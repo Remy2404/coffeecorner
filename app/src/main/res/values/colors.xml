@@ -5,18 +5,18 @@
     <color name="white">#FFFFFFFF</color>
 
     <!-- Coffee shop theme colors from design -->
-    <color name="color_01">#C67C4E</color> <!-- Brown/Coffee color -->
-    <color name="color_02">#EDD6C8</color> <!-- Light beige -->
-    <color name="color_03">#313131</color> <!-- Dark gray -->
-    <color name="color_04">#E3E3E3</color> <!-- Light gray -->
-    <color name="color_05">#F9F2ED</color> <!-- Off white -->
+    <color name="color_01">#1A467D</color> <!-- Dark blue -->
+    <color name="color_02">#057DCD</color> <!-- Medium blue -->
+    <color name="color_03">#43B0F1</color> <!-- Light blue -->
+    <color name="color_04">#F1F7FC</color> <!-- Very light blue/gray -->
+    <color name="color_05">#FFFFFF</color> <!-- White -->
     
     <!-- Semantic color mappings -->
-    <color name="primary">#C67C4E</color>
-    <color name="secondary">#EDD6C8</color>
-    <color name="text_primary">#313131</color>
+    <color name="primary">#057DCD</color>
+    <color name="secondary">#43B0F1</color>
+    <color name="text_primary">#1E3D58</color>
     <color name="text_secondary">#7F7F7F</color>
-    <color name="background">#F9F2ED</color>
+    <color name="background">#E8EEF1</color>
     <color name="surface">#FFFFFF</color>
-    <color name="divider">#E3E3E3</color>
+    <color name="divider">#E8EEF1</color>
 </resources>

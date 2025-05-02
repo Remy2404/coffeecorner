@@ -1,3 +1,8 @@
 <resources>
-    <string name="app_name">Apsara android</string>
+    <string name="app_name" translatable="false">Apsara android</string>
+    <string name="continues" translatable="false">Continue</string>
+    <string name="welcome">Welcome</string>
+    <string name="explore_our_menu_and_order_your_favorite_coffee">Explore our menu and order your favorite coffee.</string>
+    <string name="coffee_cup">Coffee cup</string>
+    <string name="coffee_corner">COFFEE corner</string>
 </resources>

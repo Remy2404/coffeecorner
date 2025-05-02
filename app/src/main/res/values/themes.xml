@@ -3,7 +3,7 @@
     <style name="Base.Theme.ApsaraAndroid" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Primary brand color. -->
         <item name="colorPrimary">@color/primary</item>
-        <item name="colorPrimaryVariant">@color/color_02</item>
+        <item name="colorPrimaryVariant">@color/color_03</item>
         <item name="colorOnPrimary">@color/white</item>
         
         <!-- Secondary brand color. -->
@@ -29,11 +29,18 @@
         <item name="textAppearanceSubtitle2">@style/TextAppearance.CoffeeShop.Subtitle2</item>
         
         <!-- Status bar and navigation bar colors -->
-        <item name="android:statusBarColor">@color/primary</item>
+        <item name="android:statusBarColor">@color/color_01</item>
         <item name="android:navigationBarColor">@color/surface</item>
     </style>
 
     <style name="Theme.ApsaraAndroid" parent="Base.Theme.ApsaraAndroid" />
+    
+    <!-- NoActionBar theme for splash screen and other full-screen activities -->
+    <style name="Theme.ApsaraAndroid.NoActionBar">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <item name="android:windowFullscreen">true</item>
+    </style>
     
     <!-- Button Styles -->
     <style name="Widget.CoffeeShop.Button" parent="Widget.MaterialComponents.Button">
