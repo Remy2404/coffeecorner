@@ -5,4 +5,10 @@
     <string name="explore_our_menu_and_order_your_favorite_coffee">Explore our menu and order your favorite coffee.</string>
     <string name="coffee_cup">Coffee cup</string>
     <string name="coffee_corner">COFFEE corner</string>
+    <string name="sign_in_with_pinterest">Sign in with Pinterest</string>
+    <string name="remember_password">Remember password</string>
+    <string name="by_signing_in_you_are_agreeing_our_terms_and_privacy_policy">By signing in you are agreeing our Terms and privacy policy</string>
+    <string name="email_address">Email address</string>
+    <string name="password">Password</string>
+    <string name="or_connect_with">or connect with</string>
 </resources>

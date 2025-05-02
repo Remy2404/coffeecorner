@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
@@ -25,24 +26,26 @@ public class LoginActivity extends AppCompatActivity {
     private EditText etEmail;
     private EditText etPassword;
     private MaterialButton btnLogin;
+    private MaterialButton btnSignUp;
     private TextView tvForgotPassword;
-    private TextView tvRegister;
+    private CheckBox cbRememberPassword;
     private ImageButton btnGoogleLogin;
     private ImageButton btnFacebookLogin;
     private ImageButton btnTwitterLogin;
+    private ImageButton btnPinterestLogin;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-        
+
         // Initialize views
         initViews();
-        
+
         // Set up click listeners
         setClickListeners();
     }
-    
+
     /**
      * Initialize all UI elements
      */
@@ -52,13 +55,15 @@ public class LoginActivity extends AppCompatActivity {
         etEmail = findViewById(R.id.etEmail);
         etPassword = findViewById(R.id.etPassword);
         btnLogin = findViewById(R.id.btnLogin);
+        btnSignUp = findViewById(R.id.btnSignUp);
         tvForgotPassword = findViewById(R.id.tvForgotPassword);
-        tvRegister = findViewById(R.id.tvRegister);
+        cbRememberPassword = findViewById(R.id.cbRememberPassword);
         btnGoogleLogin = findViewById(R.id.btnGoogleLogin);
         btnFacebookLogin = findViewById(R.id.btnFacebookLogin);
         btnTwitterLogin = findViewById(R.id.btnTwitterLogin);
+        btnPinterestLogin = findViewById(R.id.btnPinterestLogin);
     }
-    
+
     /**
      * Set up click listeners for buttons and clickable text
      */
@@ -72,7 +77,15 @@ public class LoginActivity extends AppCompatActivity {
                 }
             }
         });
-        
+
+        // Sign Up button click
+        btnSignUp.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                navigateToRegister();
+            }
+        });
+
         // Forgot password click
         tvForgotPassword.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -81,15 +94,7 @@ public class LoginActivity extends AppCompatActivity {
                 Toast.makeText(LoginActivity.this, "Forgot password clicked", Toast.LENGTH_SHORT).show();
             }
         });
-        
-        // Register click
-        tvRegister.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                navigateToRegister();
-            }
-        });
-        
+
         // Social login buttons
         btnGoogleLogin.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -100,7 +105,7 @@ public class LoginActivity extends AppCompatActivity {
                 navigateToMainActivity();
             }
         });
-        
+
         btnFacebookLogin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -110,7 +115,7 @@ public class LoginActivity extends AppCompatActivity {
                 navigateToMainActivity();
             }
         });
-        
+
         btnTwitterLogin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -120,15 +125,26 @@ public class LoginActivity extends AppCompatActivity {
                 navigateToMainActivity();
             }
         });
+
+        btnPinterestLogin.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // TODO: Implement Pinterest Sign In
+                Toast.makeText(LoginActivity.this, "Pinterest login clicked", Toast.LENGTH_SHORT).show();
+                // For demo purposes, directly navigate to main screen
+                navigateToMainActivity();
+            }
+        });
     }
-    
+
     /**
      * Validate email and password inputs
+     * 
      * @return true if inputs are valid, false otherwise
      */
     private boolean validateInputs() {
         boolean isValid = true;
-        
+
         // Validate email
         String email = etEmail.getText().toString().trim();
         if (TextUtils.isEmpty(email)) {
@@ -140,7 +156,7 @@ public class LoginActivity extends AppCompatActivity {
         } else {
             tilEmail.setError(null);
         }
-        
+
         // Validate password
         String password = etPassword.getText().toString().trim();
         if (TextUtils.isEmpty(password)) {
@@ -152,10 +168,10 @@ public class LoginActivity extends AppCompatActivity {
         } else {
             tilPassword.setError(null);
         }
-        
+
         return isValid;
     }
-    
+
     /**
      * Perform login authentication
      */
@@ -164,7 +180,7 @@ public class LoginActivity extends AppCompatActivity {
         // For demo purposes, hardcode a success case
         String email = etEmail.getText().toString().trim();
         String password = etPassword.getText().toString().trim();
-        
+
         if (email.equals("user@example.com") && password.equals("password")) {
             // Login successful
             Toast.makeText(this, "Login successful", Toast.LENGTH_SHORT).show();
@@ -174,7 +190,7 @@ public class LoginActivity extends AppCompatActivity {
             Toast.makeText(this, "Invalid email or password", Toast.LENGTH_SHORT).show();
         }
     }
-    
+
     /**
      * Navigate to the registration screen
      */
@@ -182,7 +198,7 @@ public class LoginActivity extends AppCompatActivity {
         // TODO: Navigate to RegisterActivity when it's created
         Toast.makeText(this, "Register clicked - will implement later", Toast.LENGTH_SHORT).show();
     }
-    
+
     /**
      * Navigate to the main activity after successful login
      */
