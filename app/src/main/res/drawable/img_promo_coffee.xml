@@ -1,0 +1,9 @@
+<!-- This is a placeholder for your image. 
+Replace this with your actual image file (e.g., a PNG or JPG) 
+or use a vector drawable if appropriate. 
+For demonstration, this will be a simple shape. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+    <solid android:color="#8B4513"/> <!-- SaddleBrown -->
+    <size android:width="120dp" android:height="120dp"/>
+</shape>

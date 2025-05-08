@@ -9,14 +9,19 @@
     <color name="color_02">#057DCD</color> <!-- Medium blue -->
     <color name="color_03">#43B0F1</color> <!-- Light blue -->
     <color name="color_04">#F1F7FC</color> <!-- Very light blue/gray -->
-    <color name="color_05">#FFFFFF</color> <!-- White -->
-    
+    <color name="color_05">#FFFFFF</color>
+    <color name="color_06">#F1F7FC</color> <!-- Very light blue/gray -->
+    <color name="color_07">#E8EEF1</color> <!-- Light gray -->
+    <color name="color_08">#F1F7FC</color> <!-- Very light blue/gray -->
+    <color name="color_09">#242424</color> <!-- Very dark gray -->
+
     <!-- Semantic color mappings -->
     <color name="primary">#057DCD</color>
     <color name="secondary">#43B0F1</color>
     <color name="text_primary">#1E3D58</color>
-    <color name="text_secondary">#7F7F7F</color>
+    <color name="text_secondary">#686868</color>
     <color name="background">#E8EEF1</color>
     <color name="surface">#FFFFFF</color>
     <color name="divider">#E8EEF1</color>
+    <color name="brown">#D2691E</color> <!-- Coffee brown color for chips -->
 </resources>

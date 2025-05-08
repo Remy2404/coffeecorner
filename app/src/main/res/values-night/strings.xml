@@ -1,4 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="continues" translatable="false">Continue</string>
+    <string name="forgot_password_title">"forget password "</string>
+    <string name="forgot_password_subtitle">Forgot your Password</string>
+    <string name="send_reset_link">Reset</string>
+    <string name="back_to_sign_in">Back to Sigin</string>
+    <string name="coffee_corner_logo">logo\n</string>
+    <string name="by_signing_in_you_are_agreeing_our">By signing in you are agreeing our</string>
+    <string name="terms_and_privacy_policy">Terms and privacy policy</string>
+    <string name="create_account">Create New Account</string>
+    <string name="full_name">FullName</string>
+    <string name="confirm_password">comfirm password\n</string>
+    <string name="sign_up">Sign Up</string>
+    <string name="already_have_an_account">Already have an account ?</string>
+    <string name="sign_in_underlined">Sign in</string>
+    <string name="sign_in">Sign in</string>
+    <string name="order_summary">Order Summary</string>
+    <string name="delivery_fee">Delivery Fee</string>
+    <string name="total_amount">Total Amount</string>
+    <string name="payment_method">Payment Method</string>
+    <string name="cash_on_delivery">Cash on Delivery</string>
+    <string name="credit_debit_card">Credit/Debit Card</string>
+    <string name="place_order">Place Order</string>
+    <string name="_0_00">$0.00</string>
+    <string name="search_coffee_hint">Search \"coffee corner\"</string>
+    <string name="filter_button_description">filter_button_description</string>
+    <string name="promo">Promo</string>
+    <string name="promo_image_description">promo_image_description</string>
+    <string name="promo_title">promo_title</string>
+    <string name="all_menu">all menu</string>
+    <string name="latte">latte</string>
+    <string name="baked_goods">baked goods</string>
+    <string name="americano">americano</string>
+    <string name="_4_8">4.8</string>
+    <string name="caffe_mocha">Caffe Mocha</string>
+    <string name="ice_hot">Ice/Hot</string>
+    <string name="detail">Detail</string>
+    <string name="Coffee_Coco">Coffee Coco\n</string>
+    <string name="products">Products</string>
+    <string name="location">Location</string>
+    <string name="phon_ramy">Phon Ramy</string>
+    <string name="phnom_penh_cambodia">Phnom Penh, Cambodia</string>
 </resources>
