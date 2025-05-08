@@ -74,4 +74,13 @@
         <item name="android:textSize">12sp</item>
         <item name="android:textColor">@color/text_secondary</item>
     </style>
+    
+    <!-- Image styling -->
+    <style name="RoundedImageView8dp">
+        <item name="cornerSize">8dp</item>
+    </style>
+    
+    <style name="RoundedImageView12dp">
+        <item name="cornerSize">12dp</item>
+    </style>
 </resources>

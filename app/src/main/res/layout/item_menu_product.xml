@@ -1,26 +1,63 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_margin="8dp"
-    app:cardCornerRadius="8dp"
-    app:cardElevation="4dp">
+    app:cardCornerRadius="12dp"
+    app:cardElevation="2dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="16dp">
+        android:padding="16dp"
+        android:background="@color/white">
 
-        <ImageView
+        <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/product_image"
             android:layout_width="100dp"
             android:layout_height="100dp"
             android:scaleType="centerCrop"
-            android:src="@drawable/img_caffe_mocha_placeholder" 
+            android:src="@drawable/coffee_coco"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
+            app:shapeAppearanceOverlay="@style/RoundedImageView8dp"
             android:contentDescription="@string/product_image_description"/>
+
+        <!-- Rating badge -->
+        <LinearLayout
+            android:id="@+id/ratingBadge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:layout_marginEnd="4dp"
+            android:background="@drawable/rating_badge_background"
+            android:orientation="horizontal"
+            android:paddingStart="6dp"
+            android:paddingTop="2dp"
+            android:paddingEnd="6dp"
+            android:paddingBottom="2dp"
+            app:layout_constraintEnd_toEndOf="@id/product_image"
+            app:layout_constraintTop_toTopOf="@id/product_image">
+
+            <ImageView
+                android:layout_width="12dp"
+                android:layout_height="12dp"
+                android:src="@drawable/ic_star_yellow"
+                app:tint="#F2F206"
+                tools:ignore="ContentDescription" />
+
+            <TextView
+                android:id="@+id/product_rating"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="2dp"
+                android:text="4.8"
+                android:textColor="@color/white"
+                android:textSize="10sp"
+                tools:ignore="SmallSp" />
+        </LinearLayout>
 
         <TextView
             android:id="@+id/product_name"
@@ -28,8 +65,9 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:text="Caffe Mocha"
-            android:textAppearance="@style/TextAppearance.AppCompat.Title"
-            android:textColor="@color/black"
+            android:textColor="@color/text_primary"
+            android:textSize="16sp"
+            android:textStyle="bold"
             app:layout_constraintStart_toEndOf="@id/product_image"
             app:layout_constraintTop_toTopOf="@id/product_image"
             app:layout_constraintEnd_toEndOf="parent"/>
@@ -40,8 +78,8 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
             android:text="Deep Chocolate, Rich Espresso"
-            android:textAppearance="@style/TextAppearance.AppCompat.Body1"
-            android:textColor="@color/dark_gray"
+            android:textColor="@color/text_secondary"
+            android:textSize="14sp"
             app:layout_constraintStart_toStartOf="@id/product_name"
             app:layout_constraintTop_toBottomOf="@id/product_name"
             app:layout_constraintEnd_toEndOf="parent"/>
@@ -52,22 +90,28 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:text="$4.50"
-            android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
-            android:textColor="@color/brown"
+            android:textColor="@color/color_02"
+            android:textSize="18sp"
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="@id/product_description"
             app:layout_constraintTop_toBottomOf="@id/product_description" />
 
-        <Button
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/add_to_cart_button"
             android:layout_width="wrap_content"
-            android:layout_height="40dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="30dp"
+            android:layout_marginEnd="10dp"
+
+            android:backgroundTint="@color/color_02"
             android:text="@string/add_to_cart"
-            android:backgroundTint="@color/brown"
+            android:textAllCaps="false"
             android:textColor="@android:color/white"
+            app:cornerRadius="8dp"
+            app:layout_constraintBottom_toBottomOf="@id/product_price"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintBottom_toBottomOf="@id/product_price" />
+            app:layout_constraintTop_toBottomOf="@+id/product_description" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-</androidx.cardview.widget.CardView>
+</com.google.android.material.card.MaterialCardView>
