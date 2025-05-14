@@ -1,4 +1,4 @@
-package com.example.apsaraandroid;
+package com.coffeecorner.app.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -6,6 +6,7 @@ import android.os.Handler;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
+import com.coffeecorner.app.R;
 
 import androidx.appcompat.app.AppCompatActivity;
 

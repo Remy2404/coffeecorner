@@ -1,7 +1,6 @@
 package com.coffeecorner.app.activities;
 
 import android.os.Bundle;
-import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -11,11 +10,11 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.coffeecorner.app.R;
 import com.coffeecorner.app.adapters.RewardAdapter;
 import com.coffeecorner.app.adapters.PointsHistoryAdapter;
 import com.coffeecorner.app.models.Reward;
 import com.coffeecorner.app.models.PointsHistory;
+import com.coffeecorner.app.R;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -77,10 +76,10 @@ public class RewardsActivity extends AppCompatActivity {
     private void setupRewardsRecyclerView() {
         rvRewards = findViewById(R.id.rvRewards);
         rvRewards.setLayoutManager(new LinearLayoutManager(this));
-        
+
         // Create sample rewards data
         List<Reward> rewards = getSampleRewards();
-        
+
         // Initialize adapter
         rewardAdapter = new RewardAdapter(this, rewards);
         rvRewards.setAdapter(rewardAdapter);
@@ -88,35 +87,35 @@ public class RewardsActivity extends AppCompatActivity {
 
     private List<Reward> getSampleRewards() {
         List<Reward> rewards = new ArrayList<>();
-        
+
         rewards.add(new Reward(
                 "Free Cappuccino",
                 "Any size, valid for 30 days",
                 500,
                 R.drawable.ic_coffee));
-        
+
         rewards.add(new Reward(
                 "Free Pastry",
                 "Any pastry from our bakery section",
                 350,
                 R.drawable.ic_coffee));
-        
+
         rewards.add(new Reward(
                 "50% Off Any Drink",
                 "Valid for one transaction",
                 250,
                 R.drawable.ic_coffee));
-        
+
         return rewards;
     }
 
     private void setupPointsHistoryRecyclerView() {
         rvPointsHistory = findViewById(R.id.rvPointsHistory);
         rvPointsHistory.setLayoutManager(new LinearLayoutManager(this));
-        
+
         // Create sample points history data
         List<PointsHistory> pointsHistoryList = getSamplePointsHistory();
-        
+
         // Initialize adapter
         pointsHistoryAdapter = new PointsHistoryAdapter(this, pointsHistoryList);
         rvPointsHistory.setAdapter(pointsHistoryAdapter);
@@ -124,37 +123,37 @@ public class RewardsActivity extends AppCompatActivity {
 
     private List<PointsHistory> getSamplePointsHistory() {
         List<PointsHistory> pointsHistoryList = new ArrayList<>();
-        
+
         pointsHistoryList.add(new PointsHistory(
                 "Purchase at Downtown Branch",
                 "May 12, 2023 • 10:45 AM",
                 75,
                 true));
-        
+
         pointsHistoryList.add(new PointsHistory(
                 "Redeemed Free Latte",
                 "May 10, 2023 • 3:20 PM",
                 500,
                 false));
-        
+
         pointsHistoryList.add(new PointsHistory(
                 "Purchase at Riverside Branch",
                 "May 8, 2023 • 8:15 AM",
                 60,
                 true));
-        
+
         pointsHistoryList.add(new PointsHistory(
                 "Birthday Bonus",
                 "May 5, 2023 • 12:00 AM",
                 250,
                 true));
-        
+
         pointsHistoryList.add(new PointsHistory(
                 "Purchase at Toul Kork Branch",
                 "May 2, 2023 • 2:30 PM",
                 55,
                 true));
-        
+
         return pointsHistoryList;
     }
 }

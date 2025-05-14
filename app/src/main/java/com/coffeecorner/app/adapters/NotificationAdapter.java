@@ -47,25 +47,25 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
         holder.tvContent.setText(notification.getContent());
         holder.tvTimeAgo.setText(notification.getTimeAgo());
         holder.ivIcon.setImageResource(notification.getIconResource());
-        
+
         // Set background tint for the icon
         holder.ivIconBackground.setBackgroundTintList(
                 ContextCompat.getColorStateList(context, notification.getBackgroundTint()));
-        
+
         // Set unread indicator visibility
         holder.viewUnreadIndicator.setVisibility(notification.isRead() ? View.GONE : View.VISIBLE);
-        
+
         // Set card background based on read status
-        holder.itemView.setBackgroundColor(ContextCompat.getColor(context, 
+        holder.itemView.setBackgroundColor(ContextCompat.getColor(context,
                 notification.isRead() ? R.color.white : R.color.unread_notification_bg));
-        
+
         // Set delete button click listener
         holder.btnDelete.setOnClickListener(v -> {
             if (listener != null) {
                 listener.onDeleteClicked(notification, position);
             }
         });
-        
+
         // Set item click listener
         holder.itemView.setOnClickListener(v -> {
             if (listener != null) {
@@ -78,7 +78,7 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
     public int getItemCount() {
         return notifications.size();
     }
-    
+
     public void removeItem(int position) {
         if (position >= 0 && position < notifications.size()) {
             notifications.remove(position);
@@ -86,15 +86,16 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
             notifyItemRangeChanged(position, notifications.size());
         }
     }
-    
+
     public void clearAll() {
         int size = notifications.size();
         notifications.clear();
         notifyItemRangeRemoved(0, size);
     }
-    
+
     public interface OnNotificationActionListener {
         void onNotificationClicked(Notification notification, int position);
+
         void onDeleteClicked(Notification notification, int position);
     }
 
@@ -109,7 +110,7 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
 
         public NotificationViewHolder(@NonNull View itemView) {
             super(itemView);
-            
+
             viewUnreadIndicator = itemView.findViewById(R.id.viewUnreadIndicator);
             ivIconBackground = itemView.findViewById(R.id.ivIconBackground);
             ivIcon = itemView.findViewById(R.id.ivIcon);

@@ -43,6 +43,20 @@ public class Product {
         this.availableSizes = availableSizes;
         this.availableAddons = availableAddons;
     }
+
+    // Constructor for OrderTrackingActivity
+    public Product(String id, String name, String description, double price, String imageUrl, String category, boolean isFeatured) {
+        this.id = id;
+        this.name = name;
+        this.description = description;
+        this.price = price;
+        this.imageUrl = imageUrl;
+        this.category = category;
+        this.isFeatured = isFeatured;
+        this.isAvailable = true; // Default value
+        this.availableSizes = new ArrayList<>(); // Default value
+        this.availableAddons = new ArrayList<>(); // Default value
+    }
     
     // Getters and setters
     

@@ -10,9 +10,9 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.coffeecorner.app.R;
 import com.coffeecorner.app.adapters.NotificationAdapter;
 import com.coffeecorner.app.models.Notification;
+import com.coffeecorner.app.R;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,7 +41,7 @@ public class NotificationActivity extends AppCompatActivity {
 
         ImageButton btnBack = findViewById(R.id.btnBack);
         btnBack.setOnClickListener(v -> onBackPressed());
-        
+
         ImageButton btnClearAll = findViewById(R.id.btnClearAll);
         btnClearAll.setOnClickListener(v -> clearAllNotifications());
     }
@@ -49,10 +49,10 @@ public class NotificationActivity extends AppCompatActivity {
     private void setupNotificationsRecyclerView() {
         rvNotifications = findViewById(R.id.rvNotifications);
         rvNotifications.setLayoutManager(new LinearLayoutManager(this));
-        
+
         // Create sample notifications data
         List<Notification> notifications = getSampleNotifications();
-        
+
         // Initialize adapter
         notificationAdapter = new NotificationAdapter(this, notifications);
         notificationAdapter.setOnNotificationActionListener(new NotificationAdapter.OnNotificationActionListener() {
@@ -66,13 +66,13 @@ public class NotificationActivity extends AppCompatActivity {
                 deleteNotification(notification, position);
             }
         });
-        
+
         rvNotifications.setAdapter(notificationAdapter);
     }
 
     private List<Notification> getSampleNotifications() {
         List<Notification> notifications = new ArrayList<>();
-        
+
         notifications.add(new Notification(
                 "Order Confirmed",
                 "Your order #CC-19052 has been confirmed and is being prepared.",
@@ -80,7 +80,7 @@ public class NotificationActivity extends AppCompatActivity {
                 Notification.TYPE_ORDER,
                 "CC-19052",
                 false));
-        
+
         notifications.add(new Notification(
                 "Special Offer",
                 "Buy one get one free on all Signature Blends this weekend!",
@@ -88,7 +88,7 @@ public class NotificationActivity extends AppCompatActivity {
                 Notification.TYPE_PROMOTION,
                 null,
                 false));
-        
+
         notifications.add(new Notification(
                 "Points Added",
                 "You earned 75 points from your recent purchase.",
@@ -96,7 +96,7 @@ public class NotificationActivity extends AppCompatActivity {
                 Notification.TYPE_REWARD,
                 null,
                 true));
-        
+
         notifications.add(new Notification(
                 "New Seasonal Menu",
                 "Our Summer menu is now available. Try our new Mango Tango Smoothie!",
@@ -104,7 +104,7 @@ public class NotificationActivity extends AppCompatActivity {
                 Notification.TYPE_NEWS,
                 null,
                 true));
-        
+
         notifications.add(new Notification(
                 "Free Birthday Drink",
                 "Your birthday is coming up! Don't forget to claim your free signature drink.",
@@ -112,30 +112,30 @@ public class NotificationActivity extends AppCompatActivity {
                 Notification.TYPE_REWARD,
                 null,
                 true));
-        
+
         return notifications;
     }
-    
+
     private void handleNotificationClick(Notification notification) {
         // In a real app, we would open the relevant screen based on notification type
         // For now, just mark as read and show a toast
         notification.setRead(true);
         notificationAdapter.notifyDataSetChanged();
-        
+
         Toast.makeText(this, "Opened: " + notification.getTitle(), Toast.LENGTH_SHORT).show();
     }
-    
+
     private void deleteNotification(Notification notification, int position) {
         // Delete this notification
         notificationAdapter.removeItem(position);
-        
+
         Toast.makeText(this, "Notification deleted", Toast.LENGTH_SHORT).show();
     }
-    
+
     private void clearAllNotifications() {
         // Clear all notifications
         notificationAdapter.clearAll();
-        
+
         Toast.makeText(this, "All notifications cleared", Toast.LENGTH_SHORT).show();
     }
 }

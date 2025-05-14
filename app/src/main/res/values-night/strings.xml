@@ -42,4 +42,14 @@
     <string name="phon_ramy">Phon Ramy</string>
     <string name="phnom_penh_cambodia">Phnom Penh, Cambodia</string>
     <string name="_2_50">$ 2.50</string>
+    <string name="checkout">Checkout\n</string>
+    <string name="back">Back</string>
+    <string name="subtotal">Subtotal</string>
+    <string name="total">Total</string>
+    <string name="delivery_address">Delivery address</string>
+    <string name="order_items">Order items</string>
+    <string name="change">Chnage</string>
+    <string name="continue_shopping">continue</string>
+    <string name="track_order">Order</string>
+    <string name="order_complete">Order complete</string>
 </resources>

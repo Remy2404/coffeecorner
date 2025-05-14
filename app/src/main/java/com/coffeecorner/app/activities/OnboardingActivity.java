@@ -1,4 +1,4 @@
-package com.example.apsaraandroid;
+package com.coffeecorner.app.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -9,6 +9,7 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import com.coffeecorner.app.R;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -35,14 +36,14 @@ public class OnboardingActivity extends AppCompatActivity {
             "Fast Delivery",
             "Earn Rewards"
     };
-    
+
     private final String[] descriptions = {
             "Your perfect coffee experience starts here. Explore our selection of premium coffee and treats.",
             "Browse our wide range of coffee, tea, and pastries. Customize your order just the way you like it.",
             "Order ahead and pick up at your convenience, or get it delivered right to your doorstep.",
             "Earn points with every purchase and redeem them for free drinks and special offers."
     };
-    
+
     // Placeholder for actual drawable resources to be created
     private final int[] images = {
             R.drawable.onboarding_welcome,
@@ -54,32 +55,30 @@ public class OnboardingActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        
+
         // Make the activity fullscreen
         getWindow().setFlags(
                 WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                WindowManager.LayoutParams.FLAG_FULLSCREEN
-        );
-        
+                WindowManager.LayoutParams.FLAG_FULLSCREEN);
+
         setContentView(R.layout.activity_onboarding);
-        
+
         // Initialize views
         viewPager = findViewById(R.id.viewPagerOnboarding);
         btnNext = findViewById(R.id.btnNext);
         MaterialButton btnSkip = findViewById(R.id.btnSkip);
         TabLayout tabIndicator = findViewById(R.id.tabIndicator);
-        
+
         // Set up the ViewPager with the slides adapter
         OnboardingAdapter adapter = new OnboardingAdapter();
         viewPager.setAdapter(adapter);
-        
+
         // Connect the tab indicators with the ViewPager
         new TabLayoutMediator(tabIndicator, viewPager,
-            (tab, position) -> {
-                // No text for tabs, just the indicator dots
-            }
-        ).attach();
-        
+                (tab, position) -> {
+                    // No text for tabs, just the indicator dots
+                }).attach();
+
         // Next button click logic
         btnNext.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -93,7 +92,7 @@ public class OnboardingActivity extends AppCompatActivity {
                 }
             }
         });
-        
+
         // Skip button click logic - go straight to login
         btnSkip.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -101,7 +100,7 @@ public class OnboardingActivity extends AppCompatActivity {
                 navigateToLogin();
             }
         });
-        
+
         // Set up a listener to update the Next button text on the last slide
         viewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
             @Override
@@ -114,60 +113,58 @@ public class OnboardingActivity extends AppCompatActivity {
             }
         });
     }
-    
+
     /**
      * Navigate to the login screen when onboarding is complete
      */
     private void navigateToLogin() {
         // TODO: Save onboarding completed state in SharedPreferences
-        
+
         // Start LoginActivity
         Intent intent = new Intent(OnboardingActivity.this, LoginActivity.class);
         startActivity(intent);
         finish(); // Close this activity so it's not in the back stack
     }
-    
+
     /**
      * Adapter for the onboarding slides
      */
     private class OnboardingAdapter extends RecyclerView.Adapter<OnboardingAdapter.OnboardingViewHolder> {
-        
+
         @NonNull
         @Override
         public OnboardingViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
             return new OnboardingViewHolder(
-                LayoutInflater.from(parent.getContext()).inflate(
-                    R.layout.onboarding_slide, parent, false
-                )
-            );
+                    LayoutInflater.from(parent.getContext()).inflate(
+                            R.layout.onboarding_slide, parent, false));
         }
-        
+
         @Override
         public void onBindViewHolder(@NonNull OnboardingViewHolder holder, int position) {
             holder.setData(titles[position], descriptions[position], images[position]);
         }
-        
+
         @Override
         public int getItemCount() {
             return titles.length;
         }
-        
+
         /**
          * ViewHolder for each onboarding slide
          */
         class OnboardingViewHolder extends RecyclerView.ViewHolder {
-            
+
             private final TextView tvTitle;
             private final TextView tvDescription;
             private final ImageView imgOnboarding;
-            
+
             OnboardingViewHolder(@NonNull View itemView) {
                 super(itemView);
                 tvTitle = itemView.findViewById(R.id.tvTitle);
                 tvDescription = itemView.findViewById(R.id.tvDescription);
                 imgOnboarding = itemView.findViewById(R.id.imgOnboarding);
             }
-            
+
             void setData(String title, String description, int imageResource) {
                 tvTitle.setText(title);
                 tvDescription.setText(description);

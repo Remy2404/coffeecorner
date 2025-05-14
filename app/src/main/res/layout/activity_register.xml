@@ -205,7 +205,7 @@
                     android:id="@+id/etConfirmPassword"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:drawableStart="@android:drawable/ic_lock"
+                    android:drawableStart="@drawable/ic_lock"
                     android:inputType="textPassword"
                     android:drawablePadding="10dp"
                     android:maxLines="1"

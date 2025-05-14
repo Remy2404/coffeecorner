@@ -37,7 +37,7 @@ public class OrderTrackingActivity extends AppCompatActivity {
     private ProgressBar progressBarTracking;
     private TextView tvProgressStatus;
     private MaterialButton btnContactSupport;
-    
+
     // Order status views
     private View statusConfirmed;
     private View statusPreparing;
@@ -47,19 +47,19 @@ public class OrderTrackingActivity extends AppCompatActivity {
     private TextView tvStatusPreparing;
     private TextView tvStatusOnTheWay;
     private TextView tvStatusDelivered;
-    
+
     private Order currentOrder;
     private Handler handler;
     private int currentProgress = 0;
-    
+
     // Constants for order status
     private static final int STATUS_CONFIRMED = 1;
     private static final int STATUS_PREPARING = 2;
     private static final int STATUS_ON_THE_WAY = 3;
     private static final int STATUS_DELIVERED = 4;
-    
+
     // Currently hardcoded for demo
-    private int currentOrderStatus = STATUS_PREPARING;
+    private final int currentOrderStatus = STATUS_PREPARING;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,23 +74,23 @@ public class OrderTrackingActivity extends AppCompatActivity {
 
         // Create a sample order (in a real app, we'd get this from intent or database)
         createSampleOrder();
-        
+
         // Setup order information
         setupOrderInfo();
-        
+
         // Setup order status timeline
         setupOrderStatus();
 
         // Setup delivery person info
         setupDeliveryPersonInfo();
-        
+
         // Setup contact support button
         setupContactButton();
-        
+
         // Start simulation
         simulateOrderTracking();
     }
-    
+
     private void initViews() {
         tvOrderNumber = findViewById(R.id.tvOrderNumber);
         tvOrderDate = findViewById(R.id.tvOrderDate);
@@ -102,7 +102,7 @@ public class OrderTrackingActivity extends AppCompatActivity {
         progressBarTracking = findViewById(R.id.progressBarTracking);
         tvProgressStatus = findViewById(R.id.tvProgressStatus);
         btnContactSupport = findViewById(R.id.btnContactSupport);
-        
+
         // Order status timeline views
         statusConfirmed = findViewById(R.id.statusConfirmed);
         statusPreparing = findViewById(R.id.statusPreparing);
@@ -112,7 +112,7 @@ public class OrderTrackingActivity extends AppCompatActivity {
         tvStatusPreparing = findViewById(R.id.tvStatusPreparing);
         tvStatusOnTheWay = findViewById(R.id.tvStatusOnTheWay);
         tvStatusDelivered = findViewById(R.id.tvStatusDelivered);
-        
+
         handler = new Handler(Looper.getMainLooper());
     }
 
@@ -124,11 +124,11 @@ public class OrderTrackingActivity extends AppCompatActivity {
         ImageButton btnBack = findViewById(R.id.btnBack);
         btnBack.setOnClickListener(v -> onBackPressed());
     }
-    
+
     private void createSampleOrder() {
         // Create a sample order with items
         List<CartItem> items = new ArrayList<>();
-        
+
         Product product1 = new Product(
                 "1",
                 "Cappuccino",
@@ -137,7 +137,7 @@ public class OrderTrackingActivity extends AppCompatActivity {
                 "https://example.com/cappuccino.jpg",
                 "coffee",
                 true);
-        
+
         Product product2 = new Product(
                 "2",
                 "Chocolate Croissant",
@@ -146,10 +146,10 @@ public class OrderTrackingActivity extends AppCompatActivity {
                 "https://example.com/croissant.jpg",
                 "bakery",
                 true);
-        
+
         items.add(new CartItem(product1, 1, "Medium", "Almond milk", 0.50));
         items.add(new CartItem(product2, 2, "", "", 0.0));
-        
+
         // Create the order
         currentOrder = new Order(
                 "CC-19052",
@@ -165,35 +165,36 @@ public class OrderTrackingActivity extends AppCompatActivity {
     }
 
     private void setupOrderInfo() {
-        if (currentOrder == null) return;
-        
+        if (currentOrder == null)
+            return;
+
         // Format date
         SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd, yyyy · h:mm a", Locale.getDefault());
         String formattedDate = dateFormat.format(currentOrder.getOrderDate());
-        
+
         // Set order details
         tvOrderNumber.setText("Order #" + currentOrder.getOrderId());
         tvOrderDate.setText(formattedDate);
         tvEstimatedDelivery.setText("Estimated Delivery: " + currentOrder.getEstimatedDeliveryTime() + " min");
         tvDeliveryAddress.setText(currentOrder.getDeliveryAddress());
         tvPaymentMethod.setText(currentOrder.getPaymentMethod());
-        
+
         // Calculate and set order total
         double itemsTotal = 0;
         for (CartItem item : currentOrder.getItems()) {
             double itemPrice = item.getProduct().getPrice() + item.getExtraCharge();
             itemsTotal += (itemPrice * item.getQuantity());
         }
-        
+
         double total = itemsTotal + currentOrder.getDeliveryFee() + currentOrder.getTax() - currentOrder.getDiscount();
         tvOrderTotal.setText("$" + String.format(Locale.US, "%.2f", total));
     }
-    
+
     private void setupOrderStatus() {
         // Set the current status in the timeline
         updateOrderStatusUI(currentOrder.getStatus());
     }
-    
+
     private void updateOrderStatusUI(int status) {
         switch (status) {
             case STATUS_CONFIRMED:
@@ -202,21 +203,21 @@ public class OrderTrackingActivity extends AppCompatActivity {
                 tvStatusConfirmed.setTextColor(getResources().getColor(R.color.color_02, null));
                 currentProgress = 25;
                 break;
-                
+
             case STATUS_PREPARING:
                 tvOrderStatus.setText("Preparing Order");
                 statusPreparing.setBackgroundResource(R.drawable.circle_background_blue);
                 tvStatusPreparing.setTextColor(getResources().getColor(R.color.color_02, null));
                 currentProgress = 50;
                 break;
-                
+
             case STATUS_ON_THE_WAY:
                 tvOrderStatus.setText("On the Way");
                 statusOnTheWay.setBackgroundResource(R.drawable.circle_background_blue);
                 tvStatusOnTheWay.setTextColor(getResources().getColor(R.color.color_02, null));
                 currentProgress = 75;
                 break;
-                
+
             case STATUS_DELIVERED:
                 tvOrderStatus.setText("Delivered");
                 statusDelivered.setBackgroundResource(R.drawable.circle_background_blue);
@@ -224,11 +225,11 @@ public class OrderTrackingActivity extends AppCompatActivity {
                 currentProgress = 100;
                 break;
         }
-        
+
         progressBarTracking.setProgress(currentProgress);
         updateProgressText();
     }
-    
+
     private void updateProgressText() {
         if (currentProgress <= 25) {
             tvProgressStatus.setText("Order confirmed! We're getting your order ready.");
@@ -240,13 +241,13 @@ public class OrderTrackingActivity extends AppCompatActivity {
             tvProgressStatus.setText("Order delivered. Enjoy your coffee!");
         }
     }
-    
+
     private void setupDeliveryPersonInfo() {
         // In a real app, this would be populated with actual delivery person info
         // This would be shown when the order status reaches "On the Way"
         ImageView ivDeliveryPerson = findViewById(R.id.ivDeliveryPerson);
         TextView tvDeliveryPersonName = findViewById(R.id.tvDeliveryPersonName);
-        
+
         if (currentOrder.getStatus() >= STATUS_ON_THE_WAY) {
             // Show delivery person info
             ivDeliveryPerson.setVisibility(View.VISIBLE);
@@ -267,25 +268,25 @@ public class OrderTrackingActivity extends AppCompatActivity {
             btnContactSupport.setEnabled(false);
         });
     }
-    
+
     private void simulateOrderTracking() {
         // This is a simple simulation for demo purposes
         // In a real app, you would connect to a backend service
-        
+
         // Simulate order preparation after 5 seconds
         handler.postDelayed(() -> {
             currentOrder.setStatus(STATUS_ON_THE_WAY);
             updateOrderStatusUI(STATUS_ON_THE_WAY);
             setupDeliveryPersonInfo(); // Update delivery person info
         }, TimeUnit.SECONDS.toMillis(5));
-        
+
         // Simulate order is delivered after 10 seconds
         handler.postDelayed(() -> {
             currentOrder.setStatus(STATUS_DELIVERED);
             updateOrderStatusUI(STATUS_DELIVERED);
         }, TimeUnit.SECONDS.toMillis(10));
     }
-    
+
     @Override
     protected void onDestroy() {
         super.onDestroy();

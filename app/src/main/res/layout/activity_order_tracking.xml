@@ -32,7 +32,8 @@
                     android:layout_height="24dp"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:contentDescription="@string/back_arrow_description"
-                    android:src="@drawable/ic_arrow_back_black" />
+                    android:src="@drawable/ic_arrow_back_black"
+                    tools:ignore="TouchTargetSizeCheck" />
 
                 <TextView
                     android:id="@+id/tvScreenTitle"
@@ -130,6 +131,83 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
+            <!-- Order Info Summary -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardOrderSummary"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                app:cardBackgroundColor="@color/white"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="2dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/cardOrderNumber">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:id="@+id/tvOrderStatus"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Status: Preparing"
+                        android:textColor="@color/text_primary"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tvDeliveryAddress"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="Address: 123 Coffee Ln"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="14sp" />
+
+                    <TextView
+                        android:id="@+id/tvPaymentMethod"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="Payment: Credit Card"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="14sp" />
+
+                    <TextView
+                        android:id="@+id/tvOrderTotal"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="Total: $25.97"
+                        android:textColor="@color/text_primary"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                    <ProgressBar
+                        android:id="@+id/progressBarTracking"
+                        style="?android:attr/progressBarStyleHorizontal"
+                        android:layout_width="match_parent"
+                        android:layout_height="8dp"
+                        android:layout_marginTop="8dp"
+                        android:max="100"
+                        android:progress="50"
+                        android:progressTint="@color/color_02" />
+
+                    <TextView
+                        android:id="@+id/tvProgressStatus"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="50%"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="12sp" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
             <!-- Order Status Timeline -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardOrderStatus"
@@ -159,6 +237,7 @@
 
                     <!-- Order Confirmed Status -->
                     <LinearLayout
+                        android:id="@+id/statusConfirmed"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="16dp"
@@ -193,6 +272,7 @@
                             android:orientation="vertical">
 
                             <TextView
+                                android:id="@+id/tvStatusConfirmed"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Order Confirmed"
@@ -222,6 +302,7 @@
 
                     <!-- Preparing Status -->
                     <LinearLayout
+                        android:id="@+id/statusPreparing"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal">
@@ -255,6 +336,7 @@
                             android:orientation="vertical">
 
                             <TextView
+                                android:id="@+id/tvStatusPreparing"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Preparing"
@@ -284,6 +366,7 @@
 
                     <!-- On Delivery Status -->
                     <LinearLayout
+                        android:id="@+id/statusOnTheWay"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal">
@@ -317,6 +400,7 @@
                             android:orientation="vertical">
 
                             <TextView
+                                android:id="@+id/tvStatusOnTheWay"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="On Delivery"
@@ -336,6 +420,7 @@
 
                     <!-- Delivered Status -->
                     <LinearLayout
+                        android:id="@+id/statusDelivered"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal">
@@ -363,6 +448,7 @@
                             android:orientation="vertical">
 
                             <TextView
+                                android:id="@+id/tvStatusDelivered"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Delivered"

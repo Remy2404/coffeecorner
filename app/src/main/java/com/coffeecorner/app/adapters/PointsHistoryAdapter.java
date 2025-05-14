@@ -36,13 +36,13 @@ public class PointsHistoryAdapter extends RecyclerView.Adapter<PointsHistoryAdap
     @Override
     public void onBindViewHolder(@NonNull PointsHistoryViewHolder holder, int position) {
         PointsHistory pointsHistory = pointsHistoryList.get(position);
-        
+
         holder.tvTransactionTitle.setText(pointsHistory.getTitle());
         holder.tvTransactionDate.setText(pointsHistory.getDate());
-        
+
         // Format and set points
         holder.tvPointsValue.setText(pointsHistory.getFormattedPoints());
-        
+
         // Set appropriate color for points (green for earned, red for spent)
         int textColor;
         if (pointsHistory.isEarned()) {
@@ -52,7 +52,7 @@ public class PointsHistoryAdapter extends RecyclerView.Adapter<PointsHistoryAdap
             textColor = ContextCompat.getColor(context, R.color.color_01); // red
             holder.ivTransactionType.setImageResource(R.drawable.ic_points_spent);
         }
-        
+
         holder.tvPointsValue.setTextColor(textColor);
     }
 
@@ -69,7 +69,7 @@ public class PointsHistoryAdapter extends RecyclerView.Adapter<PointsHistoryAdap
 
         public PointsHistoryViewHolder(@NonNull View itemView) {
             super(itemView);
-            
+
             ivTransactionType = itemView.findViewById(R.id.ivTransactionType);
             tvTransactionTitle = itemView.findViewById(R.id.tvTransactionTitle);
             tvTransactionDate = itemView.findViewById(R.id.tvTransactionDate);

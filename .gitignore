@@ -16,3 +16,7 @@ local.properties
 # Ignore Copilot instructions files
 .github/copilot-instructions.md
 copilot-instructions.md
+app/google-services.json
+
+# Supabase credentials
+app/src/main/assets/supabase.properties

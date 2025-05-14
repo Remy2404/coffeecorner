@@ -19,7 +19,7 @@
     <color name="primary">#057DCD</color>
     <color name="secondary">#43B0F1</color>
     <color name="text_primary">#1E3D58</color>
-    <color name="text_secondary">#686868</color>
+    <color name="text_secondary">#757575</color>
     <color name="background">#E8EEF1</color>
     <color name="surface">#FFFFFF</color>
     <color name="divider">#E8EEF1</color>
@@ -32,4 +32,7 @@
     <color name="notification_reward">#FFA94D</color> <!-- Orange -->
     <color name="notification_news">#69DB7C</color> <!-- Green -->
     <color name="notification_default">#ADB5BD</color> <!-- Gray -->
+
+    <!-- Additional colors -->
+    <color name="rating_gold">#FFD700</color>
 </resources>

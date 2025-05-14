@@ -1,11 +1,13 @@
 package com.coffeecorner.app.models;
 
+import com.coffeecorner.app.R;
+
 public class Notification {
     public static final int TYPE_ORDER = 1;
     public static final int TYPE_PROMOTION = 2;
     public static final int TYPE_REWARD = 3;
     public static final int TYPE_NEWS = 4;
-    
+
     private String title;
     private String content;
     private String timeAgo;
@@ -69,7 +71,7 @@ public class Notification {
     public void setRead(boolean read) {
         isRead = read;
     }
-    
+
     public int getIconResource() {
         switch (type) {
             case TYPE_ORDER:
@@ -84,7 +86,7 @@ public class Notification {
                 return R.drawable.ic_notification;
         }
     }
-    
+
     public int getBackgroundTint() {
         switch (type) {
             case TYPE_ORDER:

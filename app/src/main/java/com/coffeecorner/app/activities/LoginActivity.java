@@ -1,4 +1,4 @@
-package com.example.apsaraandroid;
+package com.coffeecorner.app.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -9,6 +9,7 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
+import com.coffeecorner.app.R;
 
 import androidx.appcompat.app.AppCompatActivity;
 

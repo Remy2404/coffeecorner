@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginHorizontal="16dp"
+    android:layout_marginVertical="8dp"
+    app:cardCornerRadius="8dp"
+    app:cardElevation="2dp">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="12dp">
+
+        <ImageView
+            android:id="@+id/imgProduct"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:scaleType="centerCrop"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:src="@drawable/coffee_placeholder" />
+
+        <TextView
+            android:id="@+id/tvProductName"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_marginEnd="8dp"
+            android:ellipsize="end"
+            android:maxLines="2"
+            android:textColor="@color/text_primary"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toStartOf="@id/btnRemove"
+            app:layout_constraintStart_toEndOf="@id/imgProduct"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="Caramel Macchiato" />
+
+        <TextView
+            android:id="@+id/tvProductVariant"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_marginTop="2dp"
+            android:layout_marginEnd="8dp"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:textColor="@color/text_secondary"
+            android:textSize="14sp"
+            app:layout_constraintEnd_toStartOf="@id/btnRemove"
+            app:layout_constraintStart_toEndOf="@id/imgProduct"
+            app:layout_constraintTop_toBottomOf="@id/tvProductName"
+            tools:text="Medium, Iced" />
+
+        <TextView
+            android:id="@+id/tvPrice"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:textColor="@color/primary"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@id/imgProduct"
+            app:layout_constraintTop_toBottomOf="@id/tvProductVariant"
+            app:layout_constraintVertical_bias="1.0"
+            tools:text="$4.50" />
+
+        <LinearLayout
+            android:id="@+id/quantityContainer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_quantity_selector"
+            android:gravity="center"
+            android:orientation="horizontal"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <ImageButton
+                android:id="@+id/btnDecreaseQuantity"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Decrease quantity"
+                android:src="@drawable/ic_minus"
+                app:tint="@color/text_primary" />
+
+            <TextView
+                android:id="@+id/tvQuantity"
+                android:layout_width="30dp"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="1"
+                android:textColor="@color/text_primary"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <ImageButton
+                android:id="@+id/btnIncreaseQuantity"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Increase quantity"
+                android:src="@drawable/ic_plus"
+                app:tint="@color/text_primary" />
+        </LinearLayout>
+
+        <ImageButton
+            android:id="@+id/btnRemove"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Remove item"
+            android:src="@drawable/ic_delete"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:tint="#FF6B6B" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.cardview.widget.CardView>
