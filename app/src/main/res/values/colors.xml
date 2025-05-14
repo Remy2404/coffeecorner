@@ -24,4 +24,12 @@
     <color name="surface">#FFFFFF</color>
     <color name="divider">#E8EEF1</color>
     <color name="brown">#D2691E</color> <!-- Coffee brown color for chips -->
+    
+    <!-- Notification colors -->
+    <color name="unread_notification_bg">#F0F8FF</color>
+    <color name="notification_order">#057DCD</color> <!-- Medium blue -->
+    <color name="notification_promotion">#FF6B6B</color> <!-- Light red -->
+    <color name="notification_reward">#FFA94D</color> <!-- Orange -->
+    <color name="notification_news">#69DB7C</color> <!-- Green -->
+    <color name="notification_default">#ADB5BD</color> <!-- Gray -->
 </resources>

@@ -10,16 +10,18 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="156dp"
-        android:layout_height="230dp"
+        android:layout_height="wrap_content"
         android:background="@color/color_05">
 
         <ImageView
             android:id="@+id/ivProductImageHome"
-            android:layout_width="0dp"
-            android:layout_height="180dp"
-            android:scaleType="fitCenter"
+            android:layout_width="wrap_content"
+            android:layout_marginTop="0dp"
+            android:layout_height="160dp"
+            android:scaleType="centerCrop"
             android:src="@drawable/coffee_coco"
             app:layout_constraintEnd_toEndOf="parent"
+            app:shapeAppearanceOverlay="@style/RoundedImageView8dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             tools:ignore="ContentDescription" />
@@ -29,35 +31,45 @@
             android:layout_width="12dp"
             android:layout_height="12dp"
             android:layout_marginTop="4dp"
-            android:layout_marginEnd="4dp"
+            android:layout_marginEnd="8dp"
             android:src="@drawable/ic_star_yellow"
-            app:layout_constraintEnd_toStartOf="@+id/tvRatingHome"
+            app:layout_constraintEnd_toStartOf="@+id/tvProductNameHome"
             app:layout_constraintTop_toTopOf="@+id/ivProductImageHome"
             app:tint="#F2F206"
             tools:ignore="ContentDescription" />
 <!--        background rating-->
-        <ImageView
-            android:id="@+id/imageView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="1.0"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            tools:ignore="ContentDescription"
-            app:srcCompat="@drawable/rating__bg_" />
-        <TextView
-            android:id="@+id/tvRatingHome"
+        <LinearLayout
+            android:id="@+id/ratingBadge"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
             android:layout_marginEnd="8dp"
-            android:text="@string/_4_8"
-            android:textColor="@android:color/white"
-            android:textSize="10sp"
-            app:layout_constraintEnd_toEndOf="@+id/ivProductImageHome"
-            app:layout_constraintTop_toTopOf="@+id/ivProductImageHome"
-            tools:ignore="SmallSp" />
+            android:background="@drawable/rating_badge_background"
+            android:orientation="horizontal"
+            android:paddingStart="8dp"
+            android:paddingTop="2dp"
+            android:paddingEnd="10dp"
+            android:paddingBottom="2dp"
+            app:layout_constraintEnd_toEndOf="@id/ivProductImageHome"
+            app:layout_constraintTop_toTopOf="@id/ivProductImageHome">
+
+            <ImageView
+                android:layout_width="12dp"
+                android:layout_height="12dp"
+                android:src="@drawable/ic_star_yellow"
+                app:tint="#F2F206"
+                tools:ignore="ContentDescription" />
+
+            <TextView
+                android:id="@+id/product_rating"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="2dp"
+                android:text="4.8"
+                android:textColor="@color/white"
+                android:textSize="10sp"
+                tools:ignore="SmallSp" />
+        </LinearLayout>
 
         <TextView
             android:id="@+id/tvProductNameHome"
@@ -66,7 +78,7 @@
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
             android:layout_marginEnd="8dp"
-            android:text="Caffe Mocha"
+            android:text="@string/Coffee_Coco"
             android:textColor="@color/color_09"
             android:textSize="14sp"
             android:textStyle="bold"
@@ -94,7 +106,7 @@
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
             android:layout_marginBottom="8dp"
-            android:text="$ 2.50"
+            android:text="@string/_2_50"
             android:textColor="@color/color_09"
             android:textSize="16sp"
             android:textStyle="bold"
@@ -106,8 +118,9 @@
             android:id="@+id/btnAddHome"
             android:layout_width="32dp"
             android:layout_height="32dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginBottom="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="6dp"
+            android:layout_marginBottom="5dp"
             android:background="@drawable/button_filter_background"
             android:contentDescription="@string/place_order"
             android:src="@drawable/ic_add_white"
@@ -117,7 +130,7 @@
             app:layout_constraintStart_toStartOf="@+id/tvProductNameHome"
             app:layout_constraintTop_toTopOf="@+id/tvProductNameHome"
             app:layout_constraintVertical_bias="0.0"
-            tools:ignore="ContentDescription" />
+            tools:ignore="ContentDescription,TouchTargetSizeCheck" />
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>

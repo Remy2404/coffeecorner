@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="240dp"
+    android:height="160dp"
+    android:viewportWidth="240"
+    android:viewportHeight="160">
+    
+    <!-- Background café interior -->
+    <path
+        android:fillColor="#78554B"
+        android:pathData="M0,0h240v160h-240z"/>
+    
+    <!-- Tables -->
+    <path
+        android:fillColor="#5D4037"
+        android:pathData="M30,100h40v10h-40zM120,110h40v10h-40zM190,90h30v10h-30z"/>
+    
+    <!-- Chairs -->
+    <path
+        android:fillColor="#4E342E"
+        android:pathData="M35,110h30v10h-30zM125,120h30v10h-30zM195,100h20v10h-20z"/>
+    
+    <!-- Coffee counter -->
+    <path
+        android:fillColor="#8D6E63"
+        android:pathData="M0,60h80v20h-80z"/>
+    
+    <!-- Coffee machine -->
+    <path
+        android:fillColor="#5D4037"
+        android:pathData="M20,40h40v20h-40z"/>
+    
+    <!-- Windows -->
+    <path
+        android:fillColor="#90CAF9"
+        android:pathData="M90,20h60v40h-60zM160,20h60v40h-60z"/>
+    
+    <!-- Plants -->
+    <path
+        android:fillColor="#66BB6A"
+        android:pathData="M90,70a10,5 0,1 0,20 0a10,5 0,1 0,-20 0zM200,60a10,5 0,1 0,20 0a10,5 0,1 0,-20 0z"/>
+    
+    <!-- Coffee cups -->
+    <path
+        android:fillColor="#EEEEEE"
+        android:pathData="M40,95a5,3 0,1 0,10 0a5,3 0,1 0,-10 0zM140,105a5,3 0,1 0,10 0a5,3 0,1 0,-10 0zM200,85a5,3 0,1 0,10 0a5,3 0,1 0,-10 0z"/>
+</vector>
