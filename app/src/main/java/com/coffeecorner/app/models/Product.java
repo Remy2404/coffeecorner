@@ -14,6 +14,8 @@ public class Product {
     private boolean isAvailable;
     private List<String> availableSizes;
     private List<String> availableAddons;
+    private float rating;
+    private int calories; // Added calories field
     
     // Constructor for basic products
     public Product(String id, String name, String description, double price, String category, String imageUrl) {
@@ -138,6 +140,23 @@ public class Product {
     
     public void setAvailableAddons(List<String> availableAddons) {
         this.availableAddons = availableAddons;
+    }
+    
+    public float getRating() {
+        return rating;
+    }
+    
+    public void setRating(float rating) {
+        this.rating = rating;
+    }
+    
+    // Added calories getter and setter
+    public int getCalories() {
+        return calories;
+    }
+    
+    public void setCalories(int calories) {
+        this.calories = calories;
     }
     
     // Helper methods

@@ -25,13 +25,15 @@
             android:textSize="18sp"
             android:textStyle="bold" />
 
-        <ImageView
+        <com.airbnb.lottie.LottieAnimationView
             android:id="@+id/btnSettings"
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:layout_gravity="end"
             android:layout_marginEnd="16dp"
-            android:src="@drawable/ic_settings"
+            app:lottie_rawRes="@raw/ic_settings"
+            app:lottie_autoPlay="true"
+            app:lottie_loop="true"
             app:tint="@color/text_primary" />
     </androidx.appcompat.widget.Toolbar>
 
@@ -229,11 +231,14 @@
                         android:orientation="horizontal"
                         android:padding="16dp">
 
-                        <ImageView
+                        <com.airbnb.lottie.LottieAnimationView
                             android:layout_width="24dp"
                             android:layout_height="24dp"
-                            android:src="@drawable/ic_order"
-                            app:tint="@color/primary" />
+                            app:lottie_rawRes="@raw/order"
+                            app:lottie_autoPlay="true"
+                            app:lottie_loop="true"
+                            app:lottie_renderMode="software"
+                        />
 
                         <TextView
                             android:layout_width="0dp"
@@ -419,11 +424,14 @@
                         android:orientation="horizontal"
                         android:padding="16dp">
 
-                        <ImageView
+                        <com.airbnb.lottie.LottieAnimationView
                             android:layout_width="24dp"
                             android:layout_height="24dp"
-                            android:src="@drawable/ic_logout"
-                            app:tint="#FF6B6B" />
+                            app:lottie_rawRes="@raw/logout"
+                            app:lottie_autoPlay="true"
+                            app:lottie_loop="false"
+                            app:lottie_renderMode="software"
+                        />
 
                         <TextView
                             android:layout_width="0dp"

@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.github.jan.supabase.postgrest.Postgrest;
-import io.github.jan.supabase.postgrest.query.Returning;
+import com.coffeecorner.app.utils.Returning;
 
 public class NotificationFragment extends Fragment {
 

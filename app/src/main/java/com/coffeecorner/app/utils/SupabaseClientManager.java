@@ -75,6 +75,35 @@ public class SupabaseClientManager {
         }
         return instance;
     }
+    
+    /**
+     * Get the Supabase client instance for direct API calls
+     * Added to maintain compatibility with code that was originally using the Kotlin Supabase library
+     * 
+     * @return this instance for chaining
+     */
+    public SupabaseClientManager getClient() {
+        return this;
+    }
+    
+    /**
+     * Stub method to maintain compatibility with Supabase Kotlin library
+     * 
+     * @return this instance for chaining
+     */
+    public SupabaseClientManager getSupabase() {
+        return this;
+    }
+    
+    /**
+     * Stub method to maintain compatibility with Supabase Kotlin library
+     * 
+     * @param pluginClass The plugin class to get
+     * @return this database client
+     */
+    public DatabaseClient getPlugin(Class<?> pluginClass) {
+        return new DatabaseClient("products");  // Default to products for compatibility
+    }
 
     /**
      * A simplified database interface that replaces Postgrest functionality.
@@ -195,6 +224,17 @@ public class SupabaseClientManager {
                     callback.onSuccess(new SupabaseResponse(null, new SupabaseError(e.getMessage())));
                 }
             });
+        }
+
+        /**
+         * Execute the operation synchronously
+         * 
+         * @param callback Callback to handle the response
+         */
+        public void execute(final SupabaseCallback callback) {
+            // For simplicity, we're using the same implementation as executeAsync
+            // In a real app, you might want to handle this differently
+            executeAsync(callback);
         }
     }
 

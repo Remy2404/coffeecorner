@@ -5,13 +5,12 @@ import android.os.Bundle;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.Fragment;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
+import androidx.navigation.ui.AppBarConfiguration;
+import androidx.navigation.ui.NavigationUI;
 
 import com.coffeecorner.app.R;
-import com.coffeecorner.app.fragments.CartFragment;
-import com.coffeecorner.app.fragments.HomeFragment;
-import com.coffeecorner.app.fragments.OrderHistoryFragment;
-import com.coffeecorner.app.fragments.ProfileFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
@@ -19,86 +18,41 @@ public class MainActivity extends AppCompatActivity {
 
     private BottomNavigationView bottomNavigationView;
     private FloatingActionButton fabCart;
+    private NavController navController;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_home);
+        setContentView(R.layout.activity_main);
 
         // Initialize UI elements
         initializeViews();
 
-        // Set up bottom navigation
-        setupBottomNavigation();
-
-        // Load default fragment (Home)
-        loadFragment(new HomeFragment());
-
-        // Set up click listeners
-        setupClickListeners();
+        // Set up navigation
+        setupNavigation();
     }
 
     private void initializeViews() {
-        bottomNavigationView = findViewById(R.id.bottomNavigation);
-        fabCart = findViewById(R.id.fabCart);
+        bottomNavigationView = findViewById(R.id.bottom_navigation);
+        fabCart = findViewById(R.id.fab_cart);
+
+        fabCart.setOnClickListener(v -> navController.navigate(R.id.cartFragment));
     }
 
-    private void setupBottomNavigation() {
-        bottomNavigationView.setOnItemSelectedListener(item -> {
-            Fragment selectedFragment = null;
-            int itemId = item.getItemId();
+    private void setupNavigation() {
+        navController = Navigation.findNavController(this, R.id.nav_host_fragment);
 
-            if (itemId == R.id.navigation_home) {
-                selectedFragment = new HomeFragment();
-            } else if (itemId == R.id.navigation_rewards) {
-                navigateToRewards();
-                return false;
-            } else if (itemId == R.id.navigation_orders) {
-                selectedFragment = new OrderHistoryFragment();
-            } else if (itemId == R.id.navigation_profile) {
-                selectedFragment = new ProfileFragment();
-            }
+        // Configure the bottom navigation with the nav controller
+        AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(
+                R.id.homeFragment, R.id.menuFragment, R.id.orderHistoryFragment, R.id.profileFragment)
+                .build();
 
-            if (selectedFragment != null) {
-                loadFragment(selectedFragment);
-                return true;
-            }
-            return false;
-        });
+        NavigationUI.setupWithNavController(bottomNavigationView, navController);
     }
 
-    private void setupClickListeners() {
-        // Open cart when FAB is clicked
-        fabCart.setOnClickListener(v -> {
-            loadFragment(new CartFragment());
-        });
-    }
-
-    private void loadFragment(Fragment fragment) {
-        getSupportFragmentManager()
-                .beginTransaction()
-                .replace(R.id.fragmentContainer, fragment)
-                .commit();
-    }
-
+    // Navigation helper methods
     public void navigateToCheckout() {
-        Intent intent = new Intent(this, CheckoutActivity.class);
-        startActivity(intent);
-    }
-
-    public void navigateToOrderTracking() {
-        Intent intent = new Intent(this, OrderTrackingActivity.class);
-        startActivity(intent);
-    }
-
-    public void navigateToRewards() {
-        Intent intent = new Intent(this, RewardsActivity.class);
-        startActivity(intent);
-    }
-
-    public void navigateToSettings() {
-        Intent intent = new Intent(this, SettingsActivity.class);
-        startActivity(intent);
+        startActivity(new Intent(this, CheckoutActivity.class));
     }
 
     public void showToast(String message) {

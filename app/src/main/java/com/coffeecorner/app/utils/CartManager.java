@@ -53,9 +53,7 @@ public class CartManager {
         }
         
         // Create a new cart item
-        CartItem newItem = new CartItem();
-        newItem.setProduct(product);
-        newItem.setQuantity(quantity);
+        CartItem newItem = new CartItem(product, quantity);
         newItem.setSize(size);
         newItem.setTemperature(temperature);
         newItem.setCustomizations(customizations);

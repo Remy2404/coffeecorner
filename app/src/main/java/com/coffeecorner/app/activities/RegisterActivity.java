@@ -45,7 +45,7 @@ public class RegisterActivity extends AppCompatActivity {
         }
         ImageButton btnBack = findViewById(R.id.btnBack);
         if (btnBack != null) {
-            btnBack.setOnClickListener(v -> onBackPressed());
+            btnBack.setOnClickListener(v -> finish());
         }
     }
 
@@ -59,17 +59,8 @@ public class RegisterActivity extends AppCompatActivity {
         progressBar = findViewById(R.id.progressBar);
     }
 
-    // private void initializeSupabase() {
-    // String supabaseUrl = "YOUR_SUPABASE_URL";
-    // String supabaseKey = "YOUR_SUPABASE_ANON_KEY";
-    // supabaseClient = new SupabaseClient(supabaseUrl, supabaseKey, new
-    // GoTrue.Config(), new PostgrestClient.Config());
-    // }
-
     private void setupListeners() {
-        btnRegister.setOnClickListener(v -> {
-            registerUser();
-        });
+        btnRegister.setOnClickListener(v -> registerUser());
 
         tvLoginLink.setOnClickListener(v -> {
             // Navigate to LoginActivity
@@ -136,8 +127,10 @@ public class RegisterActivity extends AppCompatActivity {
                     } else {
                         progressBar.setVisibility(View.GONE);
                         btnRegister.setEnabled(true);
+                        String errorMessage = task.getException() != null ? task.getException().getMessage()
+                                : "Registration failed";
                         Toast.makeText(RegisterActivity.this,
-                                "Registration failed: " + task.getException().getMessage(),
+                                "Registration failed: " + errorMessage,
                                 Toast.LENGTH_LONG).show();
                     }
                 });

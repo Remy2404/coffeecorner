@@ -52,14 +52,14 @@ public class OrderTrackingActivity extends AppCompatActivity {
     private Handler handler;
     private int currentProgress = 0;
 
-    // Constants for order status
-    private static final int STATUS_CONFIRMED = 1;
-    private static final int STATUS_PREPARING = 2;
-    private static final int STATUS_ON_THE_WAY = 3;
-    private static final int STATUS_DELIVERED = 4;
+    // Constants for order status - using String constants to match Order.java
+    private static final String STATUS_CONFIRMED = Order.STATUS_CONFIRMED;
+    private static final String STATUS_PREPARING = Order.STATUS_PREPARING;
+    private static final String STATUS_ON_THE_WAY = Order.STATUS_DELIVERING;
+    private static final String STATUS_DELIVERED = Order.STATUS_DELIVERED;
 
     // Currently hardcoded for demo
-    private final int currentOrderStatus = STATUS_PREPARING;
+    private final String currentOrderStatus = STATUS_PREPARING;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -119,10 +119,12 @@ public class OrderTrackingActivity extends AppCompatActivity {
     private void setupToolbar() {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayShowTitleEnabled(false);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayShowTitleEnabled(false);
+        }
 
         ImageButton btnBack = findViewById(R.id.btnBack);
-        btnBack.setOnClickListener(v -> onBackPressed());
+        btnBack.setOnClickListener(v -> finish());
     }
 
     private void createSampleOrder() {
@@ -173,9 +175,10 @@ public class OrderTrackingActivity extends AppCompatActivity {
         String formattedDate = dateFormat.format(currentOrder.getOrderDate());
 
         // Set order details
-        tvOrderNumber.setText("Order #" + currentOrder.getOrderId());
+        tvOrderNumber.setText(getString(R.string.order_number_format, currentOrder.getOrderId()));
         tvOrderDate.setText(formattedDate);
-        tvEstimatedDelivery.setText("Estimated Delivery: " + currentOrder.getEstimatedDeliveryTime() + " min");
+        tvEstimatedDelivery
+                .setText(getString(R.string.estimated_delivery_format, currentOrder.getEstimatedDeliveryTime()));
         tvDeliveryAddress.setText(currentOrder.getDeliveryAddress());
         tvPaymentMethod.setText(currentOrder.getPaymentMethod());
 
@@ -195,31 +198,31 @@ public class OrderTrackingActivity extends AppCompatActivity {
         updateOrderStatusUI(currentOrder.getStatus());
     }
 
-    private void updateOrderStatusUI(int status) {
+    private void updateOrderStatusUI(String status) {
         switch (status) {
-            case STATUS_CONFIRMED:
-                tvOrderStatus.setText("Order Confirmed");
+            case "CONFIRMED":
+                tvOrderStatus.setText(R.string.order_confirmed);
                 statusConfirmed.setBackgroundResource(R.drawable.circle_background_blue);
                 tvStatusConfirmed.setTextColor(getResources().getColor(R.color.color_02, null));
                 currentProgress = 25;
                 break;
 
-            case STATUS_PREPARING:
-                tvOrderStatus.setText("Preparing Order");
+            case "PREPARING":
+                tvOrderStatus.setText(R.string.preparing_order);
                 statusPreparing.setBackgroundResource(R.drawable.circle_background_blue);
                 tvStatusPreparing.setTextColor(getResources().getColor(R.color.color_02, null));
                 currentProgress = 50;
                 break;
 
-            case STATUS_ON_THE_WAY:
-                tvOrderStatus.setText("On the Way");
+            case "DELIVERING":
+                tvOrderStatus.setText(R.string.on_the_way);
                 statusOnTheWay.setBackgroundResource(R.drawable.circle_background_blue);
                 tvStatusOnTheWay.setTextColor(getResources().getColor(R.color.color_02, null));
                 currentProgress = 75;
                 break;
 
-            case STATUS_DELIVERED:
-                tvOrderStatus.setText("Delivered");
+            case "DELIVERED":
+                tvOrderStatus.setText(R.string.delivered);
                 statusDelivered.setBackgroundResource(R.drawable.circle_background_blue);
                 tvStatusDelivered.setTextColor(getResources().getColor(R.color.color_02, null));
                 currentProgress = 100;
@@ -232,13 +235,13 @@ public class OrderTrackingActivity extends AppCompatActivity {
 
     private void updateProgressText() {
         if (currentProgress <= 25) {
-            tvProgressStatus.setText("Order confirmed! We're getting your order ready.");
+            tvProgressStatus.setText(R.string.order_confirmed_message);
         } else if (currentProgress <= 50) {
-            tvProgressStatus.setText("Your coffee is being crafted by our baristas.");
+            tvProgressStatus.setText(R.string.order_preparing_message);
         } else if (currentProgress <= 75) {
-            tvProgressStatus.setText("Your order is on the way! Delivery person: John D.");
+            tvProgressStatus.setText(getString(R.string.order_on_the_way_message, "John D."));
         } else {
-            tvProgressStatus.setText("Order delivered. Enjoy your coffee!");
+            tvProgressStatus.setText(R.string.order_delivered_message);
         }
     }
 
@@ -248,7 +251,8 @@ public class OrderTrackingActivity extends AppCompatActivity {
         ImageView ivDeliveryPerson = findViewById(R.id.ivDeliveryPerson);
         TextView tvDeliveryPersonName = findViewById(R.id.tvDeliveryPersonName);
 
-        if (currentOrder.getStatus() >= STATUS_ON_THE_WAY) {
+        if (STATUS_ON_THE_WAY.equals(currentOrder.getStatus()) ||
+                STATUS_DELIVERED.equals(currentOrder.getStatus())) {
             // Show delivery person info
             ivDeliveryPerson.setVisibility(View.VISIBLE);
             tvDeliveryPersonName.setVisibility(View.VISIBLE);
@@ -264,7 +268,7 @@ public class OrderTrackingActivity extends AppCompatActivity {
         btnContactSupport.setOnClickListener(v -> {
             // In a real app, this would open a contact dialog or activity
             // For now, let's just update the button text to show it works
-            btnContactSupport.setText("Support contacted");
+            btnContactSupport.setText(R.string.support_contacted);
             btnContactSupport.setEnabled(false);
         });
     }

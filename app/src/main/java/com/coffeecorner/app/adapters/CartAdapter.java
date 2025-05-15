@@ -11,6 +11,8 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.airbnb.lottie.LottieAnimationView;
+
 import com.bumptech.glide.Glide;
 import com.coffeecorner.app.R;
 import com.coffeecorner.app.models.CartItem;
@@ -29,6 +31,7 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
 
     public interface CartItemListener {
         void onItemRemoved(CartItem cartItem);
+
         void onQuantityChanged(CartItem cartItem, int newQuantity);
     }
 
@@ -49,34 +52,34 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
     public void onBindViewHolder(@NonNull CartViewHolder holder, int position) {
         CartItem cartItem = cartItems.get(position);
         Product product = cartItem.getProduct();
-        
+
         // Set product name and image
         holder.tvProductName.setText(product.getName());
-        
+
         // Load product image
         if (product.getImageUrl() != null && !product.getImageUrl().isEmpty()) {
             Glide.with(context)
-                .load(product.getImageUrl())
-                .placeholder(R.drawable.coffee_placeholder)
-                .error(R.drawable.coffee_placeholder)
-                .into(holder.imgProduct);
+                    .load(product.getImageUrl())
+                    .placeholder(R.drawable.coffee_placeholder)
+                    .error(R.drawable.coffee_placeholder)
+                    .into(holder.imgProduct);
         } else {
             holder.imgProduct.setImageResource(R.drawable.coffee_placeholder);
         }
-        
+
         // Set product variant info (size, temperature, etc.)
         StringBuilder variantBuilder = new StringBuilder();
         if (cartItem.getSize() != null && !cartItem.getSize().isEmpty()) {
             variantBuilder.append(cartItem.getSize());
         }
-        
+
         if (cartItem.getTemperature() != null && !cartItem.getTemperature().isEmpty()) {
             if (variantBuilder.length() > 0) {
                 variantBuilder.append(", ");
             }
             variantBuilder.append(cartItem.getTemperature());
         }
-        
+
         // Add any customizations
         if (cartItem.getCustomizations() != null && !cartItem.getCustomizations().isEmpty()) {
             if (variantBuilder.length() > 0) {
@@ -84,49 +87,49 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
             }
             variantBuilder.append(cartItem.getCustomizations());
         }
-        
+
         holder.tvProductVariant.setText(variantBuilder.toString());
-        
+
         // Set price
         double itemPrice = product.getPrice() * cartItem.getQuantity();
         holder.tvPrice.setText(currencyFormatter.format(itemPrice));
-        
+
         // Set quantity
         holder.tvQuantity.setText(String.valueOf(cartItem.getQuantity()));
-        
+
         // Set click listeners
         holder.btnRemove.setOnClickListener(v -> {
             if (listener != null) {
                 listener.onItemRemoved(cartItem);
             }
         });
-        
+
         holder.btnIncreaseQuantity.setOnClickListener(v -> {
             int newQuantity = cartItem.getQuantity() + 1;
             if (newQuantity <= 10) { // Set a reasonable maximum
                 cartItem.setQuantity(newQuantity);
                 holder.tvQuantity.setText(String.valueOf(newQuantity));
-                
+
                 // Update price
                 double newPrice = product.getPrice() * newQuantity;
                 holder.tvPrice.setText(currencyFormatter.format(newPrice));
-                
+
                 if (listener != null) {
                     listener.onQuantityChanged(cartItem, newQuantity);
                 }
             }
         });
-        
+
         holder.btnDecreaseQuantity.setOnClickListener(v -> {
             int newQuantity = cartItem.getQuantity() - 1;
             if (newQuantity >= 1) {
                 cartItem.setQuantity(newQuantity);
                 holder.tvQuantity.setText(String.valueOf(newQuantity));
-                
+
                 // Update price
                 double newPrice = product.getPrice() * newQuantity;
                 holder.tvPrice.setText(currencyFormatter.format(newPrice));
-                
+
                 if (listener != null) {
                     listener.onQuantityChanged(cartItem, newQuantity);
                 }
@@ -152,7 +155,7 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
     static class CartViewHolder extends RecyclerView.ViewHolder {
         ImageView imgProduct;
         TextView tvProductName, tvProductVariant, tvPrice, tvQuantity;
-        ImageButton btnRemove, btnDecreaseQuantity, btnIncreaseQuantity;
+        ImageButton btnRemove, btnDecreaseQuantity, btnIncreaseQuantity; // Changed back to ImageButton
 
         public CartViewHolder(@NonNull View itemView) {
             super(itemView);

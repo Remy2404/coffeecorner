@@ -71,6 +71,7 @@ public class OrderCompleteActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         // Override back button to go to home instead of checkout
+        super.onBackPressed();
         navigateToHome();
     }
 }
