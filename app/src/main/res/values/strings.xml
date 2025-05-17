@@ -93,8 +93,8 @@
     <string name="delivery_address">Delivery address</string>
     <string name="order_items">Order items</string>
     <string name="change">Change</string>
-    <string name="continue_shopping">continue</string>
-    <string name="track_order">Order</string>
+    <string name="continue_shopping">Back to menu</string>
+    <string name="track_order">Track your order</string>
     <string name="order_complete">Order complete</string>
 
     <!-- Order Tracking Strings -->
