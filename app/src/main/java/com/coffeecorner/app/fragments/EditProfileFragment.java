@@ -70,7 +70,7 @@ public class EditProfileFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-            Bundle savedInstanceState) {
+                             Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_edit_profile, container, false);
     }
@@ -148,33 +148,33 @@ public class EditProfileFragment extends Fragment {
 
     private void populateUserData() {
         if (currentUser != null) {
-            etFullName.setText(currentUser.getName());
-            etEmail.setText(currentUser.getEmail());
-            etPhone.setText(currentUser.getPhone());
+            etFullName.setText(currentUser.full_name != null ? currentUser.full_name : "");
+            etEmail.setText(currentUser.email != null ? currentUser.email : "");
+            etPhone.setText(currentUser.phone != null ? currentUser.phone : "");
 
-            if (currentUser.getDateOfBirth() != null) {
-                etDateOfBirth.setText(dateFormat.format(currentUser.getDateOfBirth()));
+            if (currentUser.date_of_birth != null && !currentUser.date_of_birth.isEmpty()) {
+                etDateOfBirth.setText(currentUser.date_of_birth);
             }
 
             // Set gender selection
-            if (currentUser.getGender() != null) {
-                switch (currentUser.getGender()) {
+            if (currentUser.gender != null) {
+                switch (currentUser.gender) {
                     case "male":
                         radioMale.setChecked(true);
                         break;
                     case "female":
                         radioFemale.setChecked(true);
                         break;
-                    case "other":
+                    default:
                         radioOther.setChecked(true);
                         break;
                 }
             }
 
             // Load profile image
-            if (currentUser.getProfileImageUrl() != null && !currentUser.getProfileImageUrl().isEmpty()) {
+            if (currentUser.profile_image_url != null && !currentUser.profile_image_url.isEmpty()) {
                 Glide.with(this)
-                        .load(currentUser.getProfileImageUrl())
+                        .load(currentUser.profile_image_url)
                         .placeholder(R.drawable.default_profile)
                         .error(R.drawable.default_profile)
                         .into(imgProfile);
@@ -317,7 +317,7 @@ public class EditProfileFragment extends Fragment {
             uploadProfileImage(fullName, email, phone, dateOfBirth, gender);
         } else {
             // Otherwise just update user data
-            updateUserData(fullName, email, phone, dateOfBirth, gender, currentUser.getProfileImageUrl());
+            updateUserData(fullName, email, phone, dateOfBirth, gender, currentUser.profile_image_url);
         }
     }
 
@@ -361,30 +361,17 @@ public class EditProfileFragment extends Fragment {
     }
 
     private void updateUserData(String fullName, String email, String phone, String dateOfBirth, String gender,
-            String profileImageUrl) {
-        // Parse date of birth
-        Date dobDate = null;
-        if (!TextUtils.isEmpty(dateOfBirth)) {
-            try {
-                dobDate = dateFormat.parse(dateOfBirth);
-            } catch (ParseException e) {
-                // Keep as null if parsing fails
-            }
-        }
-
+                                String profileImageUrl) {
         // Update user object
-        User updatedUser = new User();
-        updatedUser.setId(currentUser.getId());
-        updatedUser.setName(fullName);
-        updatedUser.setEmail(email);
-        updatedUser.setPhone(phone);
-        updatedUser.setGender(gender);
-        updatedUser.setDateOfBirth(dobDate);
-        updatedUser.setProfileImageUrl(profileImageUrl);
-
-        // Keep other fields from current user
-        updatedUser.setCreatedAt(currentUser.getCreatedAt());
-        updatedUser.setLoyaltyPoints(currentUser.getLoyaltyPoints());
+        User updatedUser = new User(
+                currentUser.id,
+                fullName,
+                email,
+                phone,
+                gender,
+                profileImageUrl,
+                dateOfBirth
+        );
 
         // Save to Supabase
         SupabaseClientManager.getInstance().getClient()
@@ -392,13 +379,12 @@ public class EditProfileFragment extends Fragment {
                 .getPlugin(Postgrest.class)
                 .from("users")
                 .update(updatedUser)
-                .eq("id", currentUser.getId())
+                .eq("id", currentUser.id)
                 .executeWithResponseHandlers(
                         response -> {
                             requireActivity().runOnUiThread(() -> {
                                 progressBar.setVisibility(View.GONE);
-                                Toast.makeText(requireContext(), "Profile updated successfully", Toast.LENGTH_SHORT)
-                                        .show();
+                                Toast.makeText(requireContext(), "Profile updated successfully", Toast.LENGTH_SHORT).show();
                                 navigateBack();
                             });
                         },
