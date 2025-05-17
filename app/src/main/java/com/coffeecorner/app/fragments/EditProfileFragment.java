@@ -70,7 +70,7 @@ public class EditProfileFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                            Bundle savedInstanceState) {
+            Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_edit_profile, container, false);
     }
@@ -78,9 +78,9 @@ public class EditProfileFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        
+
         preferencesHelper = new PreferencesHelper(requireContext());
-        
+
         // Initialize UI components
         imgProfile = view.findViewById(R.id.imgProfile);
         etFullName = view.findViewById(R.id.etFullName);
@@ -96,24 +96,24 @@ public class EditProfileFragment extends Fragment {
         btnBack = view.findViewById(R.id.btnBack);
         btnSave = view.findViewById(R.id.btnSave);
         btnChangePassword = view.findViewById(R.id.btnChangePassword);
-        
+
         // Set listeners
         view.findViewById(R.id.btnChangePhoto).setOnClickListener(v -> showImagePickerDialog());
         btnBack.setOnClickListener(v -> navigateBack());
         btnSave.setOnClickListener(v -> updateProfile());
         btnUpdate.setOnClickListener(v -> updateProfile());
         btnChangePassword.setOnClickListener(v -> showChangePasswordDialog());
-        
+
         etDateOfBirth.setOnClickListener(v -> showDatePicker());
-        
+
         // Load user data
         loadUserData();
     }
-    
+
     private void loadUserData() {
         // Show loading state
         progressBar.setVisibility(View.VISIBLE);
-        
+
         String userId = preferencesHelper.getUserId();
         if (userId == null || userId.isEmpty()) {
             progressBar.setVisibility(View.GONE);
@@ -121,46 +121,41 @@ public class EditProfileFragment extends Fragment {
             navigateBack();
             return;
         }
-        
         // Get Supabase client and fetch user data
         SupabaseClientManager.getInstance().getClient()
-            .getSupabase()
-            .getPlugin(Postgrest.class)
-            .from("users")
-            .select()
-            .eq("id", userId)
-            .single()
-            .execute(response -> {
-                currentUser = response.getData(User.class);
-                
-                // Update UI on main thread
-                requireActivity().runOnUiThread(() -> {
-                    populateUserData();
-                    progressBar.setVisibility(View.GONE);
-                });
-                
-                return null;
-            }, error -> {
-                // Handle error on main thread
-                requireActivity().runOnUiThread(() -> {
-                    progressBar.setVisibility(View.GONE);
-                    Toast.makeText(requireContext(), "Failed to load user data", Toast.LENGTH_SHORT).show();
-                    navigateBack();
-                });
-                return null;
-            });
+                .getSupabase()
+                .getPlugin(Postgrest.class)
+                .from("users")
+                .select()
+                .eq("id", userId)
+                .single()
+                .executeWithResponseHandlers(
+                        response -> {
+                            currentUser = response.getData(User.class);
+                            requireActivity().runOnUiThread(() -> {
+                                populateUserData();
+                                progressBar.setVisibility(View.GONE);
+                            });
+                        },
+                        throwable -> {
+                            requireActivity().runOnUiThread(() -> {
+                                progressBar.setVisibility(View.GONE);
+                                Toast.makeText(requireContext(), "Failed to load user data", Toast.LENGTH_SHORT).show();
+                                navigateBack();
+                            });
+                        });
     }
-    
+
     private void populateUserData() {
         if (currentUser != null) {
             etFullName.setText(currentUser.getName());
             etEmail.setText(currentUser.getEmail());
             etPhone.setText(currentUser.getPhone());
-            
+
             if (currentUser.getDateOfBirth() != null) {
                 etDateOfBirth.setText(dateFormat.format(currentUser.getDateOfBirth()));
             }
-            
+
             // Set gender selection
             if (currentUser.getGender() != null) {
                 switch (currentUser.getGender()) {
@@ -175,21 +170,21 @@ public class EditProfileFragment extends Fragment {
                         break;
                 }
             }
-            
+
             // Load profile image
             if (currentUser.getProfileImageUrl() != null && !currentUser.getProfileImageUrl().isEmpty()) {
                 Glide.with(this)
-                    .load(currentUser.getProfileImageUrl())
-                    .placeholder(R.drawable.default_profile)
-                    .error(R.drawable.default_profile)
-                    .into(imgProfile);
+                        .load(currentUser.getProfileImageUrl())
+                        .placeholder(R.drawable.default_profile)
+                        .error(R.drawable.default_profile)
+                        .into(imgProfile);
             }
         }
     }
-    
+
     private void showDatePicker() {
         Calendar calendar = Calendar.getInstance();
-        
+
         // If date is already set, use it
         if (!TextUtils.isEmpty(etDateOfBirth.getText())) {
             try {
@@ -199,42 +194,42 @@ public class EditProfileFragment extends Fragment {
                 // Use current date if parsing fails
             }
         }
-        
+
         int year = calendar.get(Calendar.YEAR);
         int month = calendar.get(Calendar.MONTH);
         int day = calendar.get(Calendar.DAY_OF_MONTH);
-        
+
         DatePickerDialog datePickerDialog = new DatePickerDialog(requireContext(),
-            (view, selectedYear, selectedMonth, selectedDay) -> {
-                Calendar selectedDate = Calendar.getInstance();
-                selectedDate.set(selectedYear, selectedMonth, selectedDay);
-                etDateOfBirth.setText(dateFormat.format(selectedDate.getTime()));
-            }, year, month, day);
-        
+                (view, selectedYear, selectedMonth, selectedDay) -> {
+                    Calendar selectedDate = Calendar.getInstance();
+                    selectedDate.set(selectedYear, selectedMonth, selectedDay);
+                    etDateOfBirth.setText(dateFormat.format(selectedDate.getTime()));
+                }, year, month, day);
+
         // Set max date to today
         datePickerDialog.getDatePicker().setMaxDate(System.currentTimeMillis());
         datePickerDialog.show();
     }
-    
+
     private void showImagePickerDialog() {
         BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(requireContext());
         View bottomSheetView = LayoutInflater.from(requireContext())
-            .inflate(R.layout.bottom_sheet_image_picker, null);
-        
+                .inflate(R.layout.bottom_sheet_image_picker, null);
+
         bottomSheetView.findViewById(R.id.layoutCamera).setOnClickListener(v -> {
             bottomSheetDialog.dismiss();
             openCamera();
         });
-        
+
         bottomSheetView.findViewById(R.id.layoutGallery).setOnClickListener(v -> {
             bottomSheetDialog.dismiss();
             openGallery();
         });
-        
+
         bottomSheetDialog.setContentView(bottomSheetView);
         bottomSheetDialog.show();
     }
-    
+
     private void openCamera() {
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         if (takePictureIntent.resolveActivity(requireActivity().getPackageManager()) != null) {
@@ -243,16 +238,16 @@ public class EditProfileFragment extends Fragment {
             Toast.makeText(requireContext(), "Camera not available", Toast.LENGTH_SHORT).show();
         }
     }
-    
+
     private void openGallery() {
         Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
         startActivityForResult(intent, REQUEST_IMAGE_GALLERY);
     }
-    
+
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        
+
         if (resultCode == Activity.RESULT_OK) {
             if (requestCode == REQUEST_IMAGE_GALLERY && data != null) {
                 selectedImageUri = data.getData();
@@ -261,7 +256,7 @@ public class EditProfileFragment extends Fragment {
             } else if (requestCode == REQUEST_IMAGE_CAMERA && data != null) {
                 Bundle extras = data.getExtras();
                 Bitmap imageBitmap = (Bitmap) extras.get("data");
-                
+
                 // Convert bitmap to URI
                 selectedImageUri = getImageUri(imageBitmap);
                 Glide.with(this).load(selectedImageUri).into(imgProfile);
@@ -269,41 +264,42 @@ public class EditProfileFragment extends Fragment {
             }
         }
     }
-    
+
     private Uri getImageUri(Bitmap bitmap) {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bytes);
-        String path = MediaStore.Images.Media.insertImage(requireActivity().getContentResolver(), bitmap, UUID.randomUUID().toString(), null);
+        String path = MediaStore.Images.Media.insertImage(requireActivity().getContentResolver(), bitmap,
+                UUID.randomUUID().toString(), null);
         return Uri.parse(path);
     }
-    
+
     private void updateProfile() {
         // Validate input
         String fullName = etFullName.getText().toString().trim();
         String email = etEmail.getText().toString().trim();
         String phone = etPhone.getText().toString().trim();
         String dateOfBirth = etDateOfBirth.getText().toString().trim();
-        
+
         if (TextUtils.isEmpty(fullName)) {
             etFullName.setError("Name is required");
             return;
         }
-        
+
         if (TextUtils.isEmpty(email)) {
             etEmail.setError("Email is required");
             return;
         }
-        
+
         if (!Validator.isValidEmail(email)) {
             etEmail.setError("Invalid email format");
             return;
         }
-        
+
         if (TextUtils.isEmpty(phone)) {
             etPhone.setError("Phone number is required");
             return;
         }
-        
+
         // Get gender
         String gender = "other";
         int selectedGenderId = radioGroupGender.getCheckedRadioButtonId();
@@ -312,10 +308,10 @@ public class EditProfileFragment extends Fragment {
         } else if (selectedGenderId == R.id.radioFemale) {
             gender = "female";
         }
-        
+
         // Show loading state
         progressBar.setVisibility(View.VISIBLE);
-        
+
         // If image is changed, upload it first
         if (isImageChanged && selectedImageUri != null) {
             uploadProfileImage(fullName, email, phone, dateOfBirth, gender);
@@ -324,47 +320,48 @@ public class EditProfileFragment extends Fragment {
             updateUserData(fullName, email, phone, dateOfBirth, gender, currentUser.getProfileImageUrl());
         }
     }
-    
+
     private void uploadProfileImage(String fullName, String email, String phone, String dateOfBirth, String gender) {
         String fileName = "profile_" + preferencesHelper.getUserId() + "_" + System.currentTimeMillis() + ".jpg";
-        
+
         try {
             Bitmap bitmap = MediaStore.Images.Media.getBitmap(requireActivity().getContentResolver(), selectedImageUri);
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             bitmap.compress(Bitmap.CompressFormat.JPEG, 90, outputStream);
             byte[] imageData = outputStream.toByteArray();
-            
+
             // Upload to Supabase storage
             SupabaseClientManager.getInstance().getClient()
-                .getSupabase()
-                .getPlugin(Storage.class)
-                .from("profile-images")
-                .upload(new StorageFile(fileName), UploadData.from(imageData))
-                .execute(response -> {
-                    // Get public URL
-                    String imageUrl = SupabaseClientManager.getInstance().getClient()
-                        .getSupabase()
-                        .getPlugin(Storage.class)
-                        .from("profile-images")
-                        .getPublicUrl(fileName);
-                    
-                    // Update user data with new image URL
-                    updateUserData(fullName, email, phone, dateOfBirth, gender, imageUrl);
-                    return null;
-                }, error -> {
-                    requireActivity().runOnUiThread(() -> {
-                        progressBar.setVisibility(View.GONE);
-                        Toast.makeText(requireContext(), "Failed to upload image", Toast.LENGTH_SHORT).show();
-                    });
-                    return null;
-                });
+                    .getSupabase()
+                    .getPlugin(Storage.class)
+                    .from("profile-images")
+                    .upload(new StorageFile(fileName), UploadData.from(imageData))
+                    .executeWithResponseHandlers(
+                            response -> {
+                                // Get public URL
+                                String imageUrl = SupabaseClientManager.getInstance().getClient()
+                                        .getSupabase()
+                                        .getPlugin(Storage.class)
+                                        .from("profile-images")
+                                        .getPublicUrl(fileName);
+                                // Update user data with new image URL
+                                updateUserData(fullName, email, phone, dateOfBirth, gender, imageUrl);
+                            },
+                            throwable -> {
+                                requireActivity().runOnUiThread(() -> {
+                                    progressBar.setVisibility(View.GONE);
+                                    Toast.makeText(requireContext(), "Failed to upload image", Toast.LENGTH_SHORT)
+                                            .show();
+                                });
+                            });
         } catch (IOException e) {
             progressBar.setVisibility(View.GONE);
             Toast.makeText(requireContext(), "Error processing image", Toast.LENGTH_SHORT).show();
         }
     }
-    
-    private void updateUserData(String fullName, String email, String phone, String dateOfBirth, String gender, String profileImageUrl) {
+
+    private void updateUserData(String fullName, String email, String phone, String dateOfBirth, String gender,
+            String profileImageUrl) {
         // Parse date of birth
         Date dobDate = null;
         if (!TextUtils.isEmpty(dateOfBirth)) {
@@ -374,7 +371,7 @@ public class EditProfileFragment extends Fragment {
                 // Keep as null if parsing fails
             }
         }
-        
+
         // Update user object
         User updatedUser = new User();
         updatedUser.setId(currentUser.getId());
@@ -384,41 +381,42 @@ public class EditProfileFragment extends Fragment {
         updatedUser.setGender(gender);
         updatedUser.setDateOfBirth(dobDate);
         updatedUser.setProfileImageUrl(profileImageUrl);
-        
+
         // Keep other fields from current user
         updatedUser.setCreatedAt(currentUser.getCreatedAt());
         updatedUser.setLoyaltyPoints(currentUser.getLoyaltyPoints());
-        
+
         // Save to Supabase
         SupabaseClientManager.getInstance().getClient()
-            .getSupabase()
-            .getPlugin(Postgrest.class)
-            .from("users")
-            .update(updatedUser)
-            .eq("id", currentUser.getId())
-            .execute(response -> {
-                requireActivity().runOnUiThread(() -> {
-                    progressBar.setVisibility(View.GONE);
-                    Toast.makeText(requireContext(), "Profile updated successfully", Toast.LENGTH_SHORT).show();
-                    navigateBack();
-                });
-                return null;
-            }, error -> {
-                requireActivity().runOnUiThread(() -> {
-                    progressBar.setVisibility(View.GONE);
-                    Toast.makeText(requireContext(), "Failed to update profile", Toast.LENGTH_SHORT).show();
-                });
-                return null;
-            });
+                .getSupabase()
+                .getPlugin(Postgrest.class)
+                .from("users")
+                .update(updatedUser)
+                .eq("id", currentUser.getId())
+                .executeWithResponseHandlers(
+                        response -> {
+                            requireActivity().runOnUiThread(() -> {
+                                progressBar.setVisibility(View.GONE);
+                                Toast.makeText(requireContext(), "Profile updated successfully", Toast.LENGTH_SHORT)
+                                        .show();
+                                navigateBack();
+                            });
+                        },
+                        throwable -> {
+                            requireActivity().runOnUiThread(() -> {
+                                progressBar.setVisibility(View.GONE);
+                                Toast.makeText(requireContext(), "Failed to update profile", Toast.LENGTH_SHORT).show();
+                            });
+                        });
     }
-    
+
     private void showChangePasswordDialog() {
         // Implement password change functionality
         // This would typically involve showing a dialog to enter old and new passwords
         // Then using Supabase auth to update the password
         Toast.makeText(requireContext(), "Change password functionality to be implemented", Toast.LENGTH_SHORT).show();
     }
-    
+
     private void navigateBack() {
         Navigation.findNavController(requireView()).popBackStack();
     }

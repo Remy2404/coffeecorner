@@ -17,6 +17,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.function.Consumer;
 
 /**
  * A simplified client manager for Supabase that uses Java HttpURLConnection.
@@ -40,8 +43,10 @@ public class SupabaseClientManager {
      * Initialize Supabase credentials from BuildConfig
      * This should be called from the application class or before first use
      * 
-     * @param url The Supabase URL (should be injected at build time from secure source)
-     * @param key The Supabase anonymous key (should be injected at build time from secure source)
+     * @param url The Supabase URL (should be injected at build time from secure
+     *            source)
+     * @param key The Supabase anonymous key (should be injected at build time from
+     *            secure source)
      */
     public static void initialize(String url, String key) {
         SUPABASE_URL = url;
@@ -75,17 +80,18 @@ public class SupabaseClientManager {
         }
         return instance;
     }
-    
+
     /**
      * Get the Supabase client instance for direct API calls
-     * Added to maintain compatibility with code that was originally using the Kotlin Supabase library
+     * Added to maintain compatibility with code that was originally using the
+     * Kotlin Supabase library
      * 
      * @return this instance for chaining
      */
     public SupabaseClientManager getClient() {
         return this;
     }
-    
+
     /**
      * Stub method to maintain compatibility with Supabase Kotlin library
      * 
@@ -94,7 +100,7 @@ public class SupabaseClientManager {
     public SupabaseClientManager getSupabase() {
         return this;
     }
-    
+
     /**
      * Stub method to maintain compatibility with Supabase Kotlin library
      * 
@@ -102,7 +108,7 @@ public class SupabaseClientManager {
      * @return this database client
      */
     public DatabaseClient getPlugin(Class<?> pluginClass) {
-        return new DatabaseClient("products");  // Default to products for compatibility
+        return new DatabaseClient("products"); // Default to products for compatibility
     }
 
     /**
@@ -122,6 +128,25 @@ public class SupabaseClientManager {
 
         public DatabaseClient(String tableName) {
             this.tableName = tableName;
+        }
+
+        /**
+         * Select a different table to operate on
+         * 
+         * @param tableName The name of the table to operate on
+         * @return A DatabaseClient instance for chaining
+         */
+        public DatabaseClient from(String tableName) {
+            return new DatabaseClient(tableName);
+        }
+
+        /**
+         * Select records from the table
+         * 
+         * @return An OperationResult for chaining
+         */
+        public OperationResult select() {
+            return new OperationResult(null, tableName, "GET");
         }
 
         /**
@@ -152,20 +177,125 @@ public class SupabaseClientManager {
         public OperationResult delete() {
             return new OperationResult(null, tableName, "DELETE");
         }
+
+        /**
+         * Delete records from the specified table with returning option
+         * 
+         * @param returning The returning option (e.g., "representation" or "minimal")
+         * @return An OperationResult for chaining
+         */
+        public OperationResult delete(String returning) {
+            OperationResult result = new OperationResult(null, tableName, "DELETE");
+            result.addParameter("returning", returning);
+            return result;
+        }
+
+        /**
+         * Upload a file to storage
+         * 
+         * @param file The storage file
+         * @param data The upload data
+         * @return An OperationResult for chaining
+         */
+        public OperationResult upload(Object file, Object data) {
+            // This is a stub implementation for compilation
+            return new OperationResult(data, "storage.files", "POST");
+        }
+
+        /**
+         * Get public URL for a file
+         * 
+         * @param fileName The name of the file
+         * @return The public URL as a string
+         */
+        public String getPublicUrl(String fileName) {
+            // This is a stub implementation for compilation
+            return SUPABASE_URL + "/storage/v1/object/public/" + fileName;
+        }
     }
 
     /**
      * Class to handle the result of database operations
      */
     public class OperationResult {
+        /**
+         * Execute the operation with separate success and error handlers for
+         * SupabaseResponse
+         *
+         * @param onSuccess Handler for successful responses
+         * @param onError   Handler for error responses (receives Throwable)
+         */
+        public void executeWithResponseHandlers(
+                java.util.function.Consumer<SupabaseClientManager.SupabaseResponse> onSuccess,
+                java.util.function.Consumer<Throwable> onError) {
+            executeAsync(new SupabaseCallback() {
+                @Override
+                public void onSuccess(SupabaseResponse response) {
+                    if (response.getError() == null) {
+                        onSuccess.accept(response);
+                    } else {
+                        onError.accept(new Exception(response.getError().getMessage()));
+                    }
+                }
+            });
+        }
+
+        /**
+         * Add an order by clause to the request
+         *
+         * @param field     The field to order by
+         * @param ascending True for ascending, false for descending
+         * @return This instance for chaining
+         */
+        public OperationResult order(String field, boolean ascending) {
+            parameters.put("order", field + "." + (ascending ? "asc" : "desc"));
+            return this;
+        }
+
         private final Object data;
         private final String tableName;
         private final String method;
+        private final Map<String, String> filters = new HashMap<>();
+        private final Map<String, String> parameters = new HashMap<>();
 
         public OperationResult(Object data, String tableName, String method) {
             this.data = data;
             this.tableName = tableName;
             this.method = method;
+        }
+
+        /**
+         * Add a filter where field equals value
+         * 
+         * @param field The field to filter on
+         * @param value The value to match
+         * @return This instance for chaining
+         */
+        public OperationResult eq(String field, String value) {
+            filters.put(field, value);
+            return this;
+        }
+
+        /**
+         * Specify that only a single record should be returned
+         * 
+         * @return This instance for chaining
+         */
+        public OperationResult single() {
+            parameters.put("limit", "1");
+            return this;
+        }
+
+        /**
+         * Add a parameter to the request
+         * 
+         * @param key   The parameter key
+         * @param value The parameter value
+         * @return This instance for chaining
+         */
+        public OperationResult addParameter(String key, String value) {
+            parameters.put(key, value);
+            return this;
         }
 
         /**
@@ -176,7 +306,41 @@ public class SupabaseClientManager {
         public void executeAsync(final SupabaseCallback callback) {
             executor.execute(() -> {
                 try {
-                    URL url = new URL(SUPABASE_URL + "/rest/v1/" + tableName);
+                    StringBuilder urlBuilder = new StringBuilder(SUPABASE_URL + "/rest/v1/" + tableName);
+
+                    // Add filters as query parameters if present
+                    if (!filters.isEmpty()) {
+                        urlBuilder.append("?");
+
+                        boolean first = true;
+                        for (Map.Entry<String, String> entry : filters.entrySet()) {
+                            if (!first) {
+                                urlBuilder.append("&");
+                            }
+                            urlBuilder.append(entry.getKey()).append("=eq.").append(entry.getValue());
+                            first = false;
+                        }
+                    }
+
+                    // Add other parameters
+                    if (!parameters.isEmpty()) {
+                        if (filters.isEmpty()) {
+                            urlBuilder.append("?");
+                        } else {
+                            urlBuilder.append("&");
+                        }
+
+                        boolean first = filters.isEmpty();
+                        for (Map.Entry<String, String> entry : parameters.entrySet()) {
+                            if (!first) {
+                                urlBuilder.append("&");
+                            }
+                            urlBuilder.append(entry.getKey()).append("=").append(entry.getValue());
+                            first = false;
+                        }
+                    }
+
+                    URL url = new URL(urlBuilder.toString());
                     HttpURLConnection connection = (HttpURLConnection) url.openConnection();
                     connection.setRequestMethod(method);
                     connection.setRequestProperty("apikey", SUPABASE_ANON_KEY);
@@ -236,6 +400,32 @@ public class SupabaseClientManager {
             // In a real app, you might want to handle this differently
             executeAsync(callback);
         }
+
+        /**
+         * Execute the operation with success and error handlers for string responses
+         * 
+         * @param onSuccess Handler for successful String responses
+         * @param onError   Handler for error responses
+         */
+        public void executeWithStringResponse(Consumer<String> onSuccess, Consumer<String> onError) {
+            executeAsync(response -> {
+                if (response.getError() == null) {
+                    onSuccess.accept(response.getData());
+                } else {
+                    onError.accept(response.getError().getMessage());
+                }
+            });
+        }
+
+        /**
+         * Execute the operation with a callback for the SupabaseResponse
+         * Use this when you need to work with the raw response object
+         * 
+         * @param responseConsumer Consumer that processes the SupabaseResponse
+         */
+        public void executeWithResponse(Consumer<SupabaseResponse> responseConsumer) {
+            executeAsync(responseConsumer::accept);
+        }
     }
 
     /**
@@ -246,9 +436,64 @@ public class SupabaseClientManager {
     }
 
     /**
+     * 
      * Class to represent a Supabase response
      */
     public static class SupabaseResponse {
+        /**
+         * Parse JSON data to a list of class instances using simple deserialization.
+         * In a real app, use a proper JSON library like Gson or Jackson.
+         *
+         * @param <T>   The type to deserialize to
+         * @param clazz The class to instantiate
+         * @return A list of class instances
+         */
+        public <T> java.util.List<T> getDataList(Class<T> clazz) {
+            java.util.List<T> list = new java.util.ArrayList<>();
+            try {
+                if (data == null) {
+                    return list;
+                }
+                String jsonString = data.trim();
+                if (jsonString.startsWith("[")) {
+                    org.json.JSONArray arr = new org.json.JSONArray(jsonString);
+                    for (int i = 0; i < arr.length(); i++) {
+                        JSONObject json = arr.getJSONObject(i);
+                        T instance = clazz.getDeclaredConstructor().newInstance();
+                        for (java.lang.reflect.Field field : clazz.getDeclaredFields()) {
+                            field.setAccessible(true);
+                            String fieldName = field.getName();
+                            if (json.has(fieldName)) {
+                                Object value = json.get(fieldName);
+                                if (value != null && !value.equals(JSONObject.NULL)) {
+                                    field.set(instance, value);
+                                }
+                            }
+                        }
+                        list.add(instance);
+                    }
+                } else {
+                    // Single object, not an array
+                    JSONObject json = new JSONObject(jsonString);
+                    T instance = clazz.getDeclaredConstructor().newInstance();
+                    for (java.lang.reflect.Field field : clazz.getDeclaredFields()) {
+                        field.setAccessible(true);
+                        String fieldName = field.getName();
+                        if (json.has(fieldName)) {
+                            Object value = json.get(fieldName);
+                            if (value != null && !value.equals(JSONObject.NULL)) {
+                                field.set(instance, value);
+                            }
+                        }
+                    }
+                    list.add(instance);
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "Error deserializing JSON to class list: " + e.getMessage());
+            }
+            return list;
+        }
+
         private final String data;
         private final SupabaseError error;
 
@@ -261,9 +506,52 @@ public class SupabaseClientManager {
             return data;
         }
 
+        /**
+         * Parse JSON data to a class instance using simple deserialization.
+         * In a real app, use a proper JSON library like Gson or Jackson.
+         *
+         * @param <T>   The type to deserialize to
+         * @param clazz The class to instantiate
+         * @return An instance of the class populated with data
+         */
+        public <T> T getData(Class<T> clazz) {
+            try {
+                if (data == null) {
+                    return null;
+                }
+                // If the data is a JSON array, get the first object
+                String jsonString = data.trim();
+                if (jsonString.startsWith("[")) {
+                    org.json.JSONArray arr = new org.json.JSONArray(jsonString);
+                    if (arr.length() == 0)
+                        return null;
+                    jsonString = arr.getJSONObject(0).toString();
+                }
+                JSONObject json = new JSONObject(jsonString);
+                T instance = clazz.getDeclaredConstructor().newInstance();
+                for (java.lang.reflect.Field field : clazz.getDeclaredFields()) {
+                    field.setAccessible(true);
+                    String fieldName = field.getName();
+                    if (json.has(fieldName)) {
+                        Object value = json.get(fieldName);
+                        if (value != null && !value.equals(JSONObject.NULL)) {
+                            field.set(instance, value);
+                        }
+                    }
+                }
+                return instance;
+            } catch (Exception e) {
+                Log.e(TAG, "Error deserializing JSON to class: " + e.getMessage());
+                return null;
+            }
+        }
+
         public SupabaseError getError() {
             return error;
         }
+
+        // Removed invalid executeWithResponseHandlers from SupabaseResponse. This
+        // method belongs only in OperationResult.
     }
 
     /**

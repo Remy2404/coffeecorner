@@ -2,11 +2,13 @@ package com.coffeecorner.app.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
-import androidx.navigation.Navigation;
+import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
@@ -16,6 +18,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 public class MainActivity extends AppCompatActivity {
 
+    private static final String TAG = "MainActivity";
     private BottomNavigationView bottomNavigationView;
     private FloatingActionButton fabCart;
     private NavController navController;
@@ -30,24 +33,49 @@ public class MainActivity extends AppCompatActivity {
 
         // Set up navigation
         setupNavigation();
+
+        // Log successful initialization
+        Log.d(TAG, "MainActivity initialized successfully");
     }
 
     private void initializeViews() {
         bottomNavigationView = findViewById(R.id.bottom_navigation);
         fabCart = findViewById(R.id.fab_cart);
 
-        fabCart.setOnClickListener(v -> navController.navigate(R.id.cartFragment));
+        fabCart.setOnClickListener(v -> {
+            if (navController != null) {
+                navController.navigate(R.id.cartFragment);
+            } else {
+                Toast.makeText(this, "Navigation not ready", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void setupNavigation() {
-        navController = Navigation.findNavController(this, R.id.nav_host_fragment);
+        try {
+            // Get NavHostFragment and NavController
+            Fragment navHostFragment = getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment);
 
-        // Configure the bottom navigation with the nav controller
-        AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(
-                R.id.homeFragment, R.id.menuFragment, R.id.orderHistoryFragment, R.id.profileFragment)
-                .build();
+            if (navHostFragment instanceof NavHostFragment) {
+                navController = ((NavHostFragment) navHostFragment).getNavController();
 
-        NavigationUI.setupWithNavController(bottomNavigationView, navController);
+                // Configure the bottom navigation with the nav controller
+                // Use the fragment IDs from nav_graph.xml that match the bottom_nav_menu.xml
+                AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(
+                        R.id.homeFragment, R.id.menuFragment, R.id.orderHistoryFragment, R.id.profileFragment)
+                        .build();
+
+                // Setup the bottom navigation view with the nav controller
+                NavigationUI.setupWithNavController(bottomNavigationView, navController);
+                Log.d(TAG, "Navigation setup completed successfully");
+            } else {
+                Log.e(TAG, "navHostFragment is not an instance of NavHostFragment");
+                Toast.makeText(this, "Navigation setup failed", Toast.LENGTH_SHORT).show();
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Navigation setup error: " + e.getMessage(), e);
+            Toast.makeText(this, "Navigation error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
     }
 
     // Navigation helper methods

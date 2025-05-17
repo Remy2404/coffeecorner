@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
@@ -49,7 +50,7 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
         holder.ivIcon.setImageResource(notification.getIconResource());
 
         // Set background tint for the icon
-        holder.ivIconBackground.setBackgroundTintList(
+        holder.flIconBackground.setBackgroundTintList(
                 ContextCompat.getColorStateList(context, notification.getBackgroundTint()));
 
         // Set unread indicator visibility
@@ -101,7 +102,7 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
 
     static class NotificationViewHolder extends RecyclerView.ViewHolder {
         View viewUnreadIndicator;
-        ImageView ivIconBackground;
+        FrameLayout flIconBackground;
         ImageView ivIcon;
         TextView tvTitle;
         TextView tvContent;
@@ -112,7 +113,7 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
             super(itemView);
 
             viewUnreadIndicator = itemView.findViewById(R.id.viewUnreadIndicator);
-            ivIconBackground = itemView.findViewById(R.id.ivIconBackground);
+            flIconBackground = itemView.findViewById(R.id.flIconBackground);
             ivIcon = itemView.findViewById(R.id.ivIcon);
             tvTitle = itemView.findViewById(R.id.tvTitle);
             tvContent = itemView.findViewById(R.id.tvContent);

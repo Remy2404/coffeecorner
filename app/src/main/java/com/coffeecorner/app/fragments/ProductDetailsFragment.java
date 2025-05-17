@@ -155,26 +155,22 @@ public class ProductDetailsFragment extends Fragment {
                 .select()
                 .eq("id", productId)
                 .single()
-                .execute(response -> {
-                    product = response.getData(Product.class);
+                .executeWithResponseHandlers(
+                    response -> {
+                        product = response.getData(Product.class);
+                        requireActivity().runOnUiThread(() -> {
+                            displayProduct();
+                        });
+                        checkFavoriteStatus(productId);
+                    },
+                    throwable -> {
+                        requireActivity().runOnUiThread(() -> {
+                            Toast.makeText(requireContext(), "Failed to load product", Toast.LENGTH_SHORT).show();
+                            Navigation.findNavController(requireView()).popBackStack();
+                        });
+                    }
+                );
 
-                    // Update UI on main thread
-                    requireActivity().runOnUiThread(() -> {
-                        displayProduct();
-                    });
-
-                    // Check if product is in favorites
-                    checkFavoriteStatus(productId);
-
-                    return null;
-                }, error -> {
-                    // Handle error
-                    requireActivity().runOnUiThread(() -> {
-                        Toast.makeText(requireContext(), "Failed to load product", Toast.LENGTH_SHORT).show();
-                        Navigation.findNavController(requireView()).popBackStack();
-                    });
-                    return null;
-                });
     }
 
     private void displayProduct() {

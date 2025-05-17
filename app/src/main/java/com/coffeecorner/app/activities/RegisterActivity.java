@@ -137,13 +137,20 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
     private void saveUserToSupabase(String uid, String fullName, String email) {
-        User newUser = new User(uid, fullName, email, "", "");
-
+        User newUser = new User(
+            uid,           // id
+            fullName,      // full_name
+            email,         // email
+            "",            // phone
+            "other",       // gender (default)
+            "",            // profile_image_url
+            ""             // date_of_birth
+        );
         try {
             SupabaseClientManager.getInstance()
                     .from("users")
                     .insert(newUser)
-                    .execute(response -> runOnUiThread(() -> {
+                    .executeWithResponse(response -> runOnUiThread(() -> {
                         progressBar.setVisibility(View.GONE);
                         btnRegister.setEnabled(true);
 
@@ -156,14 +163,17 @@ public class RegisterActivity extends AppCompatActivity {
                             startActivity(intent);
                             finish();
                         } else {
+                            // Improved error reporting
+                            String supabaseError = response.getError().getMessage();
+                            Toast.makeText(RegisterActivity.this,
+                                    "Failed to save user data: " + supabaseError,
+                                    Toast.LENGTH_LONG).show();
                             // If Supabase save fails, delete the Firebase user
                             FirebaseUser user = mAuth.getCurrentUser();
                             if (user != null) {
                                 user.delete().addOnCompleteListener(task -> {
                                     if (task.isSuccessful()) {
-                                        Toast.makeText(RegisterActivity.this,
-                                                "Failed to save user data. Please try again.",
-                                                Toast.LENGTH_LONG).show();
+                                        // Optionally log or handle user deletion
                                     }
                                 });
                             }
@@ -173,6 +183,7 @@ public class RegisterActivity extends AppCompatActivity {
             progressBar.setVisibility(View.GONE);
             btnRegister.setEnabled(true);
             Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            e.printStackTrace();
         }
     }
 }

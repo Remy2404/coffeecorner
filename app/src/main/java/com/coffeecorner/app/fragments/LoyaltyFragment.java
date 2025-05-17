@@ -13,7 +13,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.coffeecorner.app.R;
-import com.coffeecorner.app.activities.HomeActivity;
+import com.coffeecorner.app.activities.MainActivity;
 import com.google.android.material.progressindicator.LinearProgressIndicator;
 
 public class LoyaltyFragment extends Fragment {
@@ -76,8 +76,8 @@ public class LoyaltyFragment extends Fragment {
     }
 
     private void showMessage(String message) {
-        if (getActivity() instanceof HomeActivity) {
-            ((HomeActivity) getActivity()).showToast(message);
+        if (getActivity() instanceof MainActivity) {
+            ((MainActivity) getActivity()).showToast(message);
         }
     }
 }

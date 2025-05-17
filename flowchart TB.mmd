@@ -1,0 +1,99 @@
+flowchart TB
+    subgraph "UI Layer"
+        direction LR
+        Activities["Activities
+        - SplashActivity
+        - OnboardingActivity
+        - LoginActivity
+        - RegisterActivity
+        - ForgotPasswordActivity
+        - MainActivity
+        - CheckoutActivity
+        - etc."]
+        
+        Fragments["Fragments
+        - HomeFragment
+        - MenuFragment 
+        - CartFragment
+        - ProfileFragment
+        - ProductDetailsFragment
+        - etc."]
+        
+        Adapters["Adapters
+        - MenuAdapter
+        - OrderAdapter
+        - NotificationAdapter
+        - RewardAdapter"]
+    end
+    
+    subgraph "ViewModel Layer"
+        direction LR
+        UserVM["UserViewModel"]
+        ProductVM["ProductViewModel"]
+        CartVM["CartViewModel"] 
+        OrderVM["OrderViewModel"]
+    end
+    
+    subgraph "Repository Layer"
+        direction LR
+        UserRepo["UserRepository"]
+        ProductRepo["ProductRepository"]
+        CartRepo["CartRepository"]
+        OrderRepo["OrderRepository"]
+    end
+    
+    subgraph "Data Layer"
+        direction LR
+        Models["Models
+        - User
+        - Product
+        - Order
+        - CartItem
+        - Notification"]
+        
+        Network["Network
+        - ApiService
+        - RetrofitClient"]
+        
+        Local["Local Storage
+        - PreferencesHelper
+        - Room Database"]
+    end
+    
+    %% Connections
+    Activities <--> Fragments
+    Fragments <--> Adapters
+    
+    Activities ---> UserVM & ProductVM & CartVM & OrderVM
+    Fragments ---> UserVM & ProductVM & CartVM & OrderVM
+    
+    UserVM <--> UserRepo
+    ProductVM <--> ProductRepo
+    CartVM <--> CartRepo
+    OrderVM <--> OrderRepo
+    
+    UserRepo <--> Models
+    ProductRepo <--> Models
+    CartRepo <--> Models
+    OrderRepo <--> Models
+    
+    UserRepo <--> Network
+    ProductRepo <--> Network
+    CartRepo <--> Network
+    OrderRepo <--> Network
+    
+    UserRepo <--> Local
+    ProductRepo <--> Local
+    CartRepo <--> Local
+    OrderRepo <--> Local
+    
+    %% Add some styling
+    classDef uiLayer fill:#ffcccb,stroke:#ff0000,stroke-width:2px,color:#000
+    classDef viewModelLayer fill:#b0e0e6,stroke:#0000ff,stroke-width:2px,color:#000
+    classDef repositoryLayer fill:#98fb98,stroke:#006400,stroke-width:2px,color:#000
+    classDef dataLayer fill:#fffacd,stroke:#8b4513,stroke-width:2px,color:#000
+    
+    class Activities,Fragments,Adapters uiLayer
+    class UserVM,ProductVM,CartVM,OrderVM viewModelLayer
+    class UserRepo,ProductRepo,CartRepo,OrderRepo repositoryLayer
+    class Models,Network,Local dataLayer

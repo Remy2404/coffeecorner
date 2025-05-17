@@ -80,24 +80,21 @@ public class NotificationFragment extends Fragment {
             .select()
             .eq("user_id", userId)
             .order("created_at", false) // Most recent first
-            .execute(response -> {
-                notificationList.clear();
-                notificationList.addAll(response.getData(Notification.class));
-                
-                // Update UI on main thread
-                requireActivity().runOnUiThread(() -> {
-                    notificationAdapter.notifyDataSetChanged();
-                    updateEmptyState(notificationList.isEmpty());
-                });
-                
-                return null;
-            }, error -> {
-                // Handle error on main thread
-                requireActivity().runOnUiThread(() -> {
-                    updateEmptyState(true);
-                });
-                return null;
-            });
+            .executeWithResponseHandlers(
+                response -> {
+                    notificationList.clear();
+                    notificationList.addAll(response.getDataList(Notification.class));
+                    requireActivity().runOnUiThread(() -> {
+                        notificationAdapter.notifyDataSetChanged();
+                        updateEmptyState(notificationList.isEmpty());
+                    });
+                },
+                throwable -> {
+                    requireActivity().runOnUiThread(() -> {
+                        updateEmptyState(true);
+                    });
+                }
+            );
     }
     
     private void updateEmptyState(boolean isEmpty) {
@@ -132,18 +129,18 @@ public class NotificationFragment extends Fragment {
             .from("notifications")
             .delete(Returning.REPRESENTATION)
             .eq("user_id", userId)
-            .execute(response -> {
-                // Clear local list and update UI
-                requireActivity().runOnUiThread(() -> {
-                    notificationList.clear();
-                    notificationAdapter.notifyDataSetChanged();
-                    updateEmptyState(true);
-                });
-                return null;
-            }, error -> {
-                // Handle error
-                return null;
-            });
+            .executeWithResponseHandlers(
+                response -> {
+                    requireActivity().runOnUiThread(() -> {
+                        notificationList.clear();
+                        notificationAdapter.notifyDataSetChanged();
+                        updateEmptyState(true);
+                    });
+                },
+                throwable -> {
+                    // Handle error
+                }
+            );
     }
     
     @Override

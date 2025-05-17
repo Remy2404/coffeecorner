@@ -196,8 +196,8 @@ public class LoginActivity extends AppCompatActivity {
      * Navigate to the registration screen
      */
     private void navigateToRegister() {
-        // TODO: Navigate to RegisterActivity when it's created
-        Toast.makeText(this, "Register clicked - will implement later", Toast.LENGTH_SHORT).show();
+        Intent intent = new Intent(LoginActivity.this, RegisterActivity.class);
+        startActivity(intent);
     }
 
     /**
