@@ -13,7 +13,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.coffeecorner.app.R;
-import com.coffeecorner.app.activities.MainActivity;
 import com.google.android.material.progressindicator.LinearProgressIndicator;
 
 public class LoyaltyFragment extends Fragment {
@@ -70,14 +69,5 @@ public class LoyaltyFragment extends Fragment {
     private void setupRewards() {
         // Set up RecyclerView for available rewards
         rvRewards.setLayoutManager(new LinearLayoutManager(requireContext()));
-        // In a real app, you'd add an adapter with reward items
-        // rewardsAdapter = new RewardsAdapter(rewardsList);
-        // rvRewards.setAdapter(rewardsAdapter);
-    }
-
-    private void showMessage(String message) {
-        if (getActivity() instanceof MainActivity) {
-            ((MainActivity) getActivity()).showToast(message);
-        }
     }
 }

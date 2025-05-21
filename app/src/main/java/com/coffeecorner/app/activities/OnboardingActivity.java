@@ -10,6 +10,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import com.coffeecorner.app.R;
+import com.coffeecorner.app.utils.PreferencesHelper;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -28,6 +29,7 @@ public class OnboardingActivity extends AppCompatActivity {
 
     private ViewPager2 viewPager;
     private MaterialButton btnNext;
+    private PreferencesHelper preferencesHelper;
 
     // Content for the onboarding slides
     private final String[] titles = {
@@ -56,6 +58,9 @@ public class OnboardingActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        // Initialize PreferencesHelper
+        preferencesHelper = new PreferencesHelper(this);
+
         // Make the activity fullscreen
         getWindow().setFlags(
                 WindowManager.LayoutParams.FLAG_FULLSCREEN,
@@ -80,26 +85,18 @@ public class OnboardingActivity extends AppCompatActivity {
                 }).attach();
 
         // Next button click logic
-        btnNext.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // If at the last slide, go to login
-                if (viewPager.getCurrentItem() == titles.length - 1) {
-                    navigateToLogin();
-                } else {
-                    // Otherwise, go to the next slide
-                    viewPager.setCurrentItem(viewPager.getCurrentItem() + 1);
-                }
+        btnNext.setOnClickListener(v -> {
+            // If at the last slide, go to login
+            if (viewPager.getCurrentItem() == titles.length - 1) {
+                navigateToLogin();
+            } else {
+                // Otherwise, go to the next slide
+                viewPager.setCurrentItem(viewPager.getCurrentItem() + 1);
             }
         });
 
         // Skip button click logic - go straight to login
-        btnSkip.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                navigateToLogin();
-            }
-        });
+        btnSkip.setOnClickListener(v -> navigateToLogin());
 
         // Set up a listener to update the Next button text on the last slide
         viewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
@@ -118,7 +115,8 @@ public class OnboardingActivity extends AppCompatActivity {
      * Navigate to the login screen when onboarding is complete
      */
     private void navigateToLogin() {
-        // TODO: Save onboarding completed state in SharedPreferences
+        // Save onboarding completed state in SharedPreferences
+        preferencesHelper.setOnboardingCompleted(true);
 
         // Start LoginActivity
         Intent intent = new Intent(OnboardingActivity.this, LoginActivity.class);

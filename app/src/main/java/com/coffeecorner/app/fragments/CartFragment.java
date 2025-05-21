@@ -13,6 +13,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -21,7 +22,7 @@ import com.coffeecorner.app.R;
 import com.coffeecorner.app.activities.CheckoutActivity;
 import com.coffeecorner.app.adapters.CartAdapter;
 import com.coffeecorner.app.models.CartItem;
-import com.coffeecorner.app.utils.CartManager;
+import com.coffeecorner.app.viewmodels.CartViewModel;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.text.NumberFormat;
@@ -38,6 +39,7 @@ public class CartFragment extends Fragment implements CartAdapter.CartItemListen
     private CartAdapter cartAdapter;
     private List<CartItem> cartItems = new ArrayList<>();
     private NumberFormat currencyFormatter = NumberFormat.getCurrencyInstance(Locale.US);
+    private CartViewModel cartViewModel;
 
     private static final double TAX_RATE = 0.09; // 9%
     private static final double DELIVERY_FEE = 2.00;
@@ -70,6 +72,9 @@ public class CartFragment extends Fragment implements CartAdapter.CartItemListen
 
         // Set up RecyclerView
         recyclerCartItems.setLayoutManager(new LinearLayoutManager(requireContext()));
+
+        // Initialize ViewModel
+        cartViewModel = new ViewModelProvider(requireActivity()).get(CartViewModel.class);
 
         // Load cart items
         loadCartItems();
@@ -113,40 +118,40 @@ public class CartFragment extends Fragment implements CartAdapter.CartItemListen
 
     private void loadCartItems() {
         // In a real app, get cart items from a CartManager or repository
-        cartItems = CartManager.getInstance().getCartItems();
+        cartViewModel.getCartItems().observe(getViewLifecycleOwner(), items -> {
+            cartItems = items;
 
-        if (cartItems.isEmpty()) {
-            showEmptyCartView();
-            return;
-        }
+            if (cartItems.isEmpty()) {
+                showEmptyCartView();
+                return;
+            }
 
-        // Set up adapter
-        cartAdapter = new CartAdapter(requireContext(), cartItems, this);
-        recyclerCartItems.setAdapter(cartAdapter);
+            // Set up adapter
+            cartAdapter = new CartAdapter(requireContext(), cartItems, this);
+            recyclerCartItems.setAdapter(cartAdapter);
 
-        // Update price summary
-        updatePriceSummary();
+            // Update price summary
+            updatePriceSummary();
+        });
     }
 
     private void updatePriceSummary() {
-        double subtotal = calculateSubtotal();
-        double tax = calculateTax();
-        double discount = calculateDiscount();
-        double total = calculateTotal();
+        cartViewModel.getCartTotal().observe(getViewLifecycleOwner(), subtotal -> {
+            double tax = subtotal * TAX_RATE;
+            double discount = calculateDiscount();
+            double total = subtotal + tax + DELIVERY_FEE - discount;
 
-        tvSubtotal.setText(currencyFormatter.format(subtotal));
-        tvTax.setText(currencyFormatter.format(tax));
-        tvDeliveryFee.setText(currencyFormatter.format(DELIVERY_FEE));
-        tvDiscount.setText(discount > 0 ? "-" + currencyFormatter.format(discount) : currencyFormatter.format(0));
-        tvTotal.setText(currencyFormatter.format(total));
+            tvSubtotal.setText(currencyFormatter.format(subtotal));
+            tvTax.setText(currencyFormatter.format(tax));
+            tvDeliveryFee.setText(currencyFormatter.format(DELIVERY_FEE));
+            tvDiscount.setText(discount > 0 ? "-" + currencyFormatter.format(discount) : currencyFormatter.format(0));
+            tvTotal.setText(currencyFormatter.format(total));
+        });
     }
 
     private double calculateSubtotal() {
-        double subtotal = 0;
-        for (CartItem item : cartItems) {
-            subtotal += item.getProduct().getPrice() * item.getQuantity();
-        }
-        return subtotal;
+        Double subtotal = cartViewModel.getCartTotal().getValue();
+        return subtotal != null ? subtotal : 0.0;
     }
 
     private double calculateTax() {
@@ -185,7 +190,7 @@ public class CartFragment extends Fragment implements CartAdapter.CartItemListen
     }
 
     private void clearCart() {
-        CartManager.getInstance().clearCart();
+        cartViewModel.clearCart();
         cartItems.clear();
         if (cartAdapter != null) {
             cartAdapter.notifyDataSetChanged();
@@ -196,7 +201,7 @@ public class CartFragment extends Fragment implements CartAdapter.CartItemListen
     @Override
     public void onItemRemoved(CartItem cartItem) {
         // Remove from cart
-        CartManager.getInstance().removeFromCart(cartItem);
+        cartViewModel.removeFromCart(cartItem);
         cartItems.remove(cartItem);
         cartAdapter.notifyDataSetChanged();
 
@@ -210,7 +215,7 @@ public class CartFragment extends Fragment implements CartAdapter.CartItemListen
     @Override
     public void onQuantityChanged(CartItem cartItem, int newQuantity) {
         // Update cart
-        CartManager.getInstance().updateCartItemQuantity(cartItem, newQuantity);
+        cartViewModel.updateCartItemQuantity(cartItem, newQuantity);
         updatePriceSummary();
     }
 

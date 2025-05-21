@@ -4,6 +4,10 @@ import java.util.Date;
 import java.util.List;
 
 public class Order {
+    public Order() {
+    }
+
+    public static final String STATUS_PENDING = "PENDING";
     public static final String STATUS_CONFIRMED = "CONFIRMED";
     public static final String STATUS_PREPARING = "PREPARING";
     public static final String STATUS_READY = "READY";
@@ -11,6 +15,7 @@ public class Order {
     public static final String STATUS_DELIVERED = "DELIVERED";
     public static final String STATUS_COMPLETED = "COMPLETED";
     public static final String STATUS_CANCELLED = "CANCELLED";
+    public static final String STATUS_REFUNDED = "REFUNDED";
     private String orderId;
     private String status;
     private Date orderDate;
@@ -98,6 +103,16 @@ public class Order {
 
     public void setOrderId(String orderId) {
         this.orderId = orderId;
+    }
+
+    // Missing methods needed by OrderRepository
+    public void setUserId(String userId) {
+        // Implementation depends on how user ID is stored
+        // This is a placeholder implementation
+    }
+
+    public void setTotal(double total) {
+        this.total = total;
     }
 
     public String getStatus() {

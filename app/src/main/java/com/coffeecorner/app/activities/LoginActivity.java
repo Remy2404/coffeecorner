@@ -3,8 +3,6 @@ package com.coffeecorner.app.activities;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.view.View;
-import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
@@ -21,7 +19,6 @@ import com.google.android.material.textfield.TextInputLayout;
  * Provides email/password login and social login options
  */
 public class LoginActivity extends AppCompatActivity {
-
     private TextInputLayout tilEmail;
     private TextInputLayout tilPassword;
     private EditText etEmail;
@@ -29,7 +26,6 @@ public class LoginActivity extends AppCompatActivity {
     private MaterialButton btnLogin;
     private MaterialButton btnSignUp;
     private TextView tvForgotPassword;
-    private CheckBox cbRememberPassword;
     private ImageButton btnGoogleLogin;
     private ImageButton btnFacebookLogin;
     private ImageButton btnTwitterLogin;
@@ -58,7 +54,8 @@ public class LoginActivity extends AppCompatActivity {
         btnLogin = findViewById(R.id.btnLogin);
         btnSignUp = findViewById(R.id.btnSignUp);
         tvForgotPassword = findViewById(R.id.tvForgotPassword);
-        cbRememberPassword = findViewById(R.id.cbRememberPassword);
+        // Finding the checkbox but not storing it as a field since it's not used yet
+        findViewById(R.id.cbRememberPassword);
         btnGoogleLogin = findViewById(R.id.btnGoogleLogin);
         btnFacebookLogin = findViewById(R.id.btnFacebookLogin);
         btnTwitterLogin = findViewById(R.id.btnTwitterLogin);
@@ -70,71 +67,49 @@ public class LoginActivity extends AppCompatActivity {
      */
     private void setClickListeners() {
         // Login button click
-        btnLogin.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (validateInputs()) {
-                    performLogin();
-                }
+        btnLogin.setOnClickListener(v -> {
+            if (validateInputs()) {
+                performLogin();
             }
         });
 
         // Sign Up button click
-        btnSignUp.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                navigateToRegister();
-            }
-        });
+        btnSignUp.setOnClickListener(v -> navigateToRegister());
 
         // Forgot password click
-        tvForgotPassword.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // TODO: Navigate to forgot password screen
-                Toast.makeText(LoginActivity.this, "Forgot password clicked", Toast.LENGTH_SHORT).show();
-            }
+        tvForgotPassword.setOnClickListener(v -> {
+            // TODO: Navigate to forgot password screen
+            Toast.makeText(LoginActivity.this, "Forgot password clicked", Toast.LENGTH_SHORT).show();
         });
 
         // Social login buttons
-        btnGoogleLogin.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // TODO: Implement Google Sign In
-                Toast.makeText(LoginActivity.this, "Google login clicked", Toast.LENGTH_SHORT).show();
-                // For demo purposes, directly navigate to main screen
-                navigateToMainActivity();
-            }
+        btnGoogleLogin.setOnClickListener(v -> {
+            // TODO: Implement Google Sign In
+            Toast.makeText(LoginActivity.this, "Google login clicked", Toast.LENGTH_SHORT).show();
+            // For demo purposes, directly navigate to main screen
+            navigateToMainActivity();
         });
 
-        btnFacebookLogin.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // TODO: Implement Facebook Sign In
-                Toast.makeText(LoginActivity.this, "Facebook login clicked", Toast.LENGTH_SHORT).show();
-                // For demo purposes, directly navigate to main screen
-                navigateToMainActivity();
-            }
+        btnFacebookLogin.setOnClickListener(v -> {
+            // TODO: Implement Facebook Sign In
+            Toast.makeText(LoginActivity.this, "Facebook login clicked", Toast.LENGTH_SHORT).show();
+            // For demo purposes, directly navigate to main screen
+            navigateToMainActivity();
         });
 
-        btnTwitterLogin.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // TODO: Implement Twitter Sign In
-                Toast.makeText(LoginActivity.this, "Twitter login clicked", Toast.LENGTH_SHORT).show();
-                // For demo purposes, directly navigate to main screen
-                navigateToMainActivity();
-            }
+        btnTwitterLogin.setOnClickListener(v -> {
+            // TODO: Implement Twitter Sign In
+            Toast.makeText(LoginActivity.this, "Twitter login clicked", Toast.LENGTH_SHORT).show();
+            // For demo purposes, directly navigate to main screen
+            navigateToMainActivity();
         });
 
-        btnPinterestLogin.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // TODO: Implement Pinterest Sign In
-                Toast.makeText(LoginActivity.this, "Pinterest login clicked", Toast.LENGTH_SHORT).show();
-                // For demo purposes, directly navigate to main screen
-                navigateToMainActivity();
-            }
+        btnPinterestLogin.setOnClickListener(v -> {
+
+            // TODO: Implement Pinterest Sign In
+            Toast.makeText(LoginActivity.this, "Pinterest login clicked", Toast.LENGTH_SHORT).show();
+            // For demo purposes, directly navigate to main screen
+            navigateToMainActivity();
         });
     }
 
@@ -187,6 +162,7 @@ public class LoginActivity extends AppCompatActivity {
             Toast.makeText(this, "Login successful", Toast.LENGTH_SHORT).show();
             navigateToMainActivity();
         } else {
+
             // Login failed
             Toast.makeText(this, "Invalid email or password", Toast.LENGTH_SHORT).show();
         }

@@ -70,7 +70,7 @@ public class EditProfileFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+            Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_edit_profile, container, false);
     }
@@ -148,17 +148,17 @@ public class EditProfileFragment extends Fragment {
 
     private void populateUserData() {
         if (currentUser != null) {
-            etFullName.setText(currentUser.full_name != null ? currentUser.full_name : "");
-            etEmail.setText(currentUser.email != null ? currentUser.email : "");
-            etPhone.setText(currentUser.phone != null ? currentUser.phone : "");
+            etFullName.setText(currentUser.getFullName() != null ? currentUser.getFullName() : "");
+            etEmail.setText(currentUser.getEmail() != null ? currentUser.getEmail() : "");
+            etPhone.setText(currentUser.getPhone() != null ? currentUser.getPhone() : "");
 
-            if (currentUser.date_of_birth != null && !currentUser.date_of_birth.isEmpty()) {
-                etDateOfBirth.setText(currentUser.date_of_birth);
+            if (currentUser.getDateOfBirth() != null && !currentUser.getDateOfBirth().isEmpty()) {
+                etDateOfBirth.setText(currentUser.getDateOfBirth());
             }
 
             // Set gender selection
-            if (currentUser.gender != null) {
-                switch (currentUser.gender) {
+            if (currentUser.getGender() != null) {
+                switch (currentUser.getGender()) {
                     case "male":
                         radioMale.setChecked(true);
                         break;
@@ -172,9 +172,9 @@ public class EditProfileFragment extends Fragment {
             }
 
             // Load profile image
-            if (currentUser.profile_image_url != null && !currentUser.profile_image_url.isEmpty()) {
+            if (currentUser.getPhotoUrl() != null && !currentUser.getPhotoUrl().isEmpty()) {
                 Glide.with(this)
-                        .load(currentUser.profile_image_url)
+                        .load(currentUser.getPhotoUrl())
                         .placeholder(R.drawable.default_profile)
                         .error(R.drawable.default_profile)
                         .into(imgProfile);
@@ -317,7 +317,7 @@ public class EditProfileFragment extends Fragment {
             uploadProfileImage(fullName, email, phone, dateOfBirth, gender);
         } else {
             // Otherwise just update user data
-            updateUserData(fullName, email, phone, dateOfBirth, gender, currentUser.profile_image_url);
+            updateUserData(fullName, email, phone, dateOfBirth, gender, currentUser.getPhotoUrl());
         }
     }
 
@@ -361,17 +361,16 @@ public class EditProfileFragment extends Fragment {
     }
 
     private void updateUserData(String fullName, String email, String phone, String dateOfBirth, String gender,
-                                String profileImageUrl) {
+            String profileImageUrl) {
         // Update user object
         User updatedUser = new User(
-                currentUser.id,
+                currentUser.getId(),
                 fullName,
                 email,
                 phone,
                 gender,
                 profileImageUrl,
-                dateOfBirth
-        );
+                dateOfBirth);
 
         // Save to Supabase
         SupabaseClientManager.getInstance().getClient()
@@ -379,12 +378,13 @@ public class EditProfileFragment extends Fragment {
                 .getPlugin(Postgrest.class)
                 .from("users")
                 .update(updatedUser)
-                .eq("id", currentUser.id)
+                .eq("id", currentUser.getId())
                 .executeWithResponseHandlers(
                         response -> {
                             requireActivity().runOnUiThread(() -> {
                                 progressBar.setVisibility(View.GONE);
-                                Toast.makeText(requireContext(), "Profile updated successfully", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(requireContext(), "Profile updated successfully", Toast.LENGTH_SHORT)
+                                        .show();
                                 navigateBack();
                             });
                         },

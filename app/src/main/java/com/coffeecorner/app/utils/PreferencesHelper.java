@@ -66,6 +66,13 @@ public class PreferencesHelper {
     }
 
     /**
+     * Clear user ID from preferences
+     */
+    public void clearUserId() {
+        sharedPreferences.edit().remove(KEY_USER_ID).apply();
+    }
+
+    /**
      * Check if user is logged in
      * 
      * @return True if user is logged in
@@ -90,6 +97,15 @@ public class PreferencesHelper {
      */
     public String getUserId() {
         return sharedPreferences.getString(KEY_USER_ID, null);
+    }
+
+    /**
+     * Check if user has completed onboarding
+     * 
+     * @return True if user has completed onboarding
+     */
+    public boolean hasCompletedOnboarding() {
+        return sharedPreferences.getBoolean(KEY_ONBOARDING_COMPLETED, false);
     }
 
     /**

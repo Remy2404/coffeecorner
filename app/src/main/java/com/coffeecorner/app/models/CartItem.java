@@ -62,6 +62,24 @@ public class CartItem {
         return product;
     }
 
+    /**
+     * Get the product ID from the associated product
+     * 
+     * @return product ID or null if product is null
+     */
+    public String getProductId() {
+        return product != null ? product.getId() : null;
+    }
+
+    /**
+     * Get the price from the associated product
+     * 
+     * @return product price or 0 if product is null
+     */
+    public double getPrice() {
+        return product != null ? product.getPrice() : 0.0;
+    }
+
     public void setProduct(Product product) {
         this.product = product;
     }

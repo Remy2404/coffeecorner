@@ -10,21 +10,19 @@ import android.widget.LinearLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.coffeecorner.app.R;
 import com.coffeecorner.app.adapters.OrderHistoryPagerAdapter;
 import com.coffeecorner.app.models.Order;
-import com.coffeecorner.app.utils.PreferencesHelper;
-import com.coffeecorner.app.utils.SupabaseClientManager;
+import com.coffeecorner.app.viewmodels.OrderViewModel;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import io.github.jan.supabase.postgrest.Postgrest;
 
 public class OrderHistoryFragment extends Fragment {
 
@@ -33,7 +31,7 @@ public class OrderHistoryFragment extends Fragment {
     private LinearLayout emptyView;
     private Button btnOrderNow;
     private OrderHistoryPagerAdapter pagerAdapter;
-    private PreferencesHelper preferencesHelper;
+    private OrderViewModel orderViewModel;
 
     private List<Order> activeOrders = new ArrayList<>();
     private List<Order> completedOrders = new ArrayList<>();
@@ -54,7 +52,8 @@ public class OrderHistoryFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        preferencesHelper = new PreferencesHelper(requireContext());
+        // Initialize ViewModel
+        orderViewModel = new ViewModelProvider(requireActivity()).get(OrderViewModel.class);
 
         // Initialize views
         viewPager = view.findViewById(R.id.viewPager);
@@ -87,59 +86,64 @@ public class OrderHistoryFragment extends Fragment {
             Navigation.findNavController(view).navigate(R.id.action_to_menu);
         });
 
+        // Setup observers
+        setupObservers();
+
         // Load orders
-        loadOrders();
+        refreshOrders();
     }
 
-    private void loadOrders() {
-        String userId = preferencesHelper.getUserId();
-        if (userId == null || userId.isEmpty()) {
-            showEmptyView();
-            return;
+    /**
+     * Refresh orders from the repository
+     */
+    public void refreshOrders() {
+        if (orderViewModel != null) {
+            orderViewModel.loadOrders();
         }
+    }
 
-        // Get Supabase client and fetch orders
-        SupabaseClientManager.getInstance().getClient()
-                .getSupabase()
-                .getPlugin(Postgrest.class)
-                .from("orders")
-                .select()
-                .eq("user_id", userId)
-                .order("created_at", false) // Most recent first
-                .executeWithResponseHandlers(
-                        response -> {
-                            java.util.List<Order> orders = response.getDataList(Order.class);
-                            // Clear existing lists
-                            activeOrders.clear();
-                            completedOrders.clear();
-                            cancelledOrders.clear();
-                            // Categorize orders
-                            for (Order order : orders) {
-                                if (order.getStatus().equals(Order.STATUS_CONFIRMED) ||
-                                        order.getStatus().equals(Order.STATUS_PREPARING) ||
-                                        order.getStatus().equals(Order.STATUS_READY) ||
-                                        order.getStatus().equals(Order.STATUS_DELIVERING)) {
-                                    activeOrders.add(order);
-                                } else if (order.getStatus().equals(Order.STATUS_DELIVERED) ||
-                                        order.getStatus().equals(Order.STATUS_COMPLETED)) {
-                                    completedOrders.add(order);
-                                } else if (order.getStatus().equals(Order.STATUS_CANCELLED)) {
-                                    cancelledOrders.add(order);
-                                }
-                            }
-                            // Update UI on main thread
-                            requireActivity().runOnUiThread(() -> {
-                                if (activeOrders.isEmpty() && completedOrders.isEmpty() && cancelledOrders.isEmpty()) {
-                                    showEmptyView();
-                                } else {
-                                    showOrdersView();
-                                    pagerAdapter.setOrders(activeOrders, completedOrders, cancelledOrders);
-                                }
-                            });
-                        },
-                        throwable -> {
-                            requireActivity().runOnUiThread(this::showEmptyView);
-                        });
+    private void setupObservers() {
+        // Observe active orders
+        orderViewModel.getActiveOrders().observe(getViewLifecycleOwner(), orders -> {
+            activeOrders = orders;
+            updateOrdersDisplay();
+        });
+
+        // Observe completed orders
+        orderViewModel.getCompletedOrders().observe(getViewLifecycleOwner(), orders -> {
+            completedOrders = orders;
+            updateOrdersDisplay();
+        });
+
+        // Observe cancelled orders
+        orderViewModel.getCancelledOrders().observe(getViewLifecycleOwner(), orders -> {
+            cancelledOrders = orders;
+            updateOrdersDisplay();
+        });
+
+        // Observe loading state
+        orderViewModel.getIsLoading().observe(getViewLifecycleOwner(), isLoading -> {
+            // Toggle loading indicator if needed
+        });
+
+        // Observe error messages
+        orderViewModel.getErrorMessage().observe(getViewLifecycleOwner(), errorMessage -> {
+            if (errorMessage != null && !errorMessage.isEmpty()) {
+                // Show error message
+            }
+        });
+    }
+
+    private void updateOrdersDisplay() {
+        // Update pager adapter data
+        pagerAdapter.setOrders(activeOrders, completedOrders, cancelledOrders);
+
+        // Show empty view if no orders
+        if (activeOrders.isEmpty() && completedOrders.isEmpty() && cancelledOrders.isEmpty()) {
+            showEmptyView();
+        } else {
+            hideEmptyView();
+        }
     }
 
     private void showEmptyView() {
@@ -148,7 +152,7 @@ public class OrderHistoryFragment extends Fragment {
         tabLayout.setVisibility(View.GONE);
     }
 
-    private void showOrdersView() {
+    private void hideEmptyView() {
         emptyView.setVisibility(View.GONE);
         viewPager.setVisibility(View.VISIBLE);
         tabLayout.setVisibility(View.VISIBLE);
@@ -158,6 +162,6 @@ public class OrderHistoryFragment extends Fragment {
     public void onResume() {
         super.onResume();
         // Refresh orders when fragment resumes
-        loadOrders();
+        orderViewModel.refreshOrders();
     }
 }

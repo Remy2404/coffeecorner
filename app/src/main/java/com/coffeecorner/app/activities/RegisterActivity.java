@@ -138,13 +138,13 @@ public class RegisterActivity extends AppCompatActivity {
 
     private void saveUserToSupabase(String uid, String fullName, String email) {
         User newUser = new User(
-            uid,           // id
-            fullName,      // full_name
-            email,         // email
-            "",            // phone
-            "other",       // gender (default)
-            "",            // profile_image_url
-            ""             // date_of_birth
+                uid, // id
+                fullName, // full_name
+                email, // email
+                "", // phone
+                "other", // gender (default)
+                "", // profile_image_url
+                "" // date_of_birth
         );
         try {
             SupabaseClientManager.getInstance()
