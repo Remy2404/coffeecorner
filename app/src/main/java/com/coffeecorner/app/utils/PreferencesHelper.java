@@ -330,4 +330,10 @@ public class PreferencesHelper {
     public void clearAll() {
         sharedPreferences.edit().clear().apply();
     }
+
+    public void saveUserId(String id) {
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString(KEY_USER_ID, id);
+        editor.apply();
+    }
 }

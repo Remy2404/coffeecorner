@@ -4,14 +4,19 @@ import android.content.Context;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
 
 import com.coffeecorner.app.models.CartItem;
 import com.coffeecorner.app.models.Order;
+import com.coffeecorner.app.network.ApiResponse;
 import com.coffeecorner.app.network.ApiService;
 import com.coffeecorner.app.network.RetrofitClient;
 import com.coffeecorner.app.utils.PreferencesHelper;
 
 import java.util.List;
+import java.util.Date;
+import java.util.Map;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -74,11 +79,18 @@ public class OrderRepository {
         orderRequest.setTotal(total);
         orderRequest.setDeliveryAddress(deliveryAddress);
         orderRequest.setPaymentMethod(paymentMethod);
-        // orderRequest.setStatus(Order.STATUS_CONFIRMED); // Status might be set by
-        // backend
-        // orderRequest.setCreatedAt(new Date()); // Timestamp might be set by backend
+        orderRequest.setCreatedAt(new Date()); // Timestamp might be set by backend
 
-        apiService.createOrder(orderRequest).enqueue(new Callback<ApiResponse<Order>>() {
+        // Create a Map for the request body as expected by the API
+        java.util.Map<String, Object> orderData = new java.util.HashMap<>();
+        orderData.put("userId", userId);
+        orderData.put("items", cartItems); // Assuming CartItem can be serialized correctly
+        orderData.put("total", total);
+        orderData.put("deliveryAddress", deliveryAddress);
+        orderData.put("paymentMethod", paymentMethod);
+        // Add other fields if required by your backend API for order creation
+
+        apiService.createOrder(orderData).enqueue(new Callback<ApiResponse<Order>>() {
             @Override
             public void onResponse(@NonNull Call<ApiResponse<Order>> call,
                     @NonNull Response<ApiResponse<Order>> response) {
@@ -155,7 +167,7 @@ public class OrderRepository {
             return;
         }
 
-        apiService.getOrderDetails(orderId).enqueue(new Callback<ApiResponse<Order>>() {
+        apiService.getOrderById(orderId).enqueue(new Callback<ApiResponse<Order>>() {
             @Override
             public void onResponse(@NonNull Call<ApiResponse<Order>> call,
                     @NonNull Response<ApiResponse<Order>> response) {
@@ -202,19 +214,34 @@ public class OrderRepository {
         // you might fetch the order first, check, then call cancel.
         // However, a direct cancel call is often preferred for atomicity.
 
-        apiService.cancelOrder(orderId).enqueue(new Callback<ApiResponse<Order>>() {
+        apiService.cancelOrder(orderId).enqueue(new Callback<ApiResponse<Void>>() {
             @Override
-            public void onResponse(@NonNull Call<ApiResponse<Order>> call,
-                    @NonNull Response<ApiResponse<Order>> response) {
+            public void onResponse(@NonNull Call<ApiResponse<Void>> call,
+                    @NonNull Response<ApiResponse<Void>> response) {
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                    // Check if the status is indeed cancelled, or if the API handles this
-                    // Assuming the API returns the updated order object upon successful
-                    // cancellation
-                    callback.onOrderLoaded(response.body().getData());
+                    // Assuming successful response with ApiResponse<Void> means cancellation was successful
+                    // The APIResponse<Void> body might contain a success message in the message field.
+                    String successMessage = (response.body().getMessage() != null && !response.body().getMessage().isEmpty()) ? response.body().getMessage() : "Order cancelled successfully.";
+                    // Since this callback is OrderCallback, we might need to rethink how cancellation success
+                    // is communicated, or if a different callback type is needed for cancel.
+                    // For now, we'll call onError with a success message to indicate completion,
+                    // which is a workaround. A better approach would be a dedicated CancelOrderCallback.
+                    // Let's call onOrderLoaded with null or a dummy order if the callback structure must be used.
+                    // A cleaner way is to modify OrderCallback or use a new one.
+                    // Given the existing OrderCallback structure with onError, we'll use onError for simplicity
+                    // but acknowledge this is not ideal.
+                    // Better: call onOrderLoaded with a marker or null, or have a separate success method.
+                    // Let's add a check for success and then call onError with a success message as a temporary fix.
+                    // Ideally, introduce OrderCancellationCallback with onSuccess() and onError().
+                    // For now, let's call onError with the success message.
+                    // *** Correction: Let's call onOrderLoaded with null and onError on failure as per OrderCallback structure ***
+                    callback.onOrderLoaded(null); // Indicate success with null data
                 } else {
                     String errorMsg = "Failed to cancel order.";
                     if (response.body() != null && response.body().getMessage() != null) {
                         errorMsg = response.body().getMessage();
+                    } else if (response.message() != null && !response.message().isEmpty()) {
+                        errorMsg = response.message();
                     }
                     Log.e("OrderRepository", "Cancel order failed: " + response.code() + " - " + errorMsg);
                     callback.onError(errorMsg);
@@ -222,7 +249,7 @@ public class OrderRepository {
             }
 
             @Override
-            public void onFailure(@NonNull Call<ApiResponse<Order>> call, @NonNull Throwable t) {
+            public void onFailure(@NonNull Call<ApiResponse<Void>> call, @NonNull Throwable t) {
                 Log.e("OrderRepository", "Cancel order network error", t);
                 callback.onError("Network error. Please try again. " + t.getMessage());
             }

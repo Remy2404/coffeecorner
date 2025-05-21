@@ -255,4 +255,8 @@ public class Order {
                 return "Unknown Status";
         }
     }
+
+    public void setCreatedAt(Date date) {
+        this.orderDate = date;
+    }
 }

@@ -30,7 +30,6 @@ public interface ApiService {
         @GET("orders/{id}")
         Call<ApiResponse<Order>> getOrderDetails(@Path("id") String orderId);
 
-        @POST("orders/{id}/cancel")
         // User API endpoints
 
         /**
@@ -59,7 +58,8 @@ public interface ApiService {
         Call<ApiResponse<User>> register(
                         @Field("name") String name,
                         @Field("email") String email,
-                        @Field("password") String password);
+                        @Field("password") String password,
+                        @Field("recaptcha_token") String recaptchaToken);
 
         /**
          * Get user profile by ID
@@ -156,19 +156,6 @@ public interface ApiService {
          */
         @GET("products/categories")
         Call<ApiResponse<List<String>>> getCategories();
-
-        // Order API endpoints
-
-        /**
-         * Create a new order
-         * 
-         * @param userId          User ID
-         * @param items           Order items
-         * @param total           Order total
-         * @param deliveryAddress Delivery address
-         * @param orderData       Payment method
-         * @return Order data response
-         */
         @POST("orders")
         Call<ApiResponse<Order>> createOrder(
                         @Body Map<String, Object> orderData);
@@ -268,4 +255,5 @@ public interface ApiService {
         @DELETE("cart/{userId}")
         Call<ApiResponse<Void>> clearCart(@Path("userId") String userId);
 
+        Call<User> loginUser(User loginRequest);
 }

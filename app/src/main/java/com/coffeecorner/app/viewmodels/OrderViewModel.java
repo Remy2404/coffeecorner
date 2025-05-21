@@ -83,26 +83,28 @@ public class OrderViewModel extends AndroidViewModel {
         isLoading.setValue(true);
         Log.d(TAG, "loadOrders: Fetching orders for userId: " + userId);
 
-        orderRepository.getUserOrders(userId, new com.coffeecorner.app.network.ApiCallback<List<Order>>() {
+        orderRepository.getUserOrders(userId, new OrderRepository.OrdersCallback() {
             @Override
-            public void onSuccess(List<Order> result) {
+            public void onOrdersLoaded(List<Order> orders) {
                 isLoading.setValue(false);
-                if (result != null) {
-                    Log.d(TAG, "loadOrders onSuccess: Received " + result.size() + " orders.");
+                if (orders != null) {
+                    Log.d(TAG, "loadOrders onOrdersLoaded: Received " + orders.size() + " orders.");
+                    // Filter orders by status
                     List<Order> active = new ArrayList<>();
                     List<Order> completed = new ArrayList<>();
                     List<Order> cancelled = new ArrayList<>();
 
-                    for (Order order : result) {
+                    for (Order order : orders) {
                         if (order.getStatus() == null) {
-                            Log.w(TAG, "Order with ID " + order.getId() + " has null status.");
-                            continue; // Skip orders with null status
+                            Log.w(TAG, "Order with ID " + order.getId() + " has null status. Skipping.");
+                            continue;
                         }
+                        // Assuming Order status constants match backend/API response
                         switch (order.getStatus()) {
                             case Order.STATUS_PENDING:
                             case Order.STATUS_CONFIRMED:
                             case Order.STATUS_PREPARING:
-                            case Order.STATUS_READY:
+                            // Add other active statuses if applicable
                             case Order.STATUS_DELIVERING:
                                 active.add(order);
                                 break;
@@ -111,24 +113,29 @@ public class OrderViewModel extends AndroidViewModel {
                                 completed.add(order);
                                 break;
                             case Order.STATUS_CANCELLED:
+                            // Add other cancelled/refunded statuses if applicable
                             case Order.STATUS_REFUNDED:
                                 cancelled.add(order);
                                 break;
                             default:
-                                Log.w(TAG,
-                                        "Order with ID " + order.getId() + " has unknown status: " + order.getStatus());
-                                // Optionally add to a default list or handle as an error
+                                Log.w(TAG, "Order with ID " + order.getId() + " has unhandled status: " + order.getStatus() + ". Adding to active list for now.");
+                                active.add(order); // Default to active if status is unknown
                                 break;
                         }
                     }
+
                     activeOrders.setValue(active);
                     completedOrders.setValue(completed);
                     cancelledOrders.setValue(cancelled);
-                    Log.d(TAG, "loadOrders: Active=" + active.size() + ", Completed=" + completed.size()
-                            + ", Cancelled=" + cancelled.size());
+                    Log.d(TAG, "loadOrders: Filtered into Active=" + active.size() + ", Completed="
+                            + completed.size() + ", Cancelled=" + cancelled.size());
                 } else {
-                    errorMessage.setValue("Failed to load orders. No data received.");
-                    Log.e(TAG, "loadOrders onSuccess: Result is null");
+                    Log.e(TAG, "loadOrders onOrdersLoaded: Received null orders list.");
+                    // Depending on desired behavior, you might clear existing lists or show an error
+                    activeOrders.setValue(new ArrayList<>());
+                    completedOrders.setValue(new ArrayList<>());
+                    cancelledOrders.setValue(new ArrayList<>());
+                    errorMessage.setValue("Failed to load orders. Please try again.");
                 }
             }
 
@@ -159,21 +166,28 @@ public class OrderViewModel extends AndroidViewModel {
         isLoading.setValue(true);
         Log.d(TAG, "createOrder: Attempting to create order for userId: " + userId);
 
-        orderRepository.createOrder(userId, cartItems, total, deliveryAddress, paymentMethod, paymentId, notes,
-                new com.coffeecorner.app.network.ApiCallback<Order>() {
+        // Build the necessary parameters for the repository method
+        // The repository expects List<CartItem>, double, String, String, OrderCallback
+        orderRepository.createOrder(cartItems, total, deliveryAddress, paymentMethod,
+                new OrderRepository.OrderCallback() {
                     @Override
-                    public void onSuccess(Order newOrder) {
+                    public void onOrderCreated(Order newOrder) {
                         isLoading.setValue(false);
                         if (newOrder != null) {
                             currentOrder.setValue(newOrder);
                             successMessage.setValue("Order created successfully! Order ID: " + newOrder.getId());
-                            Log.d(TAG, "createOrder onSuccess: Order created with ID: " + newOrder.getId());
+                            Log.d(TAG, "createOrder onOrderCreated: Order created with ID: " + newOrder.getId());
                             // Refresh order lists
                             loadOrders();
                         } else {
                             errorMessage.setValue("Failed to create order. Please try again.");
-                            Log.e(TAG, "createOrder onSuccess: newOrder is null");
+                            Log.e(TAG, "createOrder onOrderCreated: newOrder is null");
                         }
+                    }
+
+                    @Override
+                    public void onOrderLoaded(Order order) {
+                        // Not used for creation
                     }
 
                     @Override
@@ -194,17 +208,22 @@ public class OrderViewModel extends AndroidViewModel {
         isLoading.setValue(true);
         Log.d(TAG, "trackOrder: Fetching details for orderId: " + orderId);
 
-        orderRepository.getOrderDetails(orderId, new com.coffeecorner.app.network.ApiCallback<Order>() {
+        orderRepository.getOrderById(orderId, new OrderRepository.OrderCallback() {
             @Override
-            public void onSuccess(Order order) {
+            public void onOrderLoaded(Order order) {
                 isLoading.setValue(false);
                 if (order != null) {
                     currentOrder.setValue(order);
-                    Log.d(TAG, "trackOrder onSuccess: Details found for orderId: " + orderId);
+                    Log.d(TAG, "trackOrder onOrderLoaded: Details found for orderId: " + orderId);
                 } else {
                     errorMessage.setValue("Order not found or failed to load details.");
-                    Log.e(TAG, "trackOrder onSuccess: Order is null for orderId: " + orderId);
+                    Log.e(TAG, "trackOrder onOrderLoaded: Order is null for orderId: " + orderId);
                 }
+            }
+
+            @Override
+            public void onOrderCreated(Order order) {
+                // Not used for tracking
             }
 
             @Override
@@ -225,24 +244,28 @@ public class OrderViewModel extends AndroidViewModel {
         isLoading.setValue(true);
         Log.d(TAG, "cancelOrder: Attempting to cancel orderId: " + orderId);
 
-        orderRepository.cancelOrder(orderId, new com.coffeecorner.app.repositories.OrderRepository.OrderCallback() {
+        orderRepository.cancelOrder(orderId, new OrderRepository.OrderCallback() {
             @Override
-            public void onSuccess(ApiResponse response) {
+            public void onOrderLoaded(Order order) {
                 isLoading.setValue(false);
-                if (response != null && response.isSuccess()) {
-                    successMessage.setValue(response.getMessage());
-                    Log.d(TAG, "cancelOrder onSuccess: " + response.getMessage());
-                    // Refresh order lists
-                    loadOrders();
-                    // Clear current order if it was the one cancelled
-                    if (currentOrder.getValue() != null && currentOrder.getValue().getId().equals(orderId)) {
-                        currentOrder.setValue(null);
-                    }
-                } else {
-                    String errorMsg = (response != null) ? response.getMessage() : "Failed to cancel order.";
-                    errorMessage.setValue(errorMsg);
-                    Log.e(TAG, "cancelOrder onSuccess but operation failed: " + errorMsg);
+                // This callback method is primarily for loading/creation success with data.
+                // For cancellation success (ApiResponse<Void>), we handle it in onError as a workaround
+                // due to the OrderCallback interface not having a specific onSuccess for void.
+                // A better approach is to define a new callback interface like CancelOrderCallback.
+                // For now, assuming a successful cancel call means the order is cancelled, we can just
+                // refresh the order list.
+                Log.d(TAG, "cancelOrder onOrderLoaded: Received null order, assuming success and refreshing list.");
+                successMessage.setValue("Order cancelled successfully.");
+                loadOrders(); // Refresh order lists
+                // Clear current order if it was the one cancelled
+                if (currentOrder.getValue() != null && currentOrder.getValue().getId().equals(orderId)) {
+                    currentOrder.setValue(null);
                 }
+            }
+
+            @Override
+            public void onOrderCreated(Order order) {
+                // Not used for cancellation
             }
 
             @Override

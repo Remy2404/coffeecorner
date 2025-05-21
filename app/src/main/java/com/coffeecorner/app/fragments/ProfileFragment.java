@@ -22,16 +22,14 @@ import com.coffeecorner.app.R;
 import com.coffeecorner.app.activities.LoginActivity;
 import com.coffeecorner.app.models.User;
 import com.coffeecorner.app.viewmodels.UserViewModel;
-import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 public class ProfileFragment extends Fragment {
 
     private ImageView ivProfilePic;
     private TextView tvUsername, tvEmail;
-    private Button btnEditProfile, btnLogout;
-    private MaterialCardView cvOrderHistory, cvAddresses, cvPaymentMethods,
-            cvNotifications, cvSettings, cvHelp, cvAbout;
+    private Button btnEditProfile;
+    private View btnSettings;
     private UserViewModel userViewModel;
 
     public ProfileFragment() {
@@ -64,18 +62,11 @@ public class ProfileFragment extends Fragment {
     }
 
     private void initializeViews(View view) {
-        ivProfilePic = view.findViewById(R.id.ivProfilePic);
-        tvUsername = view.findViewById(R.id.tvUsername);
+        ivProfilePic = view.findViewById(R.id.imgProfile);
+        tvUsername = view.findViewById(R.id.tvName);
         tvEmail = view.findViewById(R.id.tvEmail);
         btnEditProfile = view.findViewById(R.id.btnEditProfile);
-        btnLogout = view.findViewById(R.id.btnLogout);
-        cvOrderHistory = view.findViewById(R.id.cvOrderHistory);
-        cvAddresses = view.findViewById(R.id.cvAddresses);
-        cvPaymentMethods = view.findViewById(R.id.cvPaymentMethods);
-        cvNotifications = view.findViewById(R.id.cvNotifications);
-        cvSettings = view.findViewById(R.id.cvSettings);
-        cvHelp = view.findViewById(R.id.cvHelp);
-        cvAbout = view.findViewById(R.id.cvAbout);
+        btnSettings = view.findViewById(R.id.btnSettings);
     }
 
     private void setupObservers() {
@@ -95,41 +86,8 @@ public class ProfileFragment extends Fragment {
             Navigation.findNavController(v).navigate(R.id.action_profileFragment_to_editProfileFragment);
         });
 
-        btnLogout.setOnClickListener(v -> {
-            showLogoutConfirmationDialog();
-        });
-
-        cvOrderHistory.setOnClickListener(v -> {
-            Navigation.findNavController(v).navigate(R.id.action_profileFragment_to_orderHistoryFragment);
-        });
-
-        cvAddresses.setOnClickListener(v -> {
-            // Navigate to addresses screen
-            Toast.makeText(requireContext(), "Addresses coming soon", Toast.LENGTH_SHORT).show();
-        });
-
-        cvPaymentMethods.setOnClickListener(v -> {
-            // Navigate to payment methods screen
-            Toast.makeText(requireContext(), "Payment methods coming soon", Toast.LENGTH_SHORT).show();
-        });
-
-        cvNotifications.setOnClickListener(v -> {
-            Navigation.findNavController(v).navigate(R.id.action_profileFragment_to_notificationFragment);
-        });
-
-        cvSettings.setOnClickListener(v -> {
-            // Navigate to settings screen
-            Toast.makeText(requireContext(), "Settings coming soon", Toast.LENGTH_SHORT).show();
-        });
-
-        cvHelp.setOnClickListener(v -> {
-            // Navigate to help screen
-            Toast.makeText(requireContext(), "Help center coming soon", Toast.LENGTH_SHORT).show();
-        });
-
-        cvAbout.setOnClickListener(v -> {
-            // Navigate to about screen
-            Toast.makeText(requireContext(), "About us coming soon", Toast.LENGTH_SHORT).show();
+        btnSettings.setOnClickListener(v -> {
+            Toast.makeText(requireContext(), "Settings clicked", Toast.LENGTH_SHORT).show();
         });
     }
 
@@ -141,11 +99,11 @@ public class ProfileFragment extends Fragment {
             Glide.with(this)
                     .load(user.getPhotoUrl())
                     .apply(RequestOptions.circleCropTransform())
-                    .placeholder(R.drawable.default_profile_image)
-                    .error(R.drawable.default_profile_image)
+                    .placeholder(R.drawable.default_profile)
+                    .error(R.drawable.default_profile)
                     .into(ivProfilePic);
         } else {
-            ivProfilePic.setImageResource(R.drawable.default_profile_image);
+            ivProfilePic.setImageResource(R.drawable.default_profile);
         }
     }
 

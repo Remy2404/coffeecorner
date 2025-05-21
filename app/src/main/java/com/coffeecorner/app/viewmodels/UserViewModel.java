@@ -65,14 +65,15 @@ public class UserViewModel extends AndroidViewModel {
 
     /**
      * Register a new user
-     * 
+     *
      * @param name     User name
      * @param email    User email
      * @param password User password
+     * @param recaptchaToken The reCAPTCHA token
      */
-    public void register(String name, String email, String password) {
+    public void register(String name, String email, String password, String recaptchaToken) {
         isLoading.setValue(true);
-        userRepository.register(name, email, password, new UserRepository.AuthCallback() {
+        userRepository.register(name, email, password, recaptchaToken, new UserRepository.AuthCallback() {
             @Override
             public void onSuccess(User user) {
                 // Automatically log in the user by saving their ID

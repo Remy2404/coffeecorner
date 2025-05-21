@@ -7,9 +7,17 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
-import com.coffeecorner.app.R;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
+
+import com.coffeecorner.app.R;
+import com.coffeecorner.app.network.ApiResponse;
+import com.coffeecorner.app.models.User;
+import com.coffeecorner.app.repositories.UserRepository;
+import com.coffeecorner.app.viewmodel.LoginViewModel;
+import com.coffeecorner.app.viewmodel.ViewModelFactory;
 
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputLayout;
@@ -31,6 +39,8 @@ public class LoginActivity extends AppCompatActivity {
     private ImageButton btnTwitterLogin;
     private ImageButton btnPinterestLogin;
 
+    private LoginViewModel loginViewModel;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -39,8 +49,15 @@ public class LoginActivity extends AppCompatActivity {
         // Initialize views
         initViews();
 
+        // Initialize ViewModel
+        UserRepository userRepository = UserRepository.getInstance(this);
+        loginViewModel = new ViewModelProvider(this, new ViewModelFactory(userRepository)).get(LoginViewModel.class);
+
         // Set up click listeners
         setClickListeners();
+
+        // Observe login result
+        observeLoginResult();
     }
 
     /**
@@ -152,20 +169,36 @@ public class LoginActivity extends AppCompatActivity {
      * Perform login authentication
      */
     private void performLogin() {
-        // TODO: Implement actual authentication with backend
-        // For demo purposes, hardcode a success case
         String email = etEmail.getText().toString().trim();
         String password = etPassword.getText().toString().trim();
 
-        if (email.equals("user@example.com") && password.equals("password")) {
-            // Login successful
-            Toast.makeText(this, "Login successful", Toast.LENGTH_SHORT).show();
-            navigateToMainActivity();
-        } else {
+        // Call login method in ViewModel
+        loginViewModel.login(email, password);
+    }
 
-            // Login failed
-            Toast.makeText(this, "Invalid email or password", Toast.LENGTH_SHORT).show();
-        }
+    /**
+     * Observe the login result from the ViewModel
+     */
+    private void observeLoginResult() {
+        loginViewModel.getLoginResult().observe(this, new Observer<ApiResponse<User>>() {
+            @Override
+            public void onChanged(ApiResponse<User> apiResponse) {
+                if (apiResponse != null) {
+                    if (apiResponse.isSuccess()) {
+                        // Login successful
+                        Toast.makeText(LoginActivity.this, "Login successful", Toast.LENGTH_SHORT).show();
+                        navigateToMainActivity();
+                    } else {
+                        // Login failed
+                        String errorMessage = apiResponse.getMessage() != null ? apiResponse.getMessage() : "Login failed.";
+                        Toast.makeText(LoginActivity.this, errorMessage, Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    // Handle null response if necessary
+                    Toast.makeText(LoginActivity.this, "Login failed: Unknown error", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
     }
 
     /**

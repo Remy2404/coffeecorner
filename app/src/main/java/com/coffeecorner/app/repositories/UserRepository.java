@@ -58,11 +58,11 @@ public class UserRepository {
         // loginRequest.setPassword(password); // Assuming password is part of the
         // request
 
-        apiService.loginUser(loginRequest).enqueue(new Callback<User>() { // Assuming loginUser returns User
+        apiService.login(email, password).enqueue(new Callback<ApiResponse<User>>() { // Corrected API call and callback type
             @Override
-            public void onResponse(@NonNull Call<User> call, @NonNull Response<User> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    User user = response.body();
+            public void onResponse(@NonNull Call<ApiResponse<User>> call, @NonNull Response<ApiResponse<User>> response) {
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                    User user = response.body().getData();
                     currentUser.setValue(user);
                     // preferencesHelper.saveUserId(user.getId()); // Save user ID upon successful
                     // login
@@ -82,7 +82,7 @@ public class UserRepository {
             }
 
             @Override
-            public void onFailure(@NonNull Call<User> call, @NonNull Throwable t) {
+            public void onFailure(@NonNull Call<ApiResponse<User>> call, @NonNull Throwable t) {
                 Log.e("UserRepository", "Login network error", t);
                 callback.onError("Network error. Please try again. " + t.getMessage());
             }
@@ -95,21 +95,21 @@ public class UserRepository {
      * @param name     User name
      * @param email    User email
      * @param password User password
+     * @param recaptchaToken The reCAPTCHA token
      * @param callback Callback to handle result
      */
-    public void register(String name, String email, String password, @NonNull AuthCallback callback) {
-        User registrationRequest = new User(); // Or a specific RegisterRequest model
-        registrationRequest.setName(name);
-        registrationRequest.setEmail(email);
+    public void register(String name, String email, String password, String recaptchaToken, @NonNull AuthCallback callback) {
+        // User registrationRequest = new User(); // Or a specific RegisterRequest model
+        // registrationRequest.setName(name);
+        // registrationRequest.setEmail(email);
         // registrationRequest.setPassword(password); // Assuming password is part of
         // the request
 
-        apiService.registerUser(registrationRequest).enqueue(new Callback<User>() { // Assuming registerUser returns
-                                                                                    // User
+        apiService.register(name, email, password, recaptchaToken).enqueue(new Callback<ApiResponse<User>>() {
             @Override
-            public void onResponse(@NonNull Call<User> call, @NonNull Response<User> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    User user = response.body();
+            public void onResponse(@NonNull Call<ApiResponse<User>> call, @NonNull Response<ApiResponse<User>> response) {
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                    User user = response.body().getData();
                     currentUser.setValue(user);
                     // preferencesHelper.saveUserId(user.getId()); // Save user ID upon successful
                     // registration
@@ -128,7 +128,7 @@ public class UserRepository {
             }
 
             @Override
-            public void onFailure(@NonNull Call<User> call, @NonNull Throwable t) {
+            public void onFailure(@NonNull Call<ApiResponse<User>> call, @NonNull Throwable t) {
                 Log.e("UserRepository", "Registration network error", t);
                 callback.onError("Network error. Please try again. " + t.getMessage());
             }
@@ -183,19 +183,27 @@ public class UserRepository {
             callback.onError("User ID cannot be null or empty.");
             return;
         }
-        apiService.getUserProfile(userId).enqueue(new Callback<User>() {
+        apiService.getUserById(userId).enqueue(new Callback<ApiResponse<User>>() {
             @Override
-            public void onResponse(@NonNull Call<User> call, @NonNull Response<User> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    callback.onUserLoaded(response.body());
+            public void onResponse(@NonNull Call<ApiResponse<User>> call, @NonNull Response<ApiResponse<User>> response) {
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                    User user = response.body().getData();
+                    currentUser.setValue(user);
+                    callback.onUserLoaded(user);
                 } else {
-                    Log.e("UserRepository", "Get user by ID failed: " + response.code() + " - " + response.message());
-                    callback.onError("Failed to load user profile.");
+                    String errorMsg = "Failed to load user profile.";
+                     if (response.body() != null && response.body().getMessage() != null) {
+                        errorMsg = response.body().getMessage();
+                    } else if (response.message() != null && !response.message().isEmpty()) {
+                         errorMsg = response.message();
+                    }
+                    Log.e("UserRepository", "Get user by ID failed: " + response.code() + " - " + errorMsg);
+                    callback.onError(errorMsg);
                 }
             }
 
             @Override
-            public void onFailure(@NonNull Call<User> call, @NonNull Throwable t) {
+            public void onFailure(@NonNull Call<ApiResponse<User>> call, @NonNull Throwable t) {
                 Log.e("UserRepository", "Get user by ID network error", t);
                 callback.onError("Network error. Please try again. " + t.getMessage());
             }
@@ -205,30 +213,38 @@ public class UserRepository {
     /**
      * Update user profile
      *
-     * @param user     Updated user object
+     * @param user     Updated user data
      * @param callback Callback to handle result
      */
     public void updateProfile(User user, @NonNull UserCallback callback) {
-        if (user == null || user.getId() == null || user.getId().isEmpty()) {
-            callback.onError("User or User ID cannot be null or empty for update.");
-            return;
+        // Assuming user object contains the ID
+        String userId = user.getId(); // Make sure your User model has an getId() method
+        if (userId == null || userId.isEmpty()) {
+             callback.onError("User ID cannot be null or empty for update.");
+             return;
         }
-        // Assuming user.getId() is the correct identifier for the API endpoint
-        apiService.updateUserProfile(user.getId(), user).enqueue(new Callback<User>() {
+        
+        apiService.updateUser(userId, user).enqueue(new Callback<ApiResponse<User>>() { // Corrected API call
             @Override
-            public void onResponse(@NonNull Call<User> call, @NonNull Response<User> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    User updatedUser = response.body();
-                    currentUser.setValue(updatedUser); // Update local LiveData
+            public void onResponse(@NonNull Call<ApiResponse<User>> call, @NonNull Response<ApiResponse<User>> response) {
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                    User updatedUser = response.body().getData();
+                    currentUser.setValue(updatedUser);
                     callback.onUserLoaded(updatedUser);
                 } else {
-                    Log.e("UserRepository", "Update profile failed: " + response.code() + " - " + response.message());
-                    callback.onError("Failed to update profile.");
+                     String errorMsg = "Failed to update profile.";
+                    if (response.body() != null && response.body().getMessage() != null) {
+                        errorMsg = response.body().getMessage();
+                    } else if (response.message() != null && !response.message().isEmpty()) {
+                         errorMsg = response.message();
+                    }
+                    Log.e("UserRepository", "Update profile failed: " + response.code() + " - " + errorMsg);
+                    callback.onError(errorMsg);
                 }
             }
 
             @Override
-            public void onFailure(@NonNull Call<User> call, @NonNull Throwable t) {
+            public void onFailure(@NonNull Call<ApiResponse<User>> call, @NonNull Throwable t) {
                 Log.e("UserRepository", "Update profile network error", t);
                 callback.onError("Network error. Please try again. " + t.getMessage());
             }
@@ -238,34 +254,35 @@ public class UserRepository {
     /**
      * Request password reset
      *
-     * @param email    User email
+     * @param email User email
      * @param callback Callback to handle result
      */
     public void requestPasswordReset(String email, @NonNull ResetCallback callback) {
-        // Assuming a simple request body, adjust if your API needs more
-        // For example, if it's a POST request with a JSON body:
-        // class PasswordResetRequest { String email; }
-        // PasswordResetRequest request = new PasswordResetRequest();
-        // request.email = email;
-        // apiService.requestPasswordReset(request).enqueue(...)
-
-        // If it's a GET request or simple POST with email in path/query:
-        apiService.forgotPassword(email).enqueue(new Callback<Void>() { // Assuming API returns Void or a simple success
-                                                                        // message
+        if (email == null || email.isEmpty()) {
+            callback.onError("Email cannot be null or empty.");
+            return;
+        }
+        apiService.requestPasswordReset(email).enqueue(new Callback<ApiResponse<Void>>() { // Corrected API call
             @Override
-            public void onResponse(@NonNull Call<Void> call, @NonNull Response<Void> response) {
-                if (response.isSuccessful()) {
+            public void onResponse(@NonNull Call<ApiResponse<Void>> call, @NonNull Response<ApiResponse<Void>> response) {
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                    // Password reset request successful
                     callback.onSuccess("Password reset link sent to your email.");
                 } else {
-                    Log.e("UserRepository",
-                            "Password reset request failed: " + response.code() + " - " + response.message());
-                    callback.onError("Failed to request password reset.");
+                    String errorMsg = "Failed to request password reset.";
+                    if (response.body() != null && response.body().getMessage() != null) {
+                        errorMsg = response.body().getMessage();
+                    } else if (response.message() != null && !response.message().isEmpty()) {
+                         errorMsg = response.message();
+                    }
+                    Log.e("UserRepository", "Request password reset failed: " + response.code() + " - " + errorMsg);
+                    callback.onError(errorMsg);
                 }
             }
 
             @Override
-            public void onFailure(@NonNull Call<Void> call, @NonNull Throwable t) {
-                Log.e("UserRepository", "Password reset network error", t);
+            public void onFailure(@NonNull Call<ApiResponse<Void>> call, @NonNull Throwable t) {
+                Log.e("UserRepository", "Request password reset network error", t);
                 callback.onError("Network error. Please try again. " + t.getMessage());
             }
         });
@@ -274,54 +291,36 @@ public class UserRepository {
     /**
      * Change user password
      *
+     * @param userId      User ID
      * @param oldPassword Current password
      * @param newPassword New password
      * @param callback    Callback to handle result
      */
     public void changePassword(String userId, String oldPassword, String newPassword, @NonNull ResetCallback callback) {
-        // TODO: Create a proper request model if your API expects a JSON body
-        // class ChangePasswordRequest { String oldPassword; String newPassword; }
-        // ChangePasswordRequest request = new ChangePasswordRequest();
-        // request.oldPassword = oldPassword;
-        // request.newPassword = newPassword;
-        // apiService.changePassword(userId, request).enqueue(...)
-
-        // This is a placeholder, adjust based on your ApiService.changePassword
-        // signature
-        // For example, if it takes userId in path and a request body:
-        // apiService.changePassword(userId, new ChangePasswordRequest(oldPassword,
-        // newPassword)).enqueue...
-
-        // Assuming a simplified call for now, replace with actual implementation
-        // This will likely require a specific request body model
-        Log.d("UserRepository", "Change password called. UserID: " + userId); // Placeholder
-        // Simulate API call for now
-        if (userId != null && !oldPassword.isEmpty() && !newPassword.isEmpty()) {
-            // apiService.changePassword(userId, oldPassword, newPassword) // Adjust this
-            // call
-            // .enqueue(new Callback<Void>() {
-            // @Override
-            // public void onResponse(@NonNull Call<Void> call, @NonNull Response<Void>
-            // response) {
-            // if (response.isSuccessful()) {
-            // callback.onSuccess("Password changed successfully");
-            // } else {
-            // Log.e("UserRepository", "Change password failed: " + response.code() + " - "
-            // + response.message());
-            // callback.onError("Failed to change password.");
-            // }
-            // }
-            //
-            // @Override
-            // public void onFailure(@NonNull Call<Void> call, @NonNull Throwable t) {
-            // Log.e("UserRepository", "Change password network error", t);
-            // callback.onError("Network error. Please try again. " + t.getMessage());
-            // }
-            // });
-            callback.onSuccess("Password change simulated successfully. Implement API call."); // Placeholder
-        } else {
-            callback.onError("User ID, old password, or new password cannot be empty.");
+        if (userId == null || userId.isEmpty()) {
+            callback.onError("User ID cannot be null or empty.");
+            return;
         }
+        // TODO: Need to create a specific API method for change password if not already
+        // available or if the existing one in ApiService doesn't match.
+        // Based on ApiService, `changePassword` takes userId, oldPassword, newPassword.
+        apiService.changePassword(userId, oldPassword, newPassword).enqueue(new Callback<ApiResponse<Void>>() { // Corrected API call
+            @Override
+            public void onResponse(@NonNull Call<ApiResponse<Void>> call, @NonNull Response<ApiResponse<Void>> response) {
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                    callback.onSuccess("Password changed successfully.");
+                } else {
+                    Log.e("UserRepository", "Change password failed: " + response.code() + " - " + response.message());
+                    callback.onError("Failed to change password.");
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<ApiResponse<Void>> call, @NonNull Throwable t) {
+                Log.e("UserRepository", "Change password network error", t);
+                callback.onError("Network error. Please try again. " + t.getMessage());
+            }
+        });
     }
 
     /**

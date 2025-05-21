@@ -16,7 +16,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.coffeecorner.app.R;
 import com.coffeecorner.app.models.User;
-import com.coffeecorner.app.utils.SupabaseClientManager;
+import com.coffeecorner.app.viewmodels.UserViewModel;
 
 public class RegisterActivity extends AppCompatActivity {
     private EditText etFullName, etEmail, etPassword, etConfirmPassword;
@@ -24,6 +24,7 @@ public class RegisterActivity extends AppCompatActivity {
     private TextView tvLoginLink;
     private ProgressBar progressBar;
     private FirebaseAuth mAuth;
+    private UserViewModel userViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,10 +32,12 @@ public class RegisterActivity extends AppCompatActivity {
         setContentView(R.layout.activity_register);
 
         mAuth = FirebaseAuth.getInstance();
+        userViewModel = new UserViewModel(getApplication());
 
         setupToolbar();
         initializeViews();
         setupListeners();
+        observeViewModel();
     }
 
     private void setupToolbar() {
@@ -66,6 +69,30 @@ public class RegisterActivity extends AppCompatActivity {
             // Navigate to LoginActivity
             startActivity(new Intent(RegisterActivity.this, LoginActivity.class));
             finish();
+        });
+    }
+
+    private void observeViewModel() {
+        userViewModel.getIsLoading().observe(this, isLoading -> {
+            progressBar.setVisibility(isLoading ? View.VISIBLE : View.GONE);
+            btnRegister.setEnabled(!isLoading);
+        });
+
+        userViewModel.getErrorMessage().observe(this, errorMessage -> {
+            if (errorMessage != null && !errorMessage.isEmpty()) {
+                Toast.makeText(RegisterActivity.this, "Error: " + errorMessage, Toast.LENGTH_LONG).show();
+                userViewModel.getErrorMessage().getValue(); // Consume the error
+            }
+        });
+
+        userViewModel.getCurrentUser().observe(this, user -> {
+            if (user != null) {
+                Toast.makeText(RegisterActivity.this, "Registration successful!", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(RegisterActivity.this, MainActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent);
+                finish();
+            }
         });
     }
 
@@ -113,16 +140,13 @@ public class RegisterActivity extends AppCompatActivity {
             return;
         }
 
-        progressBar.setVisibility(View.VISIBLE);
-        btnRegister.setEnabled(false);
-
         mAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, task -> {
                     if (task.isSuccessful()) {
                         FirebaseUser firebaseUser = mAuth.getCurrentUser();
                         if (firebaseUser != null) {
                             String uid = firebaseUser.getUid();
-                            saveUserToSupabase(uid, fullName, email);
+                            userViewModel.register(fullName, email, password, "");
                         }
                     } else {
                         progressBar.setVisibility(View.GONE);
@@ -134,56 +158,5 @@ public class RegisterActivity extends AppCompatActivity {
                                 Toast.LENGTH_LONG).show();
                     }
                 });
-    }
-
-    private void saveUserToSupabase(String uid, String fullName, String email) {
-        User newUser = new User(
-                uid, // id
-                fullName, // full_name
-                email, // email
-                "", // phone
-                "other", // gender (default)
-                "", // profile_image_url
-                "" // date_of_birth
-        );
-        try {
-            SupabaseClientManager.getInstance()
-                    .from("users")
-                    .insert(newUser)
-                    .executeWithResponse(response -> runOnUiThread(() -> {
-                        progressBar.setVisibility(View.GONE);
-                        btnRegister.setEnabled(true);
-
-                        if (response.getError() == null) {
-                            Toast.makeText(RegisterActivity.this,
-                                    "Registration successful!", Toast.LENGTH_SHORT).show();
-
-                            Intent intent = new Intent(RegisterActivity.this, MainActivity.class);
-                            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                            startActivity(intent);
-                            finish();
-                        } else {
-                            // Improved error reporting
-                            String supabaseError = response.getError().getMessage();
-                            Toast.makeText(RegisterActivity.this,
-                                    "Failed to save user data: " + supabaseError,
-                                    Toast.LENGTH_LONG).show();
-                            // If Supabase save fails, delete the Firebase user
-                            FirebaseUser user = mAuth.getCurrentUser();
-                            if (user != null) {
-                                user.delete().addOnCompleteListener(task -> {
-                                    if (task.isSuccessful()) {
-                                        // Optionally log or handle user deletion
-                                    }
-                                });
-                            }
-                        }
-                    }));
-        } catch (Exception e) {
-            progressBar.setVisibility(View.GONE);
-            btnRegister.setEnabled(true);
-            Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
-            e.printStackTrace();
-        }
     }
 }
