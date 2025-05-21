@@ -22,7 +22,7 @@ import com.coffeecorner.app.R;
 import com.coffeecorner.app.activities.CheckoutActivity;
 import com.coffeecorner.app.adapters.CartAdapter;
 import com.coffeecorner.app.models.CartItem;
-import com.coffeecorner.app.viewmodels.CartViewModel;
+import com.coffeecorner.app.viewmodel.CartViewModel;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.text.NumberFormat;

@@ -16,7 +16,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.coffeecorner.app.R;
 import com.coffeecorner.app.models.User;
-import com.coffeecorner.app.viewmodels.UserViewModel;
+import com.coffeecorner.app.viewmodel.UserViewModel;
 
 public class RegisterActivity extends AppCompatActivity {
     private EditText etFullName, etEmail, etPassword, etConfirmPassword;

@@ -20,7 +20,7 @@ import com.google.android.material.tabs.TabLayout;
 
 import com.coffeecorner.app.R;
 import com.coffeecorner.app.adapters.ProductAdapter;
-import com.coffeecorner.app.viewmodels.ProductViewModel;
+import com.coffeecorner.app.viewmodel.ProductViewModel;
 
 import java.util.ArrayList;
 
