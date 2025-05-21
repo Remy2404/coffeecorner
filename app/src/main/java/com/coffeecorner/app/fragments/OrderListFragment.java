@@ -100,12 +100,14 @@ public class OrderListFragment extends Fragment {
         }
 
         // Show/hide no orders message
-        if (orders.isEmpty()) {
-            tvNoOrders.setVisibility(View.VISIBLE);
-            recyclerOrders.setVisibility(View.GONE);
-        } else {
-            tvNoOrders.setVisibility(View.GONE);
-            recyclerOrders.setVisibility(View.VISIBLE);
+        if (tvNoOrders != null) {
+            if (orders.isEmpty()) {
+                tvNoOrders.setVisibility(View.VISIBLE);
+                recyclerOrders.setVisibility(View.GONE);
+            } else {
+                tvNoOrders.setVisibility(View.GONE);
+                recyclerOrders.setVisibility(View.VISIBLE);
+            }
         }
     }
 }

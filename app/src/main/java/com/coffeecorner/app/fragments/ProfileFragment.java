@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -27,8 +28,8 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 public class ProfileFragment extends Fragment {
 
     private ImageView ivProfilePic;
-    private TextView tvUsername, tvEmail;
-    private Button btnEditProfile;
+    private TextView tvUsername, tvEmail, tvLoyaltyPoints, tvTotalOrders, tvMemberSince;
+    private ImageButton btnEditProfile;
     private View btnSettings;
     private UserViewModel userViewModel;
 
@@ -58,13 +59,16 @@ public class ProfileFragment extends Fragment {
         setupObservers();
 
         // Setup click listeners
-        setupClickListeners();
+        setupClickListeners(view);
     }
 
     private void initializeViews(View view) {
         ivProfilePic = view.findViewById(R.id.imgProfile);
         tvUsername = view.findViewById(R.id.tvName);
         tvEmail = view.findViewById(R.id.tvEmail);
+        tvLoyaltyPoints = view.findViewById(R.id.tvLoyaltyPoints);
+        tvTotalOrders = view.findViewById(R.id.tvTotalOrders);
+        tvMemberSince = view.findViewById(R.id.tvMemberSince);
         btnEditProfile = view.findViewById(R.id.btnEditProfile);
         btnSettings = view.findViewById(R.id.btnSettings);
     }
@@ -80,7 +84,7 @@ public class ProfileFragment extends Fragment {
         });
     }
 
-    private void setupClickListeners() {
+    private void setupClickListeners(View view) {
         btnEditProfile.setOnClickListener(v -> {
             // Navigate to edit profile screen
             Navigation.findNavController(v).navigate(R.id.action_profileFragment_to_editProfileFragment);
@@ -89,11 +93,45 @@ public class ProfileFragment extends Fragment {
         btnSettings.setOnClickListener(v -> {
             Toast.makeText(requireContext(), "Settings clicked", Toast.LENGTH_SHORT).show();
         });
+
+        // Setup click listeners for action items
+        view.findViewById(R.id.layoutMyOrders).setOnClickListener(v -> {
+            Navigation.findNavController(v).navigate(R.id.action_profileFragment_to_orderHistoryFragment);
+        });
+
+        view.findViewById(R.id.layoutMyAddresses).setOnClickListener(v -> {
+            Navigation.findNavController(v).navigate(R.id.myAddressesFragment);
+        });
+
+        view.findViewById(R.id.layoutPaymentMethods).setOnClickListener(v -> {
+            Navigation.findNavController(v).navigate(R.id.paymentMethodsFragment);
+        });
+
+        view.findViewById(R.id.layoutMyRewards).setOnClickListener(v -> {
+            Navigation.findNavController(v).navigate(R.id.myRewardsFragment);
+        });
+
+        view.findViewById(R.id.layoutAboutUs).setOnClickListener(v -> {
+            Navigation.findNavController(v).navigate(R.id.aboutUsFragment);
+        });
+
+        view.findViewById(R.id.layoutLogout).setOnClickListener(v -> {
+            showLogoutConfirmationDialog();
+        });
     }
 
     private void updateUI(User user) {
         tvUsername.setText(user.getName());
         tvEmail.setText(user.getEmail());
+        if (user.getLoyaltyPoints() != null) {
+            tvLoyaltyPoints.setText(String.valueOf(user.getLoyaltyPoints()));
+        }
+        if (user.getTotalOrders() != null) {
+            tvTotalOrders.setText(String.valueOf(user.getTotalOrders()));
+        }
+        if (user.getMemberSince() != null) {
+            tvMemberSince.setText(user.getMemberSince());
+        }
 
         if (user.getPhotoUrl() != null && !user.getPhotoUrl().isEmpty()) {
             Glide.with(this)

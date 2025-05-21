@@ -57,7 +57,11 @@
         android:id="@+id/orderHistoryFragment"
         android:name="com.coffeecorner.app.fragments.OrderHistoryFragment"
         android:label="fragment_order_history"
-        tools:layout="@layout/fragment_order_history" />
+        tools:layout="@layout/fragment_order_history">
+        <action
+            android:id="@+id/action_to_menu"
+            app:destination="@id/menuFragment" />
+    </fragment>
 
     <fragment
         android:id="@+id/editProfileFragment"
@@ -70,5 +74,21 @@
         android:name="com.coffeecorner.app.fragments.NotificationFragment"
         android:label="fragment_notification"
         tools:layout="@layout/fragment_notification" />
+
+    <fragment
+        android:id="@+id/myAddressesFragment"
+        android:name="com.coffeecorner.app.fragments.MyAddressesFragment" />
+
+    <fragment
+        android:id="@+id/paymentMethodsFragment"
+        android:name="com.coffeecorner.app.fragments.PaymentMethodsFragment" />
+
+    <fragment
+        android:id="@+id/myRewardsFragment"
+        android:name="com.coffeecorner.app.fragments.MyRewardsFragment" />
+
+    <fragment
+        android:id="@+id/aboutUsFragment"
+        android:name="com.coffeecorner.app.fragments.AboutUsFragment" />
 
 </navigation>

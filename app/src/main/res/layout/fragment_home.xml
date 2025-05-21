@@ -145,7 +145,7 @@
     <com.google.android.material.tabs.TabLayout
         android:id="@+id/tabLayoutCategories"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="56dp"
         android:layout_marginTop="16dp"
         android:background="@android:color/transparent"
         app:tabIndicatorColor="@color/color_02"
@@ -189,24 +189,9 @@
         android:paddingBottom="8dp"
         android:contentDescription="@string/products"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
-        app:layout_constraintBottom_toTopOf="@id/bottomNavigationView"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tabLayoutCategories"
-        tools:listitem="@layout/item_product_home" /> <!-- Create item_product_home.xml -->
-
-    <!-- Bottom Navigation -->
-    <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:id="@+id/bottomNavigationView"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:background="@color/white"
-        app:itemIconTint="@drawable/bottom_nav_item_color_selector"
-        app:itemTextColor="@drawable/bottom_nav_item_color_selector"
-        app:labelVisibilityMode="labeled"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:menu="@menu/bottom_nav_menu" /> <!-- Create menu/bottom_nav_menu.xml and drawable/bottom_nav_item_color_selector.xml -->
-
+        app:layout_constraintTop_toBottomOf="@id/tabLayoutCategories"
+        tools:listitem="@layout/item_product_home" /> 
 </androidx.constraintlayout.widget.ConstraintLayout>
