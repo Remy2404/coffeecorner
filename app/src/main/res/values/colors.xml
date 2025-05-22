@@ -3,6 +3,8 @@
 <!-- Base colors -->
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="red">#eb2f06</color>
+
 
     <!-- Coffee shop theme colors from design -->
     <color name="color_01">#1A467D</color> <!-- Dark blue -->
@@ -35,4 +37,11 @@
 
     <!-- Additional colors -->
     <color name="rating_gold">#FFD700</color>
+
+    <!-- Sitting colors -->
+    <color name="secondary1">#FF03DAC5</color>
+    <color name="night_mode">#6124B1</color>
+    <color name="noti">#13B2C3</color>
+    <color name="p_acc">#E6A326</color>
+    <color name="sec">#D95F69</color>
 </resources>
