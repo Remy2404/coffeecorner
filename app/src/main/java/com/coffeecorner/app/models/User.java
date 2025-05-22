@@ -9,6 +9,13 @@ public class User {
     private String profile_image_url;
     private String date_of_birth;
 
+    // Loyalty points for rewards
+    private Integer loyaltyPoints;
+    // Total number of orders
+    private Integer totalOrders;
+    // Member since date (e.g., registration date)
+    private String memberSince;
+
     public User() {
     }
 
@@ -85,5 +92,29 @@ public class User {
 
     public void setDateOfBirth(String dateOfBirth) {
         this.date_of_birth = dateOfBirth;
+    }
+
+    public Integer getLoyaltyPoints() {
+        return loyaltyPoints;
+    }
+
+    public void setLoyaltyPoints(Integer loyaltyPoints) {
+        this.loyaltyPoints = loyaltyPoints;
+    }
+
+    public Integer getTotalOrders() {
+        return totalOrders;
+    }
+
+    public void setTotalOrders(Integer totalOrders) {
+        this.totalOrders = totalOrders;
+    }
+
+    public String getMemberSince() {
+        return memberSince;
+    }
+
+    public void setMemberSince(String memberSince) {
+        this.memberSince = memberSince;
     }
 }

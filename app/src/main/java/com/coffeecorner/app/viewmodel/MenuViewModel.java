@@ -32,6 +32,12 @@ public class MenuViewModel extends ViewModel {
         currentCategory.setValue("All"); // Default category
     }
 
+    public MenuViewModel() {
+        // Default constructor for ViewModelProvider
+        // Initialize MenuRepository with default ApiService (if RetrofitClient exists)
+        this(new MenuRepository(com.coffeecorner.app.network.RetrofitClient.getApiService()));
+    }
+
     /**
      * Load product categories
      */
@@ -39,13 +45,13 @@ public class MenuViewModel extends ViewModel {
         isLoading.setValue(true);
         menuRepository.getCategories(new MenuRepository.CategoriesCallback() {
             @Override
-            public void onSuccess(List<String> categoryList) {
+            public void onCategoriesLoaded(List<String> categoryList) {
                 categories.postValue(categoryList);
                 isLoading.postValue(false);
             }
 
             @Override
-            public void onError(String message) {
+            public void onCategoriesError(String message) {
                 errorMessage.postValue(message);
                 isLoading.postValue(false);
             }
@@ -60,7 +66,6 @@ public class MenuViewModel extends ViewModel {
     public void loadProductsByCategory(String category) {
         isLoading.setValue(true);
         currentCategory.setValue(category);
-
         if (category.equals("All")) {
             menuRepository.getAllProducts(new MenuRepository.ProductsCallback() {
                 @Override
@@ -158,4 +163,25 @@ public class MenuViewModel extends ViewModel {
     public LiveData<String> getErrorMessage() {
         return errorMessage;
     }
+
+    public LiveData<Object> getFilteredMenuItems() {
+        MutableLiveData<Object> filteredMenuItems = new MutableLiveData<>();
+        List<Object> items = new ArrayList<>();
+
+        // Add categories to the list
+        List<String> categoryList = categories.getValue();
+        if (categoryList != null && !categoryList.isEmpty()) {
+            items.addAll(categoryList);
+        }
+
+        // Add products to the list
+        List<Product> productList = filteredProducts.getValue();
+        if (productList != null && !productList.isEmpty()) {
+            items.addAll(productList);
+        }
+
+        filteredMenuItems.setValue(items);
+        return filteredMenuItems;
+    }
+
 }

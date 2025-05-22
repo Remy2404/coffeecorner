@@ -2,50 +2,42 @@ package com.coffeecorner.app.fragments;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
-import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.coffeecorner.app.R;
 import com.coffeecorner.app.adapters.MenuItemAdapter;
-import com.coffeecorner.app.models.MenuItem;
-import com.coffeecorner.app.repositories.MenuRepository;
-import com.coffeecorner.app.viewmodel.MenuViewModel;
-import com.coffeecorner.app.viewmodel.ViewModelFactory;
+import com.coffeecorner.app.models.Product;
+import com.coffeecorner.app.viewmodels.CartViewModel;
+import com.coffeecorner.app.viewmodels.ProductViewModel;
 import com.google.android.material.tabs.TabLayout;
 
 public class MenuFragment extends Fragment implements MenuItemAdapter.OnItemClickListener {
 
     private TabLayout tabLayoutMenuCategories;
-    private MenuViewModel menuViewModel;
-    private RecyclerView recyclerViewMenu;
-    private MenuItemAdapter menuAdapter;
-    private Toolbar toolbar;
+    private ProductViewModel productViewModel;
+    private CartViewModel cartViewModel;
+    private MenuItemAdapter adapter;
     private TextView tvToolbarTitle;
-    private MenuItem searchMenuItem;
-
-    public MenuFragment() {
-        // Required empty public constructor
-    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_menu, container, false);
-        // Initialize views and setup listeners
-        tabLayoutMenuCategories = view.findViewById(R.id.tabLayoutMenuCategories);
 
-        menuViewModel = new ViewModelProvider(this).get(MenuViewModel.class);
+        // Initialize ViewModels
+        productViewModel = new ViewModelProvider(requireActivity()).get(ProductViewModel.class);
+        cartViewModel = new ViewModelProvider(requireActivity(),
+                ViewModelProvider.AndroidViewModelFactory.getInstance(requireActivity().getApplication()))
+                .get(CartViewModel.class);
 
+        initializeViews(view);
         setupTabLayout();
         setupRecyclerView(view);
         setupObservers();
@@ -53,11 +45,14 @@ public class MenuFragment extends Fragment implements MenuItemAdapter.OnItemClic
         return view;
     }
 
+    private void initializeViews(View view) {
+        tabLayoutMenuCategories = view.findViewById(R.id.tabLayoutMenuCategories);
+    }
+
     private void setupTabLayout() {
-        // Observe categories from ViewModel and populate tabs
-        menuViewModel.getCategories().observe(getViewLifecycleOwner(), categories -> {
-            tabLayoutMenuCategories.removeAllTabs(); // Clear existing tabs
-            tabLayoutMenuCategories.addTab(tabLayoutMenuCategories.newTab().setText("All")); // Add an "All" tab
+        productViewModel.getCategories().observe(getViewLifecycleOwner(), categories -> {
+            tabLayoutMenuCategories.removeAllTabs();
+            tabLayoutMenuCategories.addTab(tabLayoutMenuCategories.newTab().setText("All"));
             if (categories != null) {
                 for (String category : categories) {
                     tabLayoutMenuCategories.addTab(tabLayoutMenuCategories.newTab().setText(category));
@@ -65,25 +60,24 @@ public class MenuFragment extends Fragment implements MenuItemAdapter.OnItemClic
             }
         });
 
-        // Set up tab selection listener
         tabLayoutMenuCategories.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
                 if (tab.getText() != null) {
                     String category = tab.getText().toString();
-                    menuViewModel.loadProductsByCategory(category);
+                    productViewModel.filterByCategory(category);
                     updateTabUI(tab.getPosition());
                 }
             }
 
             @Override
             public void onTabUnselected(TabLayout.Tab tab) {
-                // Do nothing
+                // Not needed
             }
 
             @Override
             public void onTabReselected(TabLayout.Tab tab) {
-                // Do nothing
+                // Not needed
             }
         });
     }
@@ -91,19 +85,26 @@ public class MenuFragment extends Fragment implements MenuItemAdapter.OnItemClic
     private void setupRecyclerView(View view) {
         RecyclerView rvMenuItems = view.findViewById(R.id.rvMenuItems);
         rvMenuItems.setLayoutManager(new LinearLayoutManager(getContext()));
-        MenuItemAdapter adapter = new MenuItemAdapter();
+
+        adapter = new MenuItemAdapter();
         adapter.setOnItemClickListener(this);
         rvMenuItems.setAdapter(adapter);
-        // The adapter will be updated via the observer in setupObservers
     }
 
     private void setupObservers() {
-        // Observe filtered menu items from ViewModel
-        menuViewModel.getFilteredMenuItems().observe(getViewLifecycleOwner(), menuItems -> {
-            MenuItemAdapter adapter = (MenuItemAdapter) ((RecyclerView) requireView().findViewById(R.id.rvMenuItems))
-                    .getAdapter();
-            if (adapter != null && menuItems != null) {
-                adapter.submitList(menuItems);
+        productViewModel.getProducts().observe(getViewLifecycleOwner(), products -> {
+            if (adapter != null && products != null) {
+                adapter.submitList(products);
+            }
+        });
+
+        productViewModel.getIsLoading().observe(getViewLifecycleOwner(), isLoading -> {
+            // TODO: Show/hide loading indicator
+        });
+
+        productViewModel.getErrorMessage().observe(getViewLifecycleOwner(), errorMessage -> {
+            if (errorMessage != null && !errorMessage.isEmpty()) {
+                Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_LONG).show();
             }
         });
     }
@@ -117,11 +118,6 @@ public class MenuFragment extends Fragment implements MenuItemAdapter.OnItemClic
         // You can customize the UI based on selected tab
         // For example, change indicator color, text appearance, etc.
 
-        // Clear any existing search filters
-        if (searchMenuItem != null && searchMenuItem.isActionViewExpanded()) {
-            searchMenuItem.collapseActionView();
-        }
-
         // Update title based on selected category
         String title = position == 0 ? "All Menu" : tabLayoutMenuCategories.getTabAt(position).getText().toString();
         if (tvToolbarTitle != null) {
@@ -130,26 +126,8 @@ public class MenuFragment extends Fragment implements MenuItemAdapter.OnItemClic
     }
 
     @Override
-    public void onAddToCartClick(MenuItem menuItem) {
-        // Convert MenuItem to Product for CartViewModel
-        com.coffeecorner.app.models.Product product = new com.coffeecorner.app.models.Product(
-                menuItem.getId(),
-                menuItem.getName(),
-                menuItem.getDescription(),
-                menuItem.getPrice(),
-                menuItem.getCategory(),
-                menuItem.getImageUrl());
-
-        // Get the CartViewModel
-        com.coffeecorner.app.repositories.CartRepository cartRepository = com.coffeecorner.app.repositories.CartRepository
-                .getInstance(requireContext());
-        com.coffeecorner.app.viewmodel.CartViewModel cartViewModel = new ViewModelProvider(requireActivity(),
-                new ViewModelFactory(cartRepository)).get(com.coffeecorner.app.viewmodel.CartViewModel.class);
-
-        // Add to cart with default quantity of 1 and no special instructions
-        cartViewModel.addToCart(product, 1, "");
-
-        // Show success message
-        Toast.makeText(getContext(), menuItem.getName() + " added to cart", Toast.LENGTH_SHORT).show();
+    public void onAddToCartClick(Product product) {
+        cartViewModel.addToCart(product, 1);
+        Toast.makeText(requireContext(), product.getName() + " added to cart", Toast.LENGTH_SHORT).show();
     }
 }

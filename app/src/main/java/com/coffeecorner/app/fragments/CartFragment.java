@@ -22,7 +22,7 @@ import com.coffeecorner.app.R;
 import com.coffeecorner.app.activities.CheckoutActivity;
 import com.coffeecorner.app.adapters.CartAdapter;
 import com.coffeecorner.app.models.CartItem;
-import com.coffeecorner.app.viewmodel.CartViewModel;
+import com.coffeecorner.app.viewmodels.CartViewModel;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.text.NumberFormat;
@@ -119,16 +119,28 @@ public class CartFragment extends Fragment implements CartAdapter.CartItemListen
     private void loadCartItems() {
         // In a real app, get cart items from a CartManager or repository
         cartViewModel.getCartItems().observe(getViewLifecycleOwner(), items -> {
+            if (items == null) { // Add null check for items
+                items = new ArrayList<>();
+            }
             cartItems = items;
 
             if (cartItems.isEmpty()) {
                 showEmptyCartView();
+                // Ensure adapter is not set with empty or null list if it was previously
+                // initialized
+                if (cartAdapter != null) {
+                    cartAdapter.updateCartItems(new ArrayList<>()); // Clear adapter
+                }
                 return;
             }
 
-            // Set up adapter
-            cartAdapter = new CartAdapter(requireContext(), cartItems, this);
-            recyclerCartItems.setAdapter(cartAdapter);
+            // Set up adapter or update existing adapter
+            if (cartAdapter == null) {
+                cartAdapter = new CartAdapter(requireContext(), cartItems, this);
+                recyclerCartItems.setAdapter(cartAdapter);
+            } else {
+                cartAdapter.updateCartItems(cartItems);
+            }
 
             // Update price summary
             updatePriceSummary();
@@ -136,7 +148,9 @@ public class CartFragment extends Fragment implements CartAdapter.CartItemListen
     }
 
     private void updatePriceSummary() {
-        cartViewModel.getCartTotal().observe(getViewLifecycleOwner(), subtotal -> {
+        cartViewModel.getCartTotal().observe(getViewLifecycleOwner(), subtotal -> { // Use getCartTotal since
+                                                                                    // getCartSubtotal doesn't exist
+                                                                                    // getCartSubtotal
             double tax = subtotal * TAX_RATE;
             double discount = calculateDiscount();
             double total = subtotal + tax + DELIVERY_FEE - discount;
@@ -150,7 +164,8 @@ public class CartFragment extends Fragment implements CartAdapter.CartItemListen
     }
 
     private double calculateSubtotal() {
-        Double subtotal = cartViewModel.getCartTotal().getValue();
+        Double subtotal = cartViewModel.getCartTotal().getValue(); // Use getCartTotal since getCartSubtotal doesn't
+                                                                   // exist
         return subtotal != null ? subtotal : 0.0;
     }
 
@@ -161,6 +176,7 @@ public class CartFragment extends Fragment implements CartAdapter.CartItemListen
     private double calculateDiscount() {
         // In a real app, implement discount logic here
         // For example, apply promo codes, loyalty discounts, etc.
+        // TODO: Implement discount logic (e.g., promo codes, loyalty points)
         return 0;
     }
 
@@ -201,22 +217,85 @@ public class CartFragment extends Fragment implements CartAdapter.CartItemListen
     @Override
     public void onItemRemoved(CartItem cartItem) {
         // Remove from cart
-        cartViewModel.removeFromCart(cartItem);
-        cartItems.remove(cartItem);
-        cartAdapter.notifyDataSetChanged();
-
-        if (cartItems.isEmpty()) {
-            showEmptyCartView();
+        if (cartItem != null && cartItem.getProductId() != null) {
+            cartViewModel.removeFromCart(cartItem);
+            // The LiveData observer in loadCartItems should handle UI updates
         } else {
-            updatePriceSummary();
+            Toast.makeText(getContext(), "Error: Could not remove item", Toast.LENGTH_SHORT).show();
         }
     }
 
     @Override
     public void onQuantityChanged(CartItem cartItem, int newQuantity) {
         // Update cart
-        cartViewModel.updateCartItemQuantity(cartItem, newQuantity);
-        updatePriceSummary();
+        if (cartItem != null && cartItem.getProductId() != null) {
+            cartViewModel.updateCartItemQuantity(cartItem, newQuantity);
+            // The LiveData observer in updatePriceSummary should handle UI updates
+        } else {
+            Toast.makeText(getContext(), "Error: Could not update quantity", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void setupRecyclerView() {
+        // This method seems to be a remnant and conflicts with how the adapter is
+        // initialized in loadCartItems.
+        // If it's intended for a different purpose, it needs to be revised.
+        // For now, commenting out or removing if loadCartItems handles adapter setup.
+
+        /*
+         * cartAdapter = new CartAdapter(requireContext(), cartItems, new
+         * CartAdapter.CartItemListener() {
+         * 
+         * @Override
+         * public void onRemoveItemClick(CartItem cartItem) {
+         * if (cartItem != null && cartItem.getProductId() != null) {
+         * cartViewModel.removeFromCart(cartItem.getProductId());
+         * } else {
+         * Toast.makeText(getContext(), "Error: Could not remove item",
+         * Toast.LENGTH_SHORT).show();
+         * }
+         * }
+         * 
+         * @Override
+         * public void onUpdateQuantityClick(CartItem cartItem, int newQuantity) {
+         * if (cartItem != null && cartItem.getProductId() != null) {
+         * cartViewModel.updateCartItemQuantity(cartItem.getProductId(), newQuantity);
+         * } else {
+         * Toast.makeText(getContext(), "Error: Could not update item quantity",
+         * Toast.LENGTH_SHORT).show();
+         * }
+         * }
+         * // This anonymous class should implement onQuantityChanged if
+         * CartItemListener requires it.
+         * // However, the CartFragment itself implements CartItemListener, so this
+         * inner anonymous class might be redundant
+         * // or incorrectly structured.
+         * });
+         * recyclerCartItems.setAdapter(cartAdapter);
+         */
+    }
+
+    // These methods are part of the CartAdapter.CartItemListener interface
+    // implemented by the fragment
+    // So, the @Override annotation is correct here.
+    // The calls to cartViewModel should use cartItem.getProductId()
+
+    // This method is a duplicate of onItemRemoved(CartItem cartItem) from the
+    // interface
+    // public void onRemoveItem(CartItem cartItem) { ... }
+
+    // This method is a duplicate of onQuantityChanged(CartItem cartItem, int
+    // newQuantity) from the interface
+    // public void onUpdateQuantity(CartItem cartItem, int newQuantity) { ... }
+
+    private void observeViewModel() {
+        // TODO: Implement observers for LiveData from CartViewModel if needed.
+        // For example, observe loading states, error messages, or other relevant data.
+        // Currently, cart items and subtotal are observed directly in loadCartItems()
+        // and updatePriceSummary().
+        // This method is not currently called.
+        // TODO: Observe other LiveData from CartViewModel, e.g., error messages,
+        // loading states.
     }
 
     @Override

@@ -11,7 +11,9 @@ import com.coffeecorner.app.models.Product;
 import com.coffeecorner.app.repositories.ProductRepository;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * ProductViewModel - Manages and provides product data to the UI
@@ -27,6 +29,11 @@ public class ProductViewModel extends AndroidViewModel {
     private final MutableLiveData<String> errorMessage = new MutableLiveData<>();
     private final MutableLiveData<Product> selectedProduct = new MutableLiveData<>(); // For product details
 
+    // Add cache maps
+    private final Map<String, List<Product>> categoryProductCache = new HashMap<>();
+    private long lastCacheTime = 0;
+    private static final long CACHE_DURATION = 5 * 60 * 1000; // 5 minutes cache
+
     public ProductViewModel(@NonNull Application application) {
         super(application);
         productRepository = ProductRepository.getInstance(); // Get repository instance
@@ -37,17 +44,25 @@ public class ProductViewModel extends AndroidViewModel {
     }
 
     /**
-     * Load all products from the data source or based on the current
-     * selectedCategory
+     * Load all products from cache or data source
      */
     public void loadProducts() {
-        isLoading.setValue(true);
         String categoryToLoad = selectedCategory.getValue();
         if (categoryToLoad == null || "All".equalsIgnoreCase(categoryToLoad)) {
+            // Check cache first
+            if (isCacheValid() && categoryProductCache.containsKey("All")) {
+                products.setValue(categoryProductCache.get("All"));
+                return;
+            }
+
+            isLoading.setValue(true);
             productRepository.getProducts(new ProductRepository.ProductsCallback() {
                 @Override
                 public void onProductsLoaded(List<Product> productList) {
                     products.setValue(productList);
+                    // Cache the results
+                    categoryProductCache.put("All", productList);
+                    lastCacheTime = System.currentTimeMillis();
                     isLoading.setValue(false);
                     errorMessage.setValue(null);
                 }
@@ -68,11 +83,22 @@ public class ProductViewModel extends AndroidViewModel {
     }
 
     /**
-     * Filter products by category
+     * Filter products by category using cache when possible
      * 
      * @param category Category to filter by, or "All" for no filtering
      */
     public void filterByCategory(String category) {
+        if (category == null) {
+            category = "All";
+        }
+
+        // Check cache first
+        if (isCacheValid() && categoryProductCache.containsKey(category)) {
+            products.setValue(categoryProductCache.get(category));
+            selectedCategory.setValue(category);
+            return;
+        }
+
         isLoading.setValue(true);
         selectedCategory.setValue(category); // Update selected category
 
@@ -80,6 +106,9 @@ public class ProductViewModel extends AndroidViewModel {
             @Override
             public void onProductsLoaded(List<Product> productList) {
                 products.setValue(productList);
+                // Cache the results
+                categoryProductCache.put(category, productList);
+                lastCacheTime = System.currentTimeMillis();
                 isLoading.setValue(false);
                 errorMessage.setValue(null);
             }
@@ -125,7 +154,7 @@ public class ProductViewModel extends AndroidViewModel {
      */
     public void loadProductById(String productId) {
         isLoading.setValue(true);
-        productRepository.getProductById(productId, new ProductRepository.ProductCallback() {
+        productRepository.getProductById(productId, new ProductRepository.ProductDetailCallback() {
             @Override
             public void onProductLoaded(Product product) {
                 selectedProduct.setValue(product);
@@ -134,7 +163,7 @@ public class ProductViewModel extends AndroidViewModel {
             }
 
             @Override
-            public void onError(String errorMsg) {
+            public void onProductError(String errorMsg) {
                 selectedProduct.setValue(null); // Set to null on error
                 errorMessage.setValue(errorMsg);
                 isLoading.setValue(false);
@@ -171,6 +200,22 @@ public class ProductViewModel extends AndroidViewModel {
                 isLoading.setValue(false);
             }
         });
+    }
+
+    /**
+     * Check if the cache is still valid
+     */
+    private boolean isCacheValid() {
+        return System.currentTimeMillis() - lastCacheTime < CACHE_DURATION;
+    }
+
+    /**
+     * Clear the cache (call this when needed, e.g., pull-to-refresh)
+     */
+    public void clearCache() {
+        categoryProductCache.clear();
+        lastCacheTime = 0;
+        loadProducts(); // Reload from network
     }
 
     // Getters for LiveData

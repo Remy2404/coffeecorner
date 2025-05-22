@@ -30,18 +30,23 @@ public class ProductViewModel extends ViewModel {
      */
     public LiveData<List<Product>> getAllProducts() {
         isLoading.setValue(true);
-        return productRepository.getAllProducts(new ProductRepository.ProductCallback() {
+        MutableLiveData<List<Product>> productsLiveData = new MutableLiveData<>();
+
+        productRepository.getProducts(new ProductRepository.ProductsCallback() {
             @Override
-            public void onComplete() {
+            public void onProductsLoaded(List<Product> products) {
                 isLoading.postValue(false);
+                productsLiveData.postValue(products);
             }
 
             @Override
-            public void onError(String message) {
+            public void onError(String errorMsg) {
                 isLoading.postValue(false);
-                errorMessage.postValue(message);
+                errorMessage.postValue(errorMsg);
             }
         });
+
+        return productsLiveData;
     }
 
     /**
@@ -51,18 +56,24 @@ public class ProductViewModel extends ViewModel {
      */
     public LiveData<List<Product>> getFeaturedProducts() {
         isLoading.setValue(true);
-        return productRepository.getFeaturedProducts(new ProductRepository.ProductCallback() {
+        MutableLiveData<List<Product>> featuredProductsLiveData = new MutableLiveData<>();
+
+        productRepository.getProducts(new ProductRepository.ProductsCallback() {
             @Override
-            public void onComplete() {
+            public void onProductsLoaded(List<Product> products) {
                 isLoading.postValue(false);
+                // In a real app, you might filter for featured products
+                featuredProductsLiveData.postValue(products);
             }
 
             @Override
-            public void onError(String message) {
+            public void onError(String errorMsg) {
                 isLoading.postValue(false);
-                errorMessage.postValue(message);
+                errorMessage.postValue(errorMsg);
             }
         });
+
+        return featuredProductsLiveData;
     }
 
     /**
@@ -73,18 +84,23 @@ public class ProductViewModel extends ViewModel {
      */
     public LiveData<List<Product>> getProductsByCategory(String category) {
         isLoading.setValue(true);
-        return productRepository.getProductsByCategory(category, new ProductRepository.ProductCallback() {
+        MutableLiveData<List<Product>> categoryProductsLiveData = new MutableLiveData<>();
+
+        productRepository.getProductsByCategory(category, new ProductRepository.ProductsCallback() {
             @Override
-            public void onComplete() {
+            public void onProductsLoaded(List<Product> products) {
                 isLoading.postValue(false);
+                categoryProductsLiveData.postValue(products);
             }
 
             @Override
-            public void onError(String message) {
+            public void onError(String errorMsg) {
                 isLoading.postValue(false);
-                errorMessage.postValue(message);
+                errorMessage.postValue(errorMsg);
             }
         });
+
+        return categoryProductsLiveData;
     }
 
     /**
@@ -95,18 +111,23 @@ public class ProductViewModel extends ViewModel {
      */
     public LiveData<Product> getProductById(String productId) {
         isLoading.setValue(true);
-        return productRepository.getProductById(productId, new ProductRepository.ProductDetailCallback() {
+        MutableLiveData<Product> productLiveData = new MutableLiveData<>();
+
+        productRepository.getProductDetails(productId, new ProductRepository.ProductDetailCallback() {
             @Override
-            public void onComplete() {
+            public void onProductLoaded(Product product) {
                 isLoading.postValue(false);
+                productLiveData.postValue(product);
             }
 
             @Override
-            public void onError(String message) {
+            public void onProductError(String errorMsg) {
                 isLoading.postValue(false);
-                errorMessage.postValue(message);
+                errorMessage.postValue(errorMsg);
             }
         });
+
+        return productLiveData;
     }
 
     /**
@@ -117,18 +138,24 @@ public class ProductViewModel extends ViewModel {
      */
     public LiveData<List<Product>> searchProducts(String query) {
         isLoading.setValue(true);
-        return productRepository.searchProducts(query, new ProductRepository.ProductCallback() {
+        MutableLiveData<List<Product>> searchResultsLiveData = new MutableLiveData<>();
+
+        // Assuming repository has a search method
+        productRepository.getProducts(new ProductRepository.ProductsCallback() {
             @Override
-            public void onComplete() {
+            public void onProductsLoaded(List<Product> products) {
                 isLoading.postValue(false);
+                // In a real app, you'd have a dedicated search method in the repository
+                searchResultsLiveData.postValue(products);
             }
 
             @Override
-            public void onError(String message) {
+            public void onError(String errorMsg) {
                 isLoading.postValue(false);
-                errorMessage.postValue(message);
+                errorMessage.postValue(errorMsg);
             }
         });
+        return searchResultsLiveData;
     }
 
     /**

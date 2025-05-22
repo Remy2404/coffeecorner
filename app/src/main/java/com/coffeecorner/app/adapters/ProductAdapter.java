@@ -4,6 +4,7 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -24,25 +25,29 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
     private List<Product> productList;
     private final Context context;
     private OnProductClickListener listener;
+    private OnAddToCartClickListener cartListener;
 
     public interface OnProductClickListener {
         void onProductClick(Product product, int position);
     }
-    
-    // Constructor without listener for HomeFragment
+
+    public interface OnAddToCartClickListener {
+        void onAddToCartClick(Product product, int position);
+    }
+
     public ProductAdapter(Context context, List<Product> productList) {
         this.context = context;
         this.productList = productList;
     }
 
-    // Constructor with listener
-    public ProductAdapter(Context context, List<Product> productList, OnProductClickListener listener) {
-        this.context = context;
-        this.productList = productList;
+    public void setOnProductClickListener(OnProductClickListener listener) {
         this.listener = listener;
     }
-    
-    // Method to update products list - needed by HomeFragment
+
+    public void setOnAddToCartClickListener(OnAddToCartClickListener listener) {
+        this.cartListener = listener;
+    }
+
     public void updateProducts(List<Product> newProducts) {
         this.productList = newProducts;
         notifyDataSetChanged();
@@ -53,38 +58,51 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
     public ProductViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(context).inflate(R.layout.item_product_home, parent, false);
         return new ProductViewHolder(view);
-    }    @Override
+    }
+
+    @Override
     public void onBindViewHolder(@NonNull ProductViewHolder holder, int position) {
         Product product = productList.get(position);
-        
-        // Set product name
+
+        // Set product name and subtitle
         holder.tvProductName.setText(product.getName());
-        
-        // Set product rating if available
-        if (holder.tvRating != null) {
-            holder.tvRating.setText(String.valueOf(product.getRating()));
+        holder.tvProductSubtitle.setText(product.getDescription());
+
+        // Set product rating
+        if (product.getRating() > 0) {
+            holder.tvRating.setText(String.format("%.1f", product.getRating()));
+            holder.ratingBadge.setVisibility(View.VISIBLE);
+        } else {
+            holder.ratingBadge.setVisibility(View.GONE);
         }
-        
+
         // Format and set price
         NumberFormat currencyFormatter = NumberFormat.getCurrencyInstance(Locale.US);
-        holder.tvPrice.setText(currencyFormatter.format(product.getPrice()));
-        
+        String formattedPrice = currencyFormatter.format(product.getPrice());
+        holder.tvPrice.setText(formattedPrice);
+
         // Load image using Glide
         if (product.getImageUrl() != null && !product.getImageUrl().isEmpty()) {
             Glide.with(context)
-                 .load(product.getImageUrl())
-                 .placeholder(R.drawable.coffee_placeholder)
-                 .error(R.drawable.coffee_placeholder)
-                 .centerCrop()
-                 .into(holder.ivProductImage);
+                    .load(product.getImageUrl())
+                    .placeholder(R.drawable.coffee_coco)
+                    .error(R.drawable.coffee_coco)
+                    .centerCrop()
+                    .into(holder.ivProductImage);
         } else {
-            holder.ivProductImage.setImageResource(R.drawable.coffee_placeholder);
+            holder.ivProductImage.setImageResource(R.drawable.coffee_coco);
         }
-        
-        // Set click listener
-        holder.itemView.setOnClickListener(v -> {
+
+        // Set click listeners
+        holder.cardView.setOnClickListener(v -> {
             if (listener != null) {
-                listener.onProductClick(product, position);
+                listener.onProductClick(product, holder.getAdapterPosition());
+            }
+        });
+
+        holder.btnAdd.setOnClickListener(v -> {
+            if (cartListener != null) {
+                cartListener.onAddToCartClick(product, holder.getAdapterPosition());
             }
         });
     }
@@ -96,16 +114,21 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
 
     public static class ProductViewHolder extends RecyclerView.ViewHolder {
         ImageView ivProductImage;
-        TextView tvProductName, tvRating, tvPrice;
+        TextView tvProductName, tvProductSubtitle, tvRating, tvPrice;
+        ImageButton btnAdd;
         MaterialCardView cardView;
+        View ratingBadge;
 
         public ProductViewHolder(@NonNull View itemView) {
             super(itemView);
+            cardView = (MaterialCardView) itemView;
             ivProductImage = itemView.findViewById(R.id.ivProductImageHome);
             tvProductName = itemView.findViewById(R.id.tvProductNameHome);
+            tvProductSubtitle = itemView.findViewById(R.id.tvProductSubtitleHome);
             tvRating = itemView.findViewById(R.id.product_rating);
             tvPrice = itemView.findViewById(R.id.tvProductPriceHome);
-            cardView = (MaterialCardView) itemView;
+            btnAdd = itemView.findViewById(R.id.btnAddHome);
+            ratingBadge = itemView.findViewById(R.id.ratingBadge);
         }
     }
 }
