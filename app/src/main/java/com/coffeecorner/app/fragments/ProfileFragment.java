@@ -1,5 +1,6 @@
 package com.coffeecorner.app.fragments;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -8,11 +9,13 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
@@ -22,7 +25,8 @@ import com.bumptech.glide.request.RequestOptions;
 import com.coffeecorner.app.R;
 import com.coffeecorner.app.activities.LoginActivity;
 import com.coffeecorner.app.models.User;
-import com.coffeecorner.app.viewmodels.UserViewModel;
+import com.coffeecorner.app.viewmodel.UserViewModel;
+import com.coffeecorner.app.viewmodel.UserViewModelFactory;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 public class ProfileFragment extends Fragment {
@@ -32,6 +36,10 @@ public class ProfileFragment extends Fragment {
     private ImageButton btnEditProfile;
     private View btnSettings;
     private UserViewModel userViewModel;
+    private Switch switchTheme;
+    private static final String PREFS_NAME = "app_prefs";
+    private static final String KEY_DARK_MODE = "dark_mode";
+    private boolean isThemeSwitching = false;
 
     public ProfileFragment() {
         // Required empty public constructor
@@ -42,8 +50,8 @@ public class ProfileFragment extends Fragment {
             Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_profile, container, false);
 
-        // Initialize ViewModel
-        userViewModel = new ViewModelProvider(requireActivity()).get(UserViewModel.class);
+        // Initialize ViewModel with custom factory
+        userViewModel = new ViewModelProvider(requireActivity(), new UserViewModelFactory(requireContext())).get(UserViewModel.class);
 
         return view;
     }
@@ -60,6 +68,19 @@ public class ProfileFragment extends Fragment {
 
         // Setup click listeners
         setupClickListeners(view);
+
+        // Set initial switch state based on saved preference
+        isThemeSwitching = true;
+        switchTheme.setChecked(getDarkModePref());
+        isThemeSwitching = false;
+        switchTheme.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isThemeSwitching) return;
+            saveDarkModePref(isChecked);
+            int newMode = isChecked ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO;
+            if (AppCompatDelegate.getDefaultNightMode() != newMode) {
+                AppCompatDelegate.setDefaultNightMode(newMode);
+            }
+        });
     }
 
     private void initializeViews(View view) {
@@ -71,6 +92,7 @@ public class ProfileFragment extends Fragment {
         tvMemberSince = view.findViewById(R.id.tvMemberSince);
         btnEditProfile = view.findViewById(R.id.btnEditProfile);
         btnSettings = view.findViewById(R.id.btnSettings);
+        switchTheme = view.findViewById(R.id.switchTheme);
     }
 
     private void setupObservers() {
@@ -146,5 +168,17 @@ public class ProfileFragment extends Fragment {
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
         requireActivity().finish();
+    }
+
+    private void saveDarkModePref(boolean isDark) {
+        requireContext().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .edit()
+            .putBoolean(KEY_DARK_MODE, isDark)
+            .apply();
+    }
+
+    private boolean getDarkModePref() {
+        return requireContext().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .getBoolean(KEY_DARK_MODE, false);
     }
 }
