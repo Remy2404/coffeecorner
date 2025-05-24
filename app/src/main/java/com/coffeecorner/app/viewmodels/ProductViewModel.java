@@ -85,29 +85,31 @@ public class ProductViewModel extends AndroidViewModel {
     /**
      * Filter products by category using cache when possible
      * 
-     * @param category Category to filter by, or "All" for no filtering
+     * @param categoryParamParam
      */
-    public void filterByCategory(String category) {
-        if (category == null) {
-            category = "All";
+    public void filterByCategory(String categoryParam) {
+        String finalCategory = categoryParam;
+        if (finalCategory == null) {
+            finalCategory = "All";
         }
 
         // Check cache first
-        if (isCacheValid() && categoryProductCache.containsKey(category)) {
-            products.setValue(categoryProductCache.get(category));
-            selectedCategory.setValue(category);
+        if (isCacheValid() && categoryProductCache.containsKey(finalCategory)) {
+            products.setValue(categoryProductCache.get(finalCategory));
+            selectedCategory.setValue(finalCategory);
             return;
         }
 
         isLoading.setValue(true);
-        selectedCategory.setValue(category); // Update selected category
+        selectedCategory.setValue(finalCategory); // Update selected category
 
-        productRepository.getProductsByCategory(category, new ProductRepository.ProductsCallback() {
+        final String categoryToFetch = finalCategory; // Effectively final for use in inner class
+        productRepository.getProductsByCategory(categoryToFetch, new ProductRepository.ProductsCallback() {
             @Override
             public void onProductsLoaded(List<Product> productList) {
                 products.setValue(productList);
                 // Cache the results
-                categoryProductCache.put(category, productList);
+                categoryProductCache.put(categoryToFetch, productList);
                 lastCacheTime = System.currentTimeMillis();
                 isLoading.setValue(false);
                 errorMessage.setValue(null);
