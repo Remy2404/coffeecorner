@@ -9,6 +9,7 @@
 
     <!-- Toolbar -->
     <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appBarLayout2"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/surface"
@@ -27,8 +28,8 @@
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="@string/back"
                 android:padding="12dp"
-                app:tint="@color/color_01"
-                android:src="@drawable/ic_arrow_back_black" />
+                android:src="@drawable/ic_arrow_back_black"
+                app:tint="@color/color_01" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -139,11 +140,11 @@
                         android:id="@+id/tvDeliveryAddress"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:textColor="@color/text_secondary"
-                        android:textSize="16sp"
                         android:drawableStart="@drawable/ic_location"
                         android:drawablePadding="8dp"
                         android:drawableTint="@color/primary"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="16sp"
                         tools:text="123 Street Name, City, Country" />
 
                     <Button
@@ -151,12 +152,12 @@
                         style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                         android:layout_width="wrap_content"
                         android:layout_height="40dp"
-                        android:layout_marginTop="8dp"
                         android:layout_gravity="end"
+                        android:layout_marginTop="8dp"
                         android:text="@string/change"
                         android:textColor="@color/primary"
-                        app:strokeColor="@color/primary"
-                        android:textSize="14sp" />
+                        android:textSize="14sp"
+                        app:strokeColor="@color/primary" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 

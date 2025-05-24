@@ -41,7 +41,7 @@
                     android:layout_weight="1"
                     android:text="Ratings &amp; Reviews"
                     android:textAlignment="center"
-                    android:textColor="@color/text_primary"
+                    android:textColor="@color/color_01"
                     android:textSize="18sp"
                     android:textStyle="bold" />
 
@@ -85,7 +85,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Order Details"
-                        android:textColor="@color/text_primary"
+                        android:textColor="@color/color_01"
                         android:textSize="16sp"
                         android:textStyle="bold" />
 
@@ -120,7 +120,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="4dp"
                                 android:text="#CC-19052"
-                                android:textColor="@color/text_primary"
+                                android:textColor="@color/color_01"
                                 android:textSize="16sp"
                                 android:textStyle="bold" />
                         </LinearLayout>
@@ -144,7 +144,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="4dp"
                                 android:text="May 25, 2023"
-                                android:textColor="@color/text_primary"
+                                android:textColor="@color/color_01"
                                 android:textSize="16sp" />
                         </LinearLayout>
                     </LinearLayout>
@@ -175,7 +175,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
                 android:text="Rate your experience"
-                android:textColor="@color/text_primary"
+                android:textColor="@color/color_01"
                 android:textSize="18sp"
                 android:textStyle="bold"
                 app:layout_constraintStart_toStartOf="parent"
@@ -269,7 +269,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
                 android:text="What went well?"
-                android:textColor="@color/text_primary"
+                android:textColor="@color/color_01"
                 android:textSize="16sp"
                 android:textStyle="bold"
                 app:layout_constraintStart_toStartOf="parent"
@@ -369,7 +369,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
                 android:text="Additional Comments"
-                android:textColor="@color/text_primary"
+                android:textColor="@color/color_01"
                 android:textSize="16sp"
                 android:textStyle="bold"
                 app:layout_constraintStart_toStartOf="parent"

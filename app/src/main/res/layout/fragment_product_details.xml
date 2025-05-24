@@ -257,11 +257,11 @@
                     android:layout_weight="1"
                     android:text="S"
                     android:textAlignment="center"
-                    android:textColor="@color/chip_text_color_selector"
+                    android:textColor="@color/text_secondary"
                     android:textSize="16sp"
-                    app:chipBackgroundColor="@color/chip_background_color_selector"
+                    app:chipBackgroundColor="@color/white"
                     app:chipCornerRadius="24dp"
-                    app:chipStrokeColor="@color/brown"
+                    app:chipStrokeColor="@color/text_primary"
                     app:chipStrokeWidth="1dp" />
 
                 <com.google.android.material.chip.Chip
@@ -277,9 +277,9 @@
                     android:textAlignment="center"
                     android:textColor="@color/chip_text_color_selector"
                     android:textSize="16sp"
-                    app:chipBackgroundColor="@color/chip_background_color_selector"
+                    app:chipBackgroundColor="@color/color_03"
                     app:chipCornerRadius="24dp"
-                    app:chipStrokeColor="@color/brown"
+                    app:chipStrokeColor="@color/text_primary"
                     app:chipStrokeWidth="1dp" />
 
                 <com.google.android.material.chip.Chip
@@ -291,11 +291,11 @@
                     android:layout_weight="1"
                     android:text="L"
                     android:textAlignment="center"
-                    android:textColor="@color/chip_text_color_selector"
+                    android:textColor="@color/text_secondary"
                     android:textSize="16sp"
-                    app:chipBackgroundColor="@color/chip_background_color_selector"
+                    app:chipBackgroundColor="@color/white"
                     app:chipCornerRadius="24dp"
-                    app:chipStrokeColor="@color/brown"
+                    app:chipStrokeColor="@color/text_primary"
                     app:chipStrokeWidth="1dp" />
             </LinearLayout>
 
@@ -322,7 +322,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/extra_shot"
-                    app:chipStrokeColor="@color/brown"
+                    app:chipStrokeColor="@color/text_primary"
                     app:chipStrokeWidth="1dp" />
 
                 <com.google.android.material.chip.Chip
@@ -331,7 +331,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/whipped_cream"
-                    app:chipStrokeColor="@color/brown"
+                    app:chipStrokeColor="@color/text_primary"
                     app:chipStrokeWidth="1dp" />
 
                 <com.google.android.material.chip.Chip
@@ -340,7 +340,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/caramel"
-                    app:chipStrokeColor="@color/brown"
+                    app:chipStrokeColor="@color/text_primary"
                     app:chipStrokeWidth="1dp" />
             </com.google.android.material.chip.ChipGroup>
 
@@ -445,7 +445,7 @@
             app:icon="@drawable/ic_cart_white"
             app:iconGravity="textStart"
             app:iconPadding="8dp"
-            app:backgroundTint="#D2691E"
+            app:chipBackgroundColor="@color/color_03"
             app:cornerRadius="8dp" />
 
     </LinearLayout>

@@ -165,22 +165,11 @@
                 android:layout_marginTop="8dp"
                 android:buttonTint="@color/color_01"
                 android:text="@string/remember_password"
-                android:textColor="@color/text_secondary"
+                android:textColor="@color/color_01"
                 android:textSize="14sp"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/tilPassword" />
 
-            <TextView
-                android:id="@+id/tvForgotPassword"
-                android:layout_width="wrap_content"
-                android:layout_marginEnd="10dp"
-                android:layout_height="wrap_content"
-                android:text="@string/forgot_password_subtitle"
-                android:textColor="@color/color_01"
-                android:textSize="14sp"
-                app:layout_constraintBottom_toBottomOf="@+id/cbRememberPassword"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="@+id/cbRememberPassword" />
 
             <!-- Sign in button -->
             <com.google.android.material.button.MaterialButton
@@ -227,7 +216,7 @@
                 android:layout_marginTop="24dp"
                 android:text="@string/or_connect_with"
                 android:fontFamily="sans-serif-black"
-                android:textColor="@color/black"
+                android:textColor="@color/color_01"
                 android:textSize="14sp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"

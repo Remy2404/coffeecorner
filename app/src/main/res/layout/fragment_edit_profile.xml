@@ -94,7 +94,7 @@
                 android:layout_marginStart="4dp"
                 android:layout_marginBottom="8dp"
                 android:text="Full Name"
-                android:textColor="@color/text_primary"
+                android:textColor="@color/color_01"
                 android:textSize="14sp"
                 android:textStyle="bold" />
 
@@ -121,7 +121,7 @@
                 android:layout_marginStart="4dp"
                 android:layout_marginBottom="8dp"
                 android:text="Email"
-                android:textColor="@color/text_primary"
+                android:textColor="@color/color_01"
                 android:textSize="14sp"
                 android:textStyle="bold" />
 
@@ -148,7 +148,7 @@
                 android:layout_marginStart="4dp"
                 android:layout_marginBottom="8dp"
                 android:text="Phone Number"
-                android:textColor="@color/text_primary"
+                android:textColor="@color/color_01"
                 android:textSize="14sp"
                 android:textStyle="bold" />
 
@@ -175,7 +175,7 @@
                 android:layout_marginStart="4dp"
                 android:layout_marginBottom="8dp"
                 android:text="Date of Birth"
-                android:textColor="@color/text_primary"
+                android:textColor="@color/color_01"
                 android:textSize="14sp"
                 android:textStyle="bold" />
 
@@ -205,7 +205,7 @@
                 android:layout_marginStart="4dp"
                 android:layout_marginBottom="8dp"
                 android:text="Gender"
-                android:textColor="@color/text_primary"
+                android:textColor="@color/color_01"
                 android:textSize="14sp"
                 android:textStyle="bold" />
 
@@ -221,26 +221,26 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="24dp"
-                    android:buttonTint="@color/primary"
+                    android:buttonTint="@color/color_02"
                     android:text="Male"
-                    android:textColor="@color/text_primary" />
+                    android:textColor="@color/color_01" />
 
                 <RadioButton
                     android:id="@+id/radioFemale"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="24dp"
-                    android:buttonTint="@color/primary"
+                    android:buttonTint="@color/color_02"
                     android:text="Female"
-                    android:textColor="@color/text_primary" />
+                    android:textColor="@color/color_01" />
 
                 <RadioButton
                     android:id="@+id/radioOther"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:buttonTint="@color/primary"
+                    android:buttonTint="@color/color_02"
                     android:text="Other"
-                    android:textColor="@color/text_primary" />
+                    android:textColor="@color/color_01" />
             </RadioGroup>
 
             <TextView
@@ -249,7 +249,7 @@
                 android:layout_marginStart="4dp"
                 android:layout_marginBottom="8dp"
                 android:text="Change Password"
-                android:textColor="@color/text_primary"
+                android:textColor="@color/color_01"
                 android:textSize="14sp"
                 android:textStyle="bold" />
 
@@ -270,7 +270,7 @@
                 android:id="@+id/btnUpdate"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:backgroundTint="@color/primary"
+                android:backgroundTint="@color/color_02"
                 android:paddingTop="12dp"
                 android:paddingBottom="12dp"
                 android:text="Update Profile"
