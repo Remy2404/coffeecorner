@@ -99,22 +99,6 @@ public class ProfileFragment extends Fragment {
             Navigation.findNavController(v).navigate(R.id.action_profileFragment_to_orderHistoryFragment);
         });
 
-        view.findViewById(R.id.layoutMyAddresses).setOnClickListener(v -> {
-            Navigation.findNavController(v).navigate(R.id.myAddressesFragment);
-        });
-
-        view.findViewById(R.id.layoutPaymentMethods).setOnClickListener(v -> {
-            Navigation.findNavController(v).navigate(R.id.paymentMethodsFragment);
-        });
-
-        view.findViewById(R.id.layoutMyRewards).setOnClickListener(v -> {
-            Navigation.findNavController(v).navigate(R.id.myRewardsFragment);
-        });
-
-        view.findViewById(R.id.layoutAboutUs).setOnClickListener(v -> {
-            Navigation.findNavController(v).navigate(R.id.aboutUsFragment);
-        });
-
         view.findViewById(R.id.layoutLogout).setOnClickListener(v -> {
             showLogoutConfirmationDialog();
         });
