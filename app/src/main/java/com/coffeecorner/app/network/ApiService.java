@@ -156,6 +156,7 @@ public interface ApiService {
          */
         @GET("products/categories")
         Call<ApiResponse<List<String>>> getCategories();
+
         @POST("orders")
         Call<ApiResponse<Order>> createOrder(
                         @Body Map<String, Object> orderData);
@@ -189,6 +190,24 @@ public interface ApiService {
         @PUT("orders/{orderId}/cancel")
         Call<ApiResponse<Void>> cancelOrder( // Assuming Void or a simple success message for cancel
                         @Path("orderId") String orderId);
+
+        /**
+         * Get user's order history
+         *
+         * @param userId User ID
+         * @return List of orders
+         */
+        @GET("orders/history")
+        Call<ApiResponse<List<Order>>> getOrderHistory(@Query("userId") String userId);
+
+        /**
+         * Track order status
+         *
+         * @param orderId Order ID
+         * @return Order status string
+         */
+        @GET("orders/{orderId}/track")
+        Call<ApiResponse<String>> trackOrder(@Path("orderId") String orderId);
 
         // Cart API endpoints
 
@@ -255,5 +274,30 @@ public interface ApiService {
         @DELETE("cart/{userId}")
         Call<ApiResponse<Void>> clearCart(@Path("userId") String userId);
 
+        /**
+         * Update quantity of a specific item in the cart (alternative endpoint)
+         *
+         * @param userId   User ID
+         * @param itemId   Cart Item ID
+         * @param quantity New quantity
+         * @return API response (e.g., success or error)
+         */
+        @FormUrlEncoded
+        @PUT("cart/{userId}/items/{itemId}/quantity") // Or a similar distinct endpoint
+        Call<ApiResponse<Void>> updateCartItemQuantity(
+                        @Path("userId") String userId,
+                        @Path("itemId") String itemId,
+                        @Field("quantity") int quantity);
+
         Call<User> loginUser(User loginRequest);
+
+        /**
+         * Update user profile (without specifying userId in path, assuming it's
+         * inferred from token)
+         *
+         * @param user Updated user data
+         * @return User data response
+         */
+        @PUT("users/profile")
+        Call<ApiResponse<User>> updateUserProfile(User user);
 }

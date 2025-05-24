@@ -17,7 +17,7 @@ import androidx.viewpager2.widget.ViewPager2;
 import com.coffeecorner.app.R;
 import com.coffeecorner.app.adapters.OrderHistoryPagerAdapter;
 import com.coffeecorner.app.models.Order;
-import com.coffeecorner.app.viewmodel.OrderViewModel;
+import com.coffeecorner.app.viewmodels.OrderViewModel;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 

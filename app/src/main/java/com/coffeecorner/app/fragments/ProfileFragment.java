@@ -22,7 +22,7 @@ import com.bumptech.glide.request.RequestOptions;
 import com.coffeecorner.app.R;
 import com.coffeecorner.app.activities.LoginActivity;
 import com.coffeecorner.app.models.User;
-import com.coffeecorner.app.viewmodel.UserViewModel;
+import com.coffeecorner.app.viewmodels.UserViewModel;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 public class ProfileFragment extends Fragment {

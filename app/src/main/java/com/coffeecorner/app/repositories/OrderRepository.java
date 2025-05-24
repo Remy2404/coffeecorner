@@ -115,6 +115,55 @@ public class OrderRepository {
     }
 
     /**
+     * Place an order
+     * 
+     * @param paymentMethod   Payment method
+     * @param deliveryAddress Delivery address
+     * @param additionalInfo  Additional order information
+     * @param callback        Callback to handle result
+     */
+    public void placeOrder(String paymentMethod, String deliveryAddress, Map<String, Object> additionalInfo,
+            @NonNull OrderCallback callback) {
+        String userId = preferencesHelper.getUserId();
+        if (userId == null || userId.isEmpty()) {
+            callback.onError("User not logged in");
+            return;
+        }
+
+        // Create order request with provided info
+        Map<String, Object> orderData = new java.util.HashMap<>();
+        orderData.put("userId", userId);
+        orderData.put("paymentMethod", paymentMethod);
+        orderData.put("deliveryAddress", deliveryAddress);
+
+        // Add any additional info if provided
+        if (additionalInfo != null) {
+            orderData.putAll(additionalInfo);
+        }
+
+        apiService.createOrder(orderData).enqueue(new Callback<ApiResponse<Order>>() {
+            @Override
+            public void onResponse(@NonNull Call<ApiResponse<Order>> call,
+                    @NonNull Response<ApiResponse<Order>> response) {
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                    callback.onOrderCreated(response.body().getData());
+                } else {
+                    String errorMsg = "Failed to place order";
+                    if (response.body() != null && response.body().getMessage() != null) {
+                        errorMsg = response.body().getMessage();
+                    }
+                    callback.onError(errorMsg);
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<ApiResponse<Order>> call, @NonNull Throwable t) {
+                callback.onError("Network error: " + t.getMessage());
+            }
+        });
+    }
+
+    /**
      * Get orders for the current user
      *
      * @param callback Callback to handle result
@@ -150,21 +199,59 @@ public class OrderRepository {
     }
 
     /**
-     * Get an order by ID
-     *
-     * @param orderId  Order ID
-     * @param callback Callback to handle result
+     * Get user's order history
+     * 
+     * @param callback Callback to notify completion
+     * @return LiveData containing list of orders
      */
-    public void getOrderById(String orderId, @NonNull OrderCallback callback) {
-        // String userId = preferencesHelper.getUserId(); // May not be needed if
-        // endpoint is just /orders/{orderId}
-        // if (userId == null || userId.isEmpty()) {
-        // callback.onError("User not logged in");
-        // return;
-        // }
+    public LiveData<List<Order>> getOrderHistory(@NonNull OrderHistoryCallback callback) {
+        MutableLiveData<List<Order>> orderHistoryLiveData = new MutableLiveData<>();
+        String userId = preferencesHelper.getUserId();
+
+        if (userId == null || userId.isEmpty()) {
+            callback.onError("User not logged in");
+            orderHistoryLiveData.setValue(new java.util.ArrayList<>());
+            return orderHistoryLiveData;
+        }
+
+        apiService.getOrderHistory(userId).enqueue(new Callback<ApiResponse<List<Order>>>() {
+            @Override
+            public void onResponse(@NonNull Call<ApiResponse<List<Order>>> call,
+                    @NonNull Response<ApiResponse<List<Order>>> response) {
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                    orderHistoryLiveData.setValue(response.body().getData());
+                } else {
+                    orderHistoryLiveData.setValue(new java.util.ArrayList<>());
+                    Log.e("OrderRepository", "Failed to get order history: " +
+                            (response.body() != null ? response.body().getMessage() : "Unknown error"));
+                }
+                callback.onComplete();
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<ApiResponse<List<Order>>> call, @NonNull Throwable t) {
+                orderHistoryLiveData.setValue(new java.util.ArrayList<>());
+                Log.e("OrderRepository", "Network error getting order history", t);
+                callback.onError("Network error: " + t.getMessage());
+            }
+        });
+
+        return orderHistoryLiveData;
+    }
+
+    /**
+     * Get order details by ID
+     * 
+     * @param orderId  Order ID
+     * @param callback Callback to notify completion
+     * @return LiveData containing order details
+     */
+    public LiveData<Order> getOrderById(String orderId, @NonNull OrderDetailCallback callback) {
+        MutableLiveData<Order> orderLiveData = new MutableLiveData<>();
+
         if (orderId == null || orderId.isEmpty()) {
-            callback.onError("Order ID cannot be null or empty.");
-            return;
+            callback.onError("Invalid order ID");
+            return orderLiveData;
         }
 
         apiService.getOrderById(orderId).enqueue(new Callback<ApiResponse<Order>>() {
@@ -172,70 +259,82 @@ public class OrderRepository {
             public void onResponse(@NonNull Call<ApiResponse<Order>> call,
                     @NonNull Response<ApiResponse<Order>> response) {
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                    callback.onOrderLoaded(response.body().getData());
+                    orderLiveData.setValue(response.body().getData());
                 } else {
-                    String errorMsg = "Failed to load order details.";
-                    if (response.body() != null && response.body().getMessage() != null) {
-                        errorMsg = response.body().getMessage();
-                    }
-                    Log.e("OrderRepository", "Get order by ID failed: " + response.code() + " - " + errorMsg);
-                    callback.onError(errorMsg);
+                    Log.e("OrderRepository", "Failed to get order details: " +
+                            (response.body() != null ? response.body().getMessage() : "Unknown error"));
                 }
+                callback.onComplete();
             }
 
             @Override
             public void onFailure(@NonNull Call<ApiResponse<Order>> call, @NonNull Throwable t) {
-                Log.e("OrderRepository", "Get order by ID network error", t);
-                callback.onError("Network error. Please try again. " + t.getMessage());
+                Log.e("OrderRepository", "Network error getting order details", t);
+                callback.onError("Network error: " + t.getMessage());
             }
         });
+
+        return orderLiveData;
+    }
+
+    /**
+     * Track order status
+     * 
+     * @param orderId  Order ID
+     * @param callback Callback to notify completion
+     * @return LiveData containing order status
+     */
+    public LiveData<String> trackOrderStatus(String orderId, @NonNull OrderTrackingCallback callback) {
+        MutableLiveData<String> statusLiveData = new MutableLiveData<>();
+
+        if (orderId == null || orderId.isEmpty()) {
+            callback.onError("Invalid order ID");
+            return statusLiveData;
+        }
+
+        apiService.trackOrder(orderId).enqueue(new Callback<ApiResponse<String>>() {
+            @Override
+            public void onResponse(@NonNull Call<ApiResponse<String>> call,
+                    @NonNull Response<ApiResponse<String>> response) {
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                    statusLiveData.setValue(response.body().getData());
+                } else {
+                    Log.e("OrderRepository", "Failed to track order: " +
+                            (response.body() != null ? response.body().getMessage() : "Unknown error"));
+                    statusLiveData.setValue("Unknown");
+                }
+                callback.onComplete();
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<ApiResponse<String>> call, @NonNull Throwable t) {
+                Log.e("OrderRepository", "Network error tracking order", t);
+                statusLiveData.setValue("Network Error");
+                callback.onError("Network error: " + t.getMessage());
+            }
+        });
+
+        return statusLiveData;
     }
 
     /**
      * Cancel an order
-     *
+     * 
      * @param orderId  Order ID
      * @param callback Callback to handle result
      */
-    public void cancelOrder(String orderId, @NonNull OrderCallback callback) {
-        String userId = preferencesHelper.getUserId();
-        if (userId == null || userId.isEmpty()) {
-            callback.onError("User not logged in. Cannot cancel order.");
-            return;
-        }
+    public void cancelOrder(String orderId, @NonNull OrderOperationCallback callback) {
         if (orderId == null || orderId.isEmpty()) {
-            callback.onError("Order ID cannot be null or empty.");
+            callback.onError("Invalid order ID");
             return;
         }
-
-        // The API might handle authorization and whether an order can be cancelled.
-        // If specific client-side checks are still needed (e.g. based on order status
-        // before API call),
-        // you might fetch the order first, check, then call cancel.
-        // However, a direct cancel call is often preferred for atomicity.
 
         apiService.cancelOrder(orderId).enqueue(new Callback<ApiResponse<Void>>() {
             @Override
             public void onResponse(@NonNull Call<ApiResponse<Void>> call,
                     @NonNull Response<ApiResponse<Void>> response) {
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                    // Assuming successful response with ApiResponse<Void> means cancellation was successful
-                    // The APIResponse<Void> body might contain a success message in the message field.
-                    String successMessage = (response.body().getMessage() != null && !response.body().getMessage().isEmpty()) ? response.body().getMessage() : "Order cancelled successfully.";
-                    // Since this callback is OrderCallback, we might need to rethink how cancellation success
-                    // is communicated, or if a different callback type is needed for cancel.
-                    // For now, we'll call onError with a success message to indicate completion,
-                    // which is a workaround. A better approach would be a dedicated CancelOrderCallback.
-                    // Let's call onOrderLoaded with null or a dummy order if the callback structure must be used.
-                    // A cleaner way is to modify OrderCallback or use a new one.
-                    // Given the existing OrderCallback structure with onError, we'll use onError for simplicity
-                    // but acknowledge this is not ideal.
-                    // Better: call onOrderLoaded with a marker or null, or have a separate success method.
-                    // Let's add a check for success and then call onError with a success message as a temporary fix.
-                    // Ideally, introduce OrderCancellationCallback with onSuccess() and onError().
-                    // For now, let's call onError with the success message.
-                    // *** Correction: Let's call onOrderLoaded with null and onError on failure as per OrderCallback structure ***
-                    callback.onOrderLoaded(null); // Indicate success with null data
+                    callback.onSuccess("Order cancelled successfully");
                 } else {
                     String errorMsg = "Failed to cancel order.";
                     if (response.body() != null && response.body().getMessage() != null) {
@@ -256,23 +355,49 @@ public class OrderRepository {
         });
     }
 
-    /**
-     * Interface for order creation and single order load callbacks
-     */
+    // OrderCallback interface for createOrder, placeOrder, cancelOrder, etc.
     public interface OrderCallback {
-        void onOrderCreated(Order order);
+        void onOrderCreated(Order order); // For order creation
 
-        void onOrderLoaded(Order order);
+        void onOrderLoaded(Order order); // For loading/tracking order
 
-        void onError(String errorMessage);
+        void onError(String error);
     }
 
-    /**
-     * Interface for multiple orders load callbacks
-     */
+    // OrdersCallback for loading multiple orders
     public interface OrdersCallback {
         void onOrdersLoaded(List<Order> orders);
 
-        void onError(String errorMessage);
+        void onError(String error);
+    }
+
+    // OrderHistoryCallback for order history
+    public interface OrderHistoryCallback {
+        void onComplete();
+
+        void onError(String error);
+    }
+
+    // OrderDetailCallback for order details
+    public interface OrderDetailCallback {
+        void onComplete();
+
+        void onError(String error);
+    }
+
+    // OrderTrackingCallback for tracking order status
+    public interface OrderTrackingCallback {
+        void onComplete();
+
+        void onError(String error);
+    }
+
+    /**
+     * Interface for order operations (cancel, etc.) callback
+     */
+    public interface OrderOperationCallback {
+        void onSuccess(String message);
+
+        void onError(String message);
     }
 }

@@ -422,78 +422,11 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/textInputLayoutComments" />
 
-            <!-- Photo Upload Section -->
-            <TextView
-                android:id="@+id/tvPhotoTitle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                android:text="Upload Photos (Optional)"
-                android:textColor="@color/text_primary"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/tvCharacterCount" />
-
-            <TextView
-                android:id="@+id/tvPhotoSubtitle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:text="Share photos of your experience"
-                android:textColor="@color/text_secondary"
-                android:textSize="14sp"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/tvPhotoTitle" />
-
-            <LinearLayout
-                android:id="@+id/layoutPhotos"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:orientation="horizontal"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/tvPhotoSubtitle">
-
-                <FrameLayout
-                    android:id="@+id/btnAddPhoto"
-                    android:layout_width="80dp"
-                    android:layout_height="80dp"
-                    android:layout_margin="4dp"
-                    android:background="@drawable/dashed_border_background">
-
-                    <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:layout_gravity="center"
-                        android:contentDescription="Add photo"
-                        android:src="@drawable/ic_add_photo"
-                        app:tint="@color/color_02" />
-                </FrameLayout>
-
-                <!-- Photo preview slots will be added dynamically -->
-                <Space
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1" />
-            </LinearLayout>
-
-            <TextView
-                android:id="@+id/tvPhotoInfo"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:text="You can upload up to 3 photos (max 5MB each)"
-                android:textColor="@color/text_secondary"
-                android:textSize="12sp"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/layoutPhotos" />
 
             <Space
                 android:layout_width="match_parent"
                 android:layout_height="80dp"
-                app:layout_constraintTop_toBottomOf="@id/tvPhotoInfo" />
+                app:layout_constraintTop_toBottomOf="@id/tvCharacterCount" />
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.core.widget.NestedScrollView>
 

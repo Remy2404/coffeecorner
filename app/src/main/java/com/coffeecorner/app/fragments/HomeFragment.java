@@ -12,6 +12,7 @@ import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -20,7 +21,9 @@ import com.google.android.material.tabs.TabLayout;
 
 import com.coffeecorner.app.R;
 import com.coffeecorner.app.adapters.ProductAdapter;
-import com.coffeecorner.app.viewmodel.ProductViewModel;
+import com.coffeecorner.app.utils.GridSpacingItemDecoration;
+import com.coffeecorner.app.viewmodels.CartViewModel;
+import com.coffeecorner.app.viewmodels.ProductViewModel;
 
 import java.util.ArrayList;
 
@@ -35,6 +38,7 @@ public class HomeFragment extends Fragment {
     private RecyclerView rvProducts;
     private ProductAdapter productAdapter;
     private ProductViewModel productViewModel;
+    private CartViewModel cartViewModel; // Add CartViewModel field
 
     public HomeFragment() {
         // Required empty public constructor
@@ -45,8 +49,11 @@ public class HomeFragment extends Fragment {
             Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_home, container, false);
 
-        // Initialize ViewModel
+        // Initialize ViewModels
         productViewModel = new ViewModelProvider(requireActivity()).get(ProductViewModel.class);
+        cartViewModel = new ViewModelProvider(requireActivity(),
+                ViewModelProvider.AndroidViewModelFactory.getInstance(requireActivity().getApplication()))
+                .get(CartViewModel.class);
 
         initializeViews(view);
         setupListeners();
@@ -111,8 +118,32 @@ public class HomeFragment extends Fragment {
 
     private void setupRecyclerView() {
         productAdapter = new ProductAdapter(requireContext(), new ArrayList<>());
-        rvProducts.setLayoutManager(new GridLayoutManager(requireContext(), 2));
+        
+        // Set up grid layout with 2 columns and proper spacing
+        GridLayoutManager layoutManager = new GridLayoutManager(requireContext(), 2);
+        rvProducts.setLayoutManager(layoutManager);
+        
+        // Set up click listeners
+        productAdapter.setOnProductClickListener((product, position) -> {
+            // Navigate to product details
+            Bundle args = new Bundle();
+            args.putString("productId", product.getId());
+            Navigation.findNavController(requireView()).navigate(R.id.action_homeFragment_to_productDetailsFragment, args);
+        });
+
+        productAdapter.setOnAddToCartClickListener((product, position) -> {
+            // Add to cart using CartViewModel
+            cartViewModel.addToCart(product, 1);
+            Toast.makeText(requireContext(), product.getName() + " added to cart", Toast.LENGTH_SHORT).show();
+            // Navigate to cart after adding item
+            Navigation.findNavController(requireView()).navigate(R.id.action_to_cart);
+        });
+
         rvProducts.setAdapter(productAdapter);
+        
+        // Add item decoration for spacing if needed
+        int spacing = getResources().getDimensionPixelSize(R.dimen.grid_spacing);
+        rvProducts.addItemDecoration(new GridSpacingItemDecoration(2, spacing, true));
     }
 
     private void setupObservers() {

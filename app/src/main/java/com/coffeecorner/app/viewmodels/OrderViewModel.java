@@ -89,22 +89,18 @@ public class OrderViewModel extends AndroidViewModel {
                 isLoading.setValue(false);
                 if (orders != null) {
                     Log.d(TAG, "loadOrders onOrdersLoaded: Received " + orders.size() + " orders.");
-                    // Filter orders by status
                     List<Order> active = new ArrayList<>();
                     List<Order> completed = new ArrayList<>();
                     List<Order> cancelled = new ArrayList<>();
-
                     for (Order order : orders) {
                         if (order.getStatus() == null) {
                             Log.w(TAG, "Order with ID " + order.getId() + " has null status. Skipping.");
                             continue;
                         }
-                        // Assuming Order status constants match backend/API response
                         switch (order.getStatus()) {
                             case Order.STATUS_PENDING:
                             case Order.STATUS_CONFIRMED:
                             case Order.STATUS_PREPARING:
-                            // Add other active statuses if applicable
                             case Order.STATUS_DELIVERING:
                                 active.add(order);
                                 break;
@@ -113,25 +109,23 @@ public class OrderViewModel extends AndroidViewModel {
                                 completed.add(order);
                                 break;
                             case Order.STATUS_CANCELLED:
-                            // Add other cancelled/refunded statuses if applicable
                             case Order.STATUS_REFUNDED:
                                 cancelled.add(order);
                                 break;
                             default:
-                                Log.w(TAG, "Order with ID " + order.getId() + " has unhandled status: " + order.getStatus() + ". Adding to active list for now.");
-                                active.add(order); // Default to active if status is unknown
+                                Log.w(TAG, "Order with ID " + order.getId() + " has unhandled status: "
+                                        + order.getStatus() + ". Adding to active list for now.");
+                                active.add(order);
                                 break;
                         }
                     }
-
                     activeOrders.setValue(active);
                     completedOrders.setValue(completed);
                     cancelledOrders.setValue(cancelled);
-                    Log.d(TAG, "loadOrders: Filtered into Active=" + active.size() + ", Completed="
-                            + completed.size() + ", Cancelled=" + cancelled.size());
+                    Log.d(TAG, "loadOrders: Filtered into Active=" + active.size() + ", Completed=" + completed.size()
+                            + ", Cancelled=" + cancelled.size());
                 } else {
                     Log.e(TAG, "loadOrders onOrdersLoaded: Received null orders list.");
-                    // Depending on desired behavior, you might clear existing lists or show an error
                     activeOrders.setValue(new ArrayList<>());
                     completedOrders.setValue(new ArrayList<>());
                     cancelledOrders.setValue(new ArrayList<>());
@@ -208,22 +202,11 @@ public class OrderViewModel extends AndroidViewModel {
         isLoading.setValue(true);
         Log.d(TAG, "trackOrder: Fetching details for orderId: " + orderId);
 
-        orderRepository.getOrderById(orderId, new OrderRepository.OrderCallback() {
+        orderRepository.getOrderById(orderId, new OrderRepository.OrderDetailCallback() {
             @Override
-            public void onOrderLoaded(Order order) {
+            public void onComplete() {
                 isLoading.setValue(false);
-                if (order != null) {
-                    currentOrder.setValue(order);
-                    Log.d(TAG, "trackOrder onOrderLoaded: Details found for orderId: " + orderId);
-                } else {
-                    errorMessage.setValue("Order not found or failed to load details.");
-                    Log.e(TAG, "trackOrder onOrderLoaded: Order is null for orderId: " + orderId);
-                }
-            }
-
-            @Override
-            public void onOrderCreated(Order order) {
-                // Not used for tracking
+                // Optionally update UI or LiveData here
             }
 
             @Override
@@ -244,28 +227,15 @@ public class OrderViewModel extends AndroidViewModel {
         isLoading.setValue(true);
         Log.d(TAG, "cancelOrder: Attempting to cancel orderId: " + orderId);
 
-        orderRepository.cancelOrder(orderId, new OrderRepository.OrderCallback() {
+        orderRepository.cancelOrder(orderId, new OrderRepository.OrderOperationCallback() {
             @Override
-            public void onOrderLoaded(Order order) {
+            public void onSuccess(String message) {
                 isLoading.setValue(false);
-                // This callback method is primarily for loading/creation success with data.
-                // For cancellation success (ApiResponse<Void>), we handle it in onError as a workaround
-                // due to the OrderCallback interface not having a specific onSuccess for void.
-                // A better approach is to define a new callback interface like CancelOrderCallback.
-                // For now, assuming a successful cancel call means the order is cancelled, we can just
-                // refresh the order list.
-                Log.d(TAG, "cancelOrder onOrderLoaded: Received null order, assuming success and refreshing list.");
-                successMessage.setValue("Order cancelled successfully.");
-                loadOrders(); // Refresh order lists
-                // Clear current order if it was the one cancelled
+                successMessage.setValue(message != null ? message : "Order cancelled successfully.");
+                loadOrders();
                 if (currentOrder.getValue() != null && currentOrder.getValue().getId().equals(orderId)) {
                     currentOrder.setValue(null);
                 }
-            }
-
-            @Override
-            public void onOrderCreated(Order order) {
-                // Not used for cancellation
             }
 
             @Override

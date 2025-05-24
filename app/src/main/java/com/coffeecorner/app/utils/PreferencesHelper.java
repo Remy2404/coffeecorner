@@ -336,4 +336,18 @@ public class PreferencesHelper {
         editor.putString(KEY_USER_ID, id);
         editor.apply();
     }
+
+    public void clearUserData() {
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.remove(KEY_USER_ID);
+        editor.remove(KEY_USER_NAME);
+        editor.remove(KEY_USER_EMAIL);
+        editor.remove(KEY_USER_PHONE);
+        editor.remove(KEY_USER_PROFILE_PIC);
+        editor.remove(KEY_USER_POINTS);
+        editor.remove(KEY_USER_TIER);
+        editor.remove(KEY_IS_LOGGED_IN);
+        editor.remove(KEY_AUTH_TOKEN);
+        editor.apply();
+    }
 }
