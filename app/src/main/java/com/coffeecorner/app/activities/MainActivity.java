@@ -86,4 +86,23 @@ public class MainActivity extends AppCompatActivity {
     public void showToast(String message) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
+
+    /**
+     * Update cart badge on the floating action button
+     * @param itemCount Number of items in cart
+     */
+    public void updateCartBadge(int itemCount) {
+        // For now, we'll use a simple approach by updating the FAB's content description
+        // In a more advanced implementation, you could use Material Design Badge API
+        if (fabCart != null) {
+            if (itemCount > 0) {
+                fabCart.setContentDescription("Cart (" + itemCount + " items)");
+                // You could also change the FAB appearance here
+                // For example, change color or add an overlay
+            } else {
+                fabCart.setContentDescription("Cart (empty)");
+            }
+        }
+        Log.d(TAG, "Cart badge updated: " + itemCount + " items");
+    }
 }
