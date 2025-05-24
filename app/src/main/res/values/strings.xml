@@ -214,4 +214,6 @@
     <string name="chipGroupExtras">Extras</string>
     <string name="ic_favorite_filled">Favorite filled</string>
     <string name="ic_favorite_outline">Favorite outline</string>
+    <string name="theme_switch">Theme Switch</string>
+    <string name="switch_theme">Switch Theme</string>
 </resources>

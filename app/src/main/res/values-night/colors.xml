@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Base colors for dark theme -->
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="red">#eb2f06</color>
+
+    <!-- Coffee shop dark theme colors -->
+    <color name="color_01">#121C2B</color> <!-- Very dark blue for status bar -->
+    <color name="color_02">#1A467D</color> <!-- Dark blue for primary elements -->
+    <color name="color_03">#057DCD</color> <!-- Medium blue for accents -->
+    <color name="color_04">#23272F</color> <!-- Dark gray/blue for surfaces -->
+    <color name="color_05">#23272F</color>
+    <color name="color_06">#23272F</color>
+    <color name="color_07">#181A20</color> <!-- Near black for backgrounds -->
+    <color name="color_08">#23272F</color>
+    <color name="color_09">#FFFFFF</color> <!-- White for text on dark -->
+
+    <!-- Semantic color mappings for dark theme -->
+    <color name="primary">#057DCD</color>
+    <color name="secondary">#43B0F1</color>
+    <color name="text_primary">#FFFFFF</color>
+    <color name="text_secondary">#B0B0B0</color>
+    <color name="background">#181A20</color>
+    <color name="surface">#23272F</color>
+    <color name="divider">#23272F</color>
+    <color name="brown">#B87333</color> <!-- Muted brown for dark mode -->
+
+    <!-- Notification colors (unchanged for dark) -->
+    <color name="unread_notification_bg">#23272F</color>
+    <color name="notification_order">#057DCD</color>
+    <color name="notification_promotion">#FF6B6B</color>
+    <color name="notification_reward">#FFA94D</color>
+    <color name="notification_news">#69DB7C</color>
+    <color name="notification_default">#ADB5BD</color>
+
+    <!-- Additional colors -->
+    <color name="rating_gold">#FFD700</color>
+
+    <!-- Sitting colors -->
+    <color name="secondary1">#FF03DAC5</color>
+    <color name="night_mode">#6124B1</color>
+    <color name="noti">#13B2C3</color>
+    <color name="p_acc">#E6A326</color>
+    <color name="sec">#D95F69</color>
+</resources>
