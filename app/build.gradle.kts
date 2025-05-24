@@ -104,14 +104,15 @@ dependencies {
     annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
     
     // Supabase - Temporarily disabled due to dependency conflicts
-    // implementation("io.github.jan-tennert.supabase:postgrest-kt:2.1.2")
-    // implementation("io.github.jan-tennert.supabase:storage-kt:2.1.2")
-    // implementation("io.github.jan-tennert.supabase:gotrue-kt:2.1.2")
+    implementation(platform("io.github.jan-tennert.supabase:bom:3.1.4"))
+    implementation("io.github.jan-tennert.supabase:postgrest-kt:3.1.4")
+    implementation ("io.github.jan-tennert.supabase:storage-kt:2.6.0")
+    implementation("io.github.jan-tennert.supabase:realtime-kt:3.1.4")
     
     // Ktor (required for Supabase) - Temporarily disabled
-    // implementation("io.ktor:ktor-client-android:2.3.11")
-    // implementation("io.ktor:ktor-client-content-negotiation:2.3.11")
-    // implementation("io.ktor:ktor-serialization-kotlinx-json:2.3.11")
+     implementation("io.ktor:ktor-client-android:2.3.11")
+     implementation("io.ktor:ktor-client-content-negotiation:2.3.11")
+     implementation("io.ktor:ktor-serialization-kotlinx-json:2.3.11")
     
     // Navigation Component
     implementation("androidx.navigation:navigation-fragment:2.9.0")
