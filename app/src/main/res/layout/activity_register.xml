@@ -221,7 +221,7 @@
                 android:layout_height="56dp"
                 android:layout_marginHorizontal="10dp"
                 android:layout_marginTop="40dp"
-                android:backgroundTint="@color/color_01"
+                android:backgroundTint="@color/color_02"
                 android:text="@string/sign_up"
                 android:textAllCaps="false"
                 android:textColor="@color/white"

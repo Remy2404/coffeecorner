@@ -41,7 +41,7 @@
                     android:layout_weight="1"
                     android:text="About Us"
                     android:textAlignment="center"
-                    android:textColor="@color/text_primary"
+                    android:textColor="@color/color_02"
                     android:textSize="18sp"
                     android:textStyle="bold" />
 
@@ -102,7 +102,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Coffee Corner"
-                        android:textColor="@color/white"
+                        android:textColor="@color/color_02"
                         android:textSize="28sp"
                         android:textStyle="bold" />
 
@@ -111,7 +111,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Brewing Happiness Since 2010"
-                        android:textColor="@color/white"
+                        android:textColor="@color/color_03"
                         android:textSize="16sp" />
                 </LinearLayout>
             </FrameLayout>
@@ -141,7 +141,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Our Story"
-                        android:textColor="@color/text_primary"
+                        android:textColor="@color/color_03"
                         android:textSize="20sp"
                         android:textStyle="bold" />
 
@@ -182,7 +182,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Our Mission"
-                        android:textColor="@color/text_primary"
+                        android:textColor="@color/color_03"
                         android:textSize="20sp"
                         android:textStyle="bold" />
 
@@ -206,7 +206,7 @@
                 android:layout_marginStart="16dp"
                 android:layout_marginTop="24dp"
                 android:text="Our Values"
-                android:textColor="@color/text_primary"
+                android:textColor="@color/color_03"
                 android:textSize="20sp"
                 android:textStyle="bold"
                 app:layout_constraintStart_toStartOf="parent"
@@ -384,7 +384,7 @@
                 android:layout_marginStart="16dp"
                 android:layout_marginTop="24dp"
                 android:text="Our Locations"
-                android:textColor="@color/text_primary"
+                android:textColor="@color/color_03"
                 android:textSize="20sp"
                 android:textStyle="bold"
                 app:layout_constraintStart_toStartOf="parent"
@@ -433,7 +433,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Contact Us"
-                        android:textColor="@color/text_primary"
+                        android:textColor="@color/color_02"
                         android:textSize="20sp"
                         android:textStyle="bold" />
 
@@ -490,7 +490,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="16dp"
                         android:text="Follow Us"
-                        android:textColor="@color/text_primary"
+                        android:textColor="@color/color_02"
                         android:textSize="16sp"
                         android:textStyle="bold" />
 

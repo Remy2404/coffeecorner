@@ -104,7 +104,7 @@
             android:layout_width="match_parent"
             android:layout_height="56dp"
             android:layout_marginTop="48dp"
-            android:backgroundTint="@color/color_01"
+            android:backgroundTint="@color/color_02"
             android:text="@string/track_order"
             android:textAllCaps="false"
             android:textColor="@color/color_05"

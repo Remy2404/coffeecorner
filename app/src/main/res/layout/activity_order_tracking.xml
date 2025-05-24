@@ -42,7 +42,7 @@
                     android:layout_weight="1"
                     android:text="Track Your Order"
                     android:textAlignment="center"
-                    android:textColor="@color/text_primary"
+                    android:textColor="@color/color_01"
                     android:textSize="18sp"
                     android:textStyle="bold" />
 
@@ -95,7 +95,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
                         android:text="#CC-19052"
-                        android:textColor="@color/text_primary"
+                        android:textColor="@color/color_01"
                         android:textSize="18sp"
                         android:textStyle="bold" />
 
@@ -231,7 +231,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Order Status"
-                        android:textColor="@color/text_primary"
+                        android:textColor="@color/color_01"
                         android:textSize="16sp"
                         android:textStyle="bold" />
 
@@ -276,7 +276,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Order Confirmed"
-                                android:textColor="@color/text_primary"
+                                android:textColor="@color/color_01"
                                 android:textSize="16sp"
                                 android:textStyle="bold" />
 
@@ -340,7 +340,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Preparing"
-                                android:textColor="@color/text_primary"
+                                android:textColor="@color/color_01"
                                 android:textSize="16sp"
                                 android:textStyle="bold" />
 
@@ -490,7 +490,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Delivery Person"
-                        android:textColor="@color/text_primary"
+                        android:textColor="@color/color_01"
                         android:textSize="16sp"
                         android:textStyle="bold" />
 
@@ -521,7 +521,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="John Doe"
-                                android:textColor="@color/text_primary"
+                                android:textColor="@color/color_01"
                                 android:textSize="16sp"
                                 android:textStyle="bold" />
 
@@ -615,6 +615,6 @@
         android:text="Contact Support"
         android:textAllCaps="false"
         android:textSize="16sp"
-        app:backgroundTint="@color/color_02"
+        app:backgroundTint="@color/color_01"
         app:cornerRadius="8dp" />
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
