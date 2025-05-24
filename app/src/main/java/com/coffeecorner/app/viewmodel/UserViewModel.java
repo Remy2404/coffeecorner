@@ -86,4 +86,72 @@ public class UserViewModel extends ViewModel {
     public LiveData<ApiResponse<User>> getProfileUpdateResult() {
         return profileUpdateResult;
     }
+
+    /**
+     * Login a user
+     * 
+     * @param email    User email
+     * @param password User password
+     */
+    public void login(String email, String password) {
+        isLoading.setValue(true);
+        userRepository.login(email, password, new UserRepository.AuthCallback() {
+            @Override
+            public void onSuccess(User user) {
+                isLoading.postValue(false);
+                // Success will be handled through currentUser LiveData
+            }
+
+            @Override
+            public void onError(String errorMessage) {
+                isLoading.postValue(false);
+                errorMessageLiveData.postValue(errorMessage);
+            }
+        });
+    }
+
+    /**
+     * Register a new user
+     * 
+     * @param name           User's full name
+     * @param email          User's email address
+     * @param password       User's password
+     * @param recaptchaToken reCAPTCHA token (can be empty for now)
+     */
+    public void register(String name, String email, String password, String recaptchaToken) {
+        isLoading.setValue(true);
+        userRepository.register(name, email, password, recaptchaToken, new UserRepository.AuthCallback() {
+            @Override
+            public void onSuccess(User user) {
+                isLoading.postValue(false);
+                // Success will be handled through currentUser LiveData
+            }
+
+            @Override
+            public void onError(String errorMessage) {
+                isLoading.postValue(false);
+                errorMessageLiveData.postValue(errorMessage);
+            }
+        });
+    }
+
+    private final MutableLiveData<String> errorMessageLiveData = new MutableLiveData<>();
+
+    /**
+     * Get error message from operations
+     * 
+     * @return LiveData containing error message
+     */
+    public LiveData<String> getErrorMessage() {
+        return errorMessageLiveData;
+    }
+
+    /**
+     * Get current user information
+     * 
+     * @return LiveData containing user details
+     */
+    public LiveData<User> getCurrentUser() {
+        return userRepository.getCurrentUser();
+    }
 }

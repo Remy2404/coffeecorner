@@ -37,9 +37,14 @@ public class OrderViewModel extends ViewModel {
         isLoading.setValue(true);
         orderRepository.placeOrder(paymentMethod, deliveryAddress, additionalInfo, new OrderRepository.OrderCallback() {
             @Override
-            public void onSuccess(Order order) {
+            public void onOrderCreated(Order order) {
                 isLoading.postValue(false);
                 orderPlaceResult.postValue(new ApiResponse<>(true, "Order placed successfully", order));
+            }
+
+            @Override
+            public void onOrderLoaded(Order order) {
+                // Not used for placeOrder
             }
 
             @Override

@@ -113,12 +113,11 @@ public class ProductRepository {
      * @param productId Product ID to fetch
      * @param callback  Callback to handle result
      */
-    public void getProductDetails(String productId, @NonNull ProductCallback callback) {
+    public void getProductDetails(String productId, @NonNull ProductDetailCallback callback) {
         if (productId == null || productId.isEmpty()) {
-            callback.onError("Invalid product ID");
+            callback.onProductError("Invalid product ID");
             return;
         }
-
         apiService.getProductById(productId).enqueue(new Callback<ApiResponse<Product>>() {
             @Override
             public void onResponse(@NonNull Call<ApiResponse<Product>> call,
@@ -131,14 +130,14 @@ public class ProductRepository {
                         errorMsg = response.body().getMessage();
                     }
                     Log.e("ProductRepository", "Get product details failed: " + response.code() + " - " + errorMsg);
-                    callback.onError(errorMsg);
+                    callback.onProductError(errorMsg);
                 }
             }
 
             @Override
             public void onFailure(@NonNull Call<ApiResponse<Product>> call, @NonNull Throwable t) {
                 Log.e("ProductRepository", "Get product details network error", t);
-                callback.onError("Network error. Please try again. " + t.getMessage());
+                callback.onProductError("Network error. Please try again. " + t.getMessage());
             }
         });
     }
@@ -185,12 +184,11 @@ public class ProductRepository {
      * @param productId Product ID
      * @param callback  Callback to handle result
      */
-    public void getProductById(String productId, @NonNull ProductCallback callback) {
+    public void getProductById(String productId, @NonNull ProductDetailCallback callback) {
         if (productId == null || productId.isEmpty()) {
-            callback.onError("Product ID cannot be null or empty.");
+            callback.onProductError("Product ID cannot be null or empty.");
             return;
         }
-
         apiService.getProductDetails(productId).enqueue(new Callback<ApiResponse<Product>>() {
             @Override
             public void onResponse(@NonNull Call<ApiResponse<Product>> call,
@@ -203,14 +201,14 @@ public class ProductRepository {
                         errorMsg = response.body().getMessage();
                     }
                     Log.e("ProductRepository", "Get product by ID failed: " + response.code() + " - " + errorMsg);
-                    callback.onError(errorMsg);
+                    callback.onProductError(errorMsg);
                 }
             }
 
             @Override
             public void onFailure(@NonNull Call<ApiResponse<Product>> call, @NonNull Throwable t) {
                 Log.e("ProductRepository", "Get product by ID network error", t);
-                callback.onError("Network error. Please try again. " + t.getMessage());
+                callback.onProductError("Network error. Please try again. " + t.getMessage());
             }
         });
     }
@@ -279,5 +277,14 @@ public class ProductRepository {
         void onCategoriesLoaded(List<String> categories);
 
         void onError(String errorMessage);
+    }
+
+    /**
+     * Interface for product detail callback
+     */
+    public interface ProductDetailCallback {
+        void onProductLoaded(Product product);
+
+        void onProductError(String errorMessage);
     }
 }

@@ -182,7 +182,7 @@ public class CartViewModel extends AndroidViewModel {
     public void clearCart() {
         isLoading.setValue(true);
         Log.d(TAG, "clearCart: Requesting to clear cart.");
-        cartRepository.clearCart(new CartRepository.CartModificationCallback() {
+        cartRepository.clearCart(new CartRepository.CartOperationCallback() {
             @Override
             public void onSuccess(String message) {
                 cartItems.setValue(new ArrayList<>()); // Clear local list

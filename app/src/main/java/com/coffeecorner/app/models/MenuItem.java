@@ -43,20 +43,21 @@ public class MenuItem {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         MenuItem menuItem = (MenuItem) o;
         return Double.compare(menuItem.price, price) == 0 &&
-               id.equals(menuItem.id) &&
-               name.equals(menuItem.name) &&
-               description.equals(menuItem.description) &&
-               imageUrl.equals(menuItem.imageUrl) &&
-               category.equals(menuItem.category);
+                id.equals(menuItem.id) &&
+                name.equals(menuItem.name) &&
+                description.equals(menuItem.description) &&
+                imageUrl.equals(menuItem.imageUrl) &&
+                category.equals(menuItem.category);
     }
 
     @Override
     public int hashCode() {
-        // Simple hash code implementation, can be improved
         int result = id.hashCode();
         result = 31 * result + name.hashCode();
         result = 31 * result + description.hashCode();
@@ -65,6 +66,4 @@ public class MenuItem {
         result = 31 * result + category.hashCode();
         return result;
     }
-
-    // TODO: Implement equals() and hashCode() for DiffUtil in Adapter
-} 
+}

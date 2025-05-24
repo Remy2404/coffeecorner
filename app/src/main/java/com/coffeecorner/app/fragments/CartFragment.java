@@ -2,11 +2,13 @@ package com.coffeecorner.app.fragments;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -20,9 +22,11 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.coffeecorner.app.R;
 import com.coffeecorner.app.activities.CheckoutActivity;
+import com.coffeecorner.app.activities.MainActivity;
 import com.coffeecorner.app.adapters.CartAdapter;
 import com.coffeecorner.app.models.CartItem;
-import com.coffeecorner.app.viewmodel.CartViewModel;
+import com.coffeecorner.app.utils.PreferencesHelper;
+import com.coffeecorner.app.viewmodels.CartViewModel;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.text.NumberFormat;
@@ -36,6 +40,7 @@ public class CartFragment extends Fragment implements CartAdapter.CartItemListen
     private TextView tvSubtotal, tvTax, tvDeliveryFee, tvDiscount, tvTotal;
     private Button btnCheckout, btnBrowseMenu;
     private LinearLayout emptyCartView;
+    private ProgressBar progressBar;
     private CartAdapter cartAdapter;
     private List<CartItem> cartItems = new ArrayList<>();
     private NumberFormat currencyFormatter = NumberFormat.getCurrencyInstance(Locale.US);
@@ -57,9 +62,7 @@ public class CartFragment extends Fragment implements CartAdapter.CartItemListen
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-
-        // Initialize views
+        super.onViewCreated(view, savedInstanceState); // Initialize views
         recyclerCartItems = view.findViewById(R.id.recyclerCartItems);
         tvSubtotal = view.findViewById(R.id.tvSubtotal);
         tvTax = view.findViewById(R.id.tvTax);
@@ -69,12 +72,14 @@ public class CartFragment extends Fragment implements CartAdapter.CartItemListen
         btnCheckout = view.findViewById(R.id.btnCheckout);
         btnBrowseMenu = view.findViewById(R.id.btnBrowseMenu);
         emptyCartView = view.findViewById(R.id.emptyCartView);
+        progressBar = view.findViewById(R.id.progressBar);
 
         // Set up RecyclerView
-        recyclerCartItems.setLayoutManager(new LinearLayoutManager(requireContext()));
-
-        // Initialize ViewModel
+        recyclerCartItems.setLayoutManager(new LinearLayoutManager(requireContext())); // Initialize ViewModel
         cartViewModel = new ViewModelProvider(requireActivity()).get(CartViewModel.class);
+
+        // Observe ViewModel
+        observeViewModel();
 
         // Load cart items
         loadCartItems();
@@ -95,17 +100,13 @@ public class CartFragment extends Fragment implements CartAdapter.CartItemListen
             intent.putExtra("total", calculateTotal());
             startActivity(intent);
         });
-
         btnBrowseMenu.setOnClickListener(v -> {
-            // Navigate to menu
-            if (getActivity() != null) {
-                // Navigate to the menu tab in the main activity
-                // This will depend on your specific navigation setup
-                // For example, if using a bottom navigation view:
-                // ((MainActivity) getActivity()).navigateToMenuTab();
-
-                // Or using navigation component:
+            // Navigate to menu using navigation component
+            try {
                 Navigation.findNavController(view).navigate(R.id.action_to_menu);
+            } catch (Exception e) {
+                Log.e("CartFragment", "Navigation error: " + e.getMessage());
+                Toast.makeText(requireContext(), "Navigation error", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -119,16 +120,28 @@ public class CartFragment extends Fragment implements CartAdapter.CartItemListen
     private void loadCartItems() {
         // In a real app, get cart items from a CartManager or repository
         cartViewModel.getCartItems().observe(getViewLifecycleOwner(), items -> {
+            if (items == null) { // Add null check for items
+                items = new ArrayList<>();
+            }
             cartItems = items;
 
             if (cartItems.isEmpty()) {
                 showEmptyCartView();
+                // Ensure adapter is not set with empty or null list if it was previously
+                // initialized
+                if (cartAdapter != null) {
+                    cartAdapter.updateCartItems(new ArrayList<>()); // Clear adapter
+                }
                 return;
             }
 
-            // Set up adapter
-            cartAdapter = new CartAdapter(requireContext(), cartItems, this);
-            recyclerCartItems.setAdapter(cartAdapter);
+            // Set up adapter or update existing adapter
+            if (cartAdapter == null) {
+                cartAdapter = new CartAdapter(requireContext(), cartItems, this);
+                recyclerCartItems.setAdapter(cartAdapter);
+            } else {
+                cartAdapter.updateCartItems(cartItems);
+            }
 
             // Update price summary
             updatePriceSummary();
@@ -136,7 +149,9 @@ public class CartFragment extends Fragment implements CartAdapter.CartItemListen
     }
 
     private void updatePriceSummary() {
-        cartViewModel.getCartTotal().observe(getViewLifecycleOwner(), subtotal -> {
+        cartViewModel.getCartTotal().observe(getViewLifecycleOwner(), subtotal -> { // Use getCartTotal since
+                                                                                    // getCartSubtotal doesn't exist
+                                                                                    // getCartSubtotal
             double tax = subtotal * TAX_RATE;
             double discount = calculateDiscount();
             double total = subtotal + tax + DELIVERY_FEE - discount;
@@ -150,7 +165,8 @@ public class CartFragment extends Fragment implements CartAdapter.CartItemListen
     }
 
     private double calculateSubtotal() {
-        Double subtotal = cartViewModel.getCartTotal().getValue();
+        Double subtotal = cartViewModel.getCartTotal().getValue(); // Use getCartTotal since getCartSubtotal doesn't
+                                                                   // exist
         return subtotal != null ? subtotal : 0.0;
     }
 
@@ -159,9 +175,33 @@ public class CartFragment extends Fragment implements CartAdapter.CartItemListen
     }
 
     private double calculateDiscount() {
-        // In a real app, implement discount logic here
-        // For example, apply promo codes, loyalty discounts, etc.
-        return 0;
+        double discount = 0;
+
+        // Apply loyalty points discount if available
+        PreferencesHelper preferencesHelper = new PreferencesHelper(requireContext());
+        int loyaltyPoints = preferencesHelper.getLoyaltyPoints();
+        if (loyaltyPoints >= 100) {
+            // 100 points = $5 discount
+            discount += (loyaltyPoints / 100) * 5.0;
+        }
+
+        // Apply promo code discount if available
+        String promoCode = preferencesHelper.getPromoCode();
+        if (promoCode != null && !promoCode.isEmpty()) {
+            switch (promoCode.toUpperCase()) {
+                case "WELCOME10":
+                    discount += calculateSubtotal() * 0.10; // 10% discount
+                    break;
+                case "SAVE5":
+                    discount += 5.0; // $5 off
+                    break;
+                case "FIRST20":
+                    discount += calculateSubtotal() * 0.20; // 20% discount for first-time users
+                    break;
+            }
+        }
+
+        return Math.min(discount, calculateSubtotal()); // Don't exceed subtotal
     }
 
     private double calculateTotal() {
@@ -201,22 +241,70 @@ public class CartFragment extends Fragment implements CartAdapter.CartItemListen
     @Override
     public void onItemRemoved(CartItem cartItem) {
         // Remove from cart
-        cartViewModel.removeFromCart(cartItem);
-        cartItems.remove(cartItem);
-        cartAdapter.notifyDataSetChanged();
-
-        if (cartItems.isEmpty()) {
-            showEmptyCartView();
+        if (cartItem != null && cartItem.getProductId() != null) {
+            cartViewModel.removeFromCart(cartItem);
+            // The LiveData observer in loadCartItems should handle UI updates
         } else {
-            updatePriceSummary();
+            Toast.makeText(getContext(), "Error: Could not remove item", Toast.LENGTH_SHORT).show();
         }
     }
 
     @Override
     public void onQuantityChanged(CartItem cartItem, int newQuantity) {
         // Update cart
-        cartViewModel.updateCartItemQuantity(cartItem, newQuantity);
-        updatePriceSummary();
+        if (cartItem != null && cartItem.getProductId() != null) {
+            cartViewModel.updateCartItemQuantity(cartItem, newQuantity);
+            // The LiveData observer in updatePriceSummary should handle UI updates
+        } else {
+            Toast.makeText(getContext(), "Error: Could not update quantity", Toast.LENGTH_SHORT).show();
+        }
+    } // These methods are part of the CartAdapter.CartItemListener interface
+    // implemented by the fragment and are already properly implemented above
+
+    private void observeViewModel() {
+        // Observe loading state
+        cartViewModel.getIsLoading().observe(getViewLifecycleOwner(), isLoading -> {
+            if (isLoading != null && isLoading) {
+                // Show loading indicator
+                if (progressBar != null) {
+                    progressBar.setVisibility(View.VISIBLE);
+                }
+            } else {
+                // Hide loading indicator
+                if (progressBar != null) {
+                    progressBar.setVisibility(View.GONE);
+                }
+            }
+        });
+
+        // Observe error messages
+        cartViewModel.getErrorMessage().observe(getViewLifecycleOwner(), errorMessage -> {
+            if (errorMessage != null && !errorMessage.isEmpty()) {
+                Toast.makeText(getContext(), errorMessage, Toast.LENGTH_LONG).show();
+            }
+        });
+
+        // Observe success messages
+        cartViewModel.getSuccessMessage().observe(getViewLifecycleOwner(), successMessage -> {
+            if (successMessage != null && !successMessage.isEmpty()) {
+                Toast.makeText(getContext(), successMessage, Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        // Observe cart item count for badge updates
+        cartViewModel.getCartItemCount().observe(getViewLifecycleOwner(), itemCount -> {
+            if (itemCount != null) {
+                // Update cart badge in bottom navigation if needed
+                updateCartBadge(itemCount);
+            }
+        });
+    }
+
+    private void updateCartBadge(int itemCount) {
+        // Update cart badge in MainActivity
+        if (getActivity() instanceof MainActivity) {
+            ((MainActivity) getActivity()).updateCartBadge(itemCount);
+        }
     }
 
     @Override

@@ -262,11 +262,64 @@ public class CartRepository {
     }
 
     /**
+     * Update quantity of an item in the cart
+     *
+     * @param itemId   ID of the cart item
+     * @param quantity New quantity
+     * @param callback Callback to handle result
+     */
+    public void updateCartItemQuantity(String itemId, int quantity, @NonNull CartOperationCallback callback) {
+        String userId = preferencesHelper.getUserId();
+        if (userId == null || userId.isEmpty()) {
+            Log.w(TAG, "updateCartItemQuantity: User not logged in.");
+            callback.onError("User not logged in. Cannot update cart.");
+            return;
+        }
+        if (itemId == null || itemId.isEmpty() || quantity < 0) {
+            Log.w(TAG, "updateCartItemQuantity: Invalid item ID or quantity.");
+            callback.onError("Invalid item ID or quantity.");
+            return;
+        }
+
+        Log.d(TAG, "updateCartItemQuantity: Updating itemId: " + itemId + " quantity: " + quantity + " for userId: "
+                + userId);
+        apiService.updateCartItemQuantity(userId, itemId, quantity).enqueue(new Callback<ApiResponse<Void>>() {
+            @Override
+            public void onResponse(@NonNull Call<ApiResponse<Void>> call,
+                    @NonNull Response<ApiResponse<Void>> response) {
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                    Log.d(TAG, "updateCartItemQuantity onSuccess: Item quantity updated");
+                    callback.onSuccess("Item quantity updated successfully."); // Provide message
+                } else {
+                    String errorMsg = "Failed to update item quantity.";
+                    if (response.body() != null && response.body().getMessage() != null) {
+                        errorMsg = response.body().getMessage();
+                    } else if (response.errorBody() != null) {
+                        try {
+                            errorMsg = response.errorBody().string();
+                        } catch (Exception e) {
+                            Log.e(TAG, "Error parsing error body", e);
+                        }
+                    }
+                    Log.e(TAG, "updateCartItemQuantity failed: " + errorMsg + " Code: " + response.code());
+                    callback.onError(errorMsg);
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<ApiResponse<Void>> call, @NonNull Throwable t) {
+                Log.e(TAG, "updateCartItemQuantity network error", t);
+                callback.onError("Network error while updating item quantity: " + t.getMessage());
+            }
+        });
+    }
+
+    /**
      * Clear all items from the cart on the backend.
      *
-     * @param callback Callback to handle the success/failure of the operation.
+     * @param callback Callback to handle success or error.
      */
-    public void clearCart(@NonNull CartModificationCallback callback) {
+    public void clearCart(@NonNull CartOperationCallback callback) { // Changed to CartOperationCallback
         String userId = preferencesHelper.getUserId();
         if (userId == null || userId.isEmpty()) {
             Log.w(TAG, "clearCart: User not logged in.");
@@ -275,16 +328,14 @@ public class CartRepository {
         }
 
         Log.d(TAG, "clearCart: Clearing cart for userId: " + userId);
-        apiService.clearCart(userId).enqueue(new Callback<ApiResponse<Void>>() {
+        apiService.clearCart(userId).enqueue(new Callback<ApiResponse<Void>>() { // Change to ApiResponse<Void>
             @Override
             public void onResponse(@NonNull Call<ApiResponse<Void>> call,
                     @NonNull Response<ApiResponse<Void>> response) {
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                    Log.d(TAG, "clearCart onSuccess: Cart cleared.");
-                    callback.onSuccess(response.body().getMessage() != null ? response.body().getMessage()
-                            : "Cart cleared successfully.");
+                    callback.onSuccess(response.body().getMessage()); // Or a generic success message
                 } else {
-                    String errorMsg = "Failed to clear cart.";
+                    String errorMsg = "Failed to clear cart";
                     if (response.body() != null && response.body().getMessage() != null) {
                         errorMsg = response.body().getMessage();
                     } else if (response.errorBody() != null) {
@@ -322,6 +373,16 @@ public class CartRepository {
      */
     public interface CartModificationCallback {
         void onSuccess(String message);
+
+        void onError(String errorMessage);
+    }
+
+    /**
+     * Callback interface for generic cart operations (add, remove, update) that
+     * return no data.
+     */
+    public interface CartOperationCallback {
+        void onSuccess(String successMsg); // Changed from void onSuccess();
 
         void onError(String errorMessage);
     }

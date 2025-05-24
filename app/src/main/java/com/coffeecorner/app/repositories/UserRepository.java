@@ -52,20 +52,14 @@ public class UserRepository {
      * @param callback Callback to handle result
      */
     public void login(String email, String password, @NonNull AuthCallback callback) {
-        // TODO: Replace with actual User model for login request if different
-        User loginRequest = new User(); // Or a specific LoginRequest model
-        loginRequest.setEmail(email);
-        // loginRequest.setPassword(password); // Assuming password is part of the
-        // request
-
-        apiService.login(email, password).enqueue(new Callback<ApiResponse<User>>() { // Corrected API call and callback type
+        apiService.login(email, password).enqueue(new Callback<ApiResponse<User>>() {
             @Override
-            public void onResponse(@NonNull Call<ApiResponse<User>> call, @NonNull Response<ApiResponse<User>> response) {
+            public void onResponse(@NonNull Call<ApiResponse<User>> call,
+                    @NonNull Response<ApiResponse<User>> response) {
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                     User user = response.body().getData();
                     currentUser.setValue(user);
-                    // preferencesHelper.saveUserId(user.getId()); // Save user ID upon successful
-                    // login
+                    preferencesHelper.saveUserId(user.getId());
                     callback.onSuccess(user);
                 } else {
                     // Log error for debugging
@@ -92,13 +86,14 @@ public class UserRepository {
     /**
      * Register a new user
      *
-     * @param name     User name
-     * @param email    User email
-     * @param password User password
+     * @param name           User name
+     * @param email          User email
+     * @param password       User password
      * @param recaptchaToken The reCAPTCHA token
-     * @param callback Callback to handle result
+     * @param callback       Callback to handle result
      */
-    public void register(String name, String email, String password, String recaptchaToken, @NonNull AuthCallback callback) {
+    public void register(String name, String email, String password, String recaptchaToken,
+            @NonNull AuthCallback callback) {
         // User registrationRequest = new User(); // Or a specific RegisterRequest model
         // registrationRequest.setName(name);
         // registrationRequest.setEmail(email);
@@ -107,7 +102,8 @@ public class UserRepository {
 
         apiService.register(name, email, password, recaptchaToken).enqueue(new Callback<ApiResponse<User>>() {
             @Override
-            public void onResponse(@NonNull Call<ApiResponse<User>> call, @NonNull Response<ApiResponse<User>> response) {
+            public void onResponse(@NonNull Call<ApiResponse<User>> call,
+                    @NonNull Response<ApiResponse<User>> response) {
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                     User user = response.body().getData();
                     currentUser.setValue(user);
@@ -145,6 +141,22 @@ public class UserRepository {
     }
 
     /**
+     * Get current user profile
+     */
+    public LiveData<User> getUserProfile() {
+        // Return the current user LiveData
+        return currentUser;
+    }
+
+    /**
+     * Check if user is authenticated
+     */
+    public boolean isUserAuthenticated() {
+        // Check if there's a saved user ID in preferences
+        return preferencesHelper.getUserId() != null && !preferencesHelper.getUserId().isEmpty();
+    }
+
+    /**
      * Check if there is a logged in user
      *
      * @return true if a user is logged in
@@ -168,8 +180,48 @@ public class UserRepository {
     public void clearUserId() {
         preferencesHelper.clearUserId();
         currentUser.setValue(null);
-        // TODO: Add API call for server-side logout if necessary
-        // apiService.logoutUser().enqueue(...);
+
+        // Optional: Add API call for server-side logout if needed
+        // For now, local logout is sufficient
+        android.util.Log.d("UserRepository", "User logged out successfully");
+    }
+
+    /**
+     * Update user profile
+     */
+    public void updateUserProfile(User user, ProfileUpdateCallback callback) {
+        if (user == null) {
+            callback.onError("User data cannot be null");
+            return;
+        }
+
+        // Make API call to update user profile
+        apiService.updateUserProfile(user).enqueue(new Callback<ApiResponse<User>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<User>> call, Response<ApiResponse<User>> response) {
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                    User updatedUser = response.body().getData();
+                    currentUser.setValue(updatedUser);
+                    callback.onSuccess(updatedUser);
+                } else {
+                    callback.onError("Failed to update profile");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse<User>> call, Throwable t) {
+                callback.onError("Network error: " + t.getMessage());
+            }
+        });
+    }
+
+    /**
+     * Logout user
+     */
+    public void logout() {
+        // Clear user data from preferences and set current user to null
+        preferencesHelper.clearUserData();
+        currentUser.setValue(null);
     }
 
     /**
@@ -185,17 +237,18 @@ public class UserRepository {
         }
         apiService.getUserById(userId).enqueue(new Callback<ApiResponse<User>>() {
             @Override
-            public void onResponse(@NonNull Call<ApiResponse<User>> call, @NonNull Response<ApiResponse<User>> response) {
+            public void onResponse(@NonNull Call<ApiResponse<User>> call,
+                    @NonNull Response<ApiResponse<User>> response) {
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                     User user = response.body().getData();
                     currentUser.setValue(user);
                     callback.onUserLoaded(user);
                 } else {
                     String errorMsg = "Failed to load user profile.";
-                     if (response.body() != null && response.body().getMessage() != null) {
+                    if (response.body() != null && response.body().getMessage() != null) {
                         errorMsg = response.body().getMessage();
                     } else if (response.message() != null && !response.message().isEmpty()) {
-                         errorMsg = response.message();
+                        errorMsg = response.message();
                     }
                     Log.e("UserRepository", "Get user by ID failed: " + response.code() + " - " + errorMsg);
                     callback.onError(errorMsg);
@@ -220,23 +273,24 @@ public class UserRepository {
         // Assuming user object contains the ID
         String userId = user.getId(); // Make sure your User model has an getId() method
         if (userId == null || userId.isEmpty()) {
-             callback.onError("User ID cannot be null or empty for update.");
-             return;
+            callback.onError("User ID cannot be null or empty for update.");
+            return;
         }
-        
+
         apiService.updateUser(userId, user).enqueue(new Callback<ApiResponse<User>>() { // Corrected API call
             @Override
-            public void onResponse(@NonNull Call<ApiResponse<User>> call, @NonNull Response<ApiResponse<User>> response) {
+            public void onResponse(@NonNull Call<ApiResponse<User>> call,
+                    @NonNull Response<ApiResponse<User>> response) {
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                     User updatedUser = response.body().getData();
                     currentUser.setValue(updatedUser);
                     callback.onUserLoaded(updatedUser);
                 } else {
-                     String errorMsg = "Failed to update profile.";
+                    String errorMsg = "Failed to update profile.";
                     if (response.body() != null && response.body().getMessage() != null) {
                         errorMsg = response.body().getMessage();
                     } else if (response.message() != null && !response.message().isEmpty()) {
-                         errorMsg = response.message();
+                        errorMsg = response.message();
                     }
                     Log.e("UserRepository", "Update profile failed: " + response.code() + " - " + errorMsg);
                     callback.onError(errorMsg);
@@ -254,7 +308,7 @@ public class UserRepository {
     /**
      * Request password reset
      *
-     * @param email User email
+     * @param email    User email
      * @param callback Callback to handle result
      */
     public void requestPasswordReset(String email, @NonNull ResetCallback callback) {
@@ -264,7 +318,8 @@ public class UserRepository {
         }
         apiService.requestPasswordReset(email).enqueue(new Callback<ApiResponse<Void>>() { // Corrected API call
             @Override
-            public void onResponse(@NonNull Call<ApiResponse<Void>> call, @NonNull Response<ApiResponse<Void>> response) {
+            public void onResponse(@NonNull Call<ApiResponse<Void>> call,
+                    @NonNull Response<ApiResponse<Void>> response) {
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                     // Password reset request successful
                     callback.onSuccess("Password reset link sent to your email.");
@@ -273,7 +328,7 @@ public class UserRepository {
                     if (response.body() != null && response.body().getMessage() != null) {
                         errorMsg = response.body().getMessage();
                     } else if (response.message() != null && !response.message().isEmpty()) {
-                         errorMsg = response.message();
+                        errorMsg = response.message();
                     }
                     Log.e("UserRepository", "Request password reset failed: " + response.code() + " - " + errorMsg);
                     callback.onError(errorMsg);
@@ -301,12 +356,11 @@ public class UserRepository {
             callback.onError("User ID cannot be null or empty.");
             return;
         }
-        // TODO: Need to create a specific API method for change password if not already
-        // available or if the existing one in ApiService doesn't match.
-        // Based on ApiService, `changePassword` takes userId, oldPassword, newPassword.
-        apiService.changePassword(userId, oldPassword, newPassword).enqueue(new Callback<ApiResponse<Void>>() { // Corrected API call
+
+        apiService.changePassword(userId, oldPassword, newPassword).enqueue(new Callback<ApiResponse<Void>>() {
             @Override
-            public void onResponse(@NonNull Call<ApiResponse<Void>> call, @NonNull Response<ApiResponse<Void>> response) {
+            public void onResponse(@NonNull Call<ApiResponse<Void>> call,
+                    @NonNull Response<ApiResponse<Void>> response) {
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                     callback.onSuccess("Password changed successfully.");
                 } else {
@@ -346,6 +400,15 @@ public class UserRepository {
      */
     public interface ResetCallback {
         void onSuccess(String message);
+
+        void onError(String errorMessage);
+    }
+
+    /**
+     * Interface for profile update callbacks
+     */
+    public interface ProfileUpdateCallback {
+        void onSuccess(User user);
 
         void onError(String errorMessage);
     }

@@ -36,7 +36,6 @@ dependencies {
     implementation("androidx.appcompat:appcompat:1.6.1") 
     implementation(libs.material)
     implementation(libs.activity)
-    implementation(libs.constraintlayout)
     implementation(libs.navigation.runtime.android)
     implementation(libs.car.ui.lib)
     testImplementation(libs.junit)

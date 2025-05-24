@@ -11,7 +11,11 @@ import com.coffeecorner.app.models.Product;
 import com.coffeecorner.app.repositories.ProductRepository;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * ProductViewModel - Manages and provides product data to the UI
@@ -27,27 +31,43 @@ public class ProductViewModel extends AndroidViewModel {
     private final MutableLiveData<String> errorMessage = new MutableLiveData<>();
     private final MutableLiveData<Product> selectedProduct = new MutableLiveData<>(); // For product details
 
+    // Add cache maps
+    private final Map<String, List<Product>> categoryProductCache = new HashMap<>();
+    private long lastCacheTime = 0;
+    private static final long CACHE_DURATION = 5 * 60 * 1000; // 5 minutes cache
+
+    // Store original list for filtering/sorting
+    private List<Product> originalProducts = new ArrayList<>();
+
     public ProductViewModel(@NonNull Application application) {
         super(application);
         productRepository = ProductRepository.getInstance(); // Get repository instance
 
         // Load initial data
-        loadCategories(); // Load categories first, then products based on "All"
-        // loadProducts(); // This will be called by loadCategories or explicitly
+        loadCategories();
+
     }
 
     /**
-     * Load all products from the data source or based on the current
-     * selectedCategory
+     * Load all products from cache or data source
      */
     public void loadProducts() {
-        isLoading.setValue(true);
         String categoryToLoad = selectedCategory.getValue();
         if (categoryToLoad == null || "All".equalsIgnoreCase(categoryToLoad)) {
+            // Check cache first
+            if (isCacheValid() && categoryProductCache.containsKey("All")) {
+                products.setValue(categoryProductCache.get("All"));
+                return;
+            }
+
+            isLoading.setValue(true);
             productRepository.getProducts(new ProductRepository.ProductsCallback() {
                 @Override
                 public void onProductsLoaded(List<Product> productList) {
                     products.setValue(productList);
+                    // Cache the results
+                    categoryProductCache.put("All", productList);
+                    lastCacheTime = System.currentTimeMillis();
                     isLoading.setValue(false);
                     errorMessage.setValue(null);
                 }
@@ -67,19 +87,30 @@ public class ProductViewModel extends AndroidViewModel {
         }
     }
 
-    /**
-     * Filter products by category
-     * 
-     * @param category Category to filter by, or "All" for no filtering
-     */
-    public void filterByCategory(String category) {
-        isLoading.setValue(true);
-        selectedCategory.setValue(category); // Update selected category
+    public void filterByCategory(String categoryParam) {
+        String finalCategory = categoryParam;
+        if (finalCategory == null) {
+            finalCategory = "All";
+        }
 
-        productRepository.getProductsByCategory(category, new ProductRepository.ProductsCallback() {
+        // Check cache first
+        if (isCacheValid() && categoryProductCache.containsKey(finalCategory)) {
+            products.setValue(categoryProductCache.get(finalCategory));
+            selectedCategory.setValue(finalCategory);
+            return;
+        }
+
+        isLoading.setValue(true);
+        selectedCategory.setValue(finalCategory); // Update selected category
+
+        final String categoryToFetch = finalCategory; // Effectively final for use in inner class
+        productRepository.getProductsByCategory(categoryToFetch, new ProductRepository.ProductsCallback() {
             @Override
             public void onProductsLoaded(List<Product> productList) {
                 products.setValue(productList);
+                // Cache the results
+                categoryProductCache.put(categoryToFetch, productList);
+                lastCacheTime = System.currentTimeMillis();
                 isLoading.setValue(false);
                 errorMessage.setValue(null);
             }
@@ -125,7 +156,7 @@ public class ProductViewModel extends AndroidViewModel {
      */
     public void loadProductById(String productId) {
         isLoading.setValue(true);
-        productRepository.getProductById(productId, new ProductRepository.ProductCallback() {
+        productRepository.getProductById(productId, new ProductRepository.ProductDetailCallback() {
             @Override
             public void onProductLoaded(Product product) {
                 selectedProduct.setValue(product);
@@ -134,7 +165,7 @@ public class ProductViewModel extends AndroidViewModel {
             }
 
             @Override
-            public void onError(String errorMsg) {
+            public void onProductError(String errorMsg) {
                 selectedProduct.setValue(null); // Set to null on error
                 errorMessage.setValue(errorMsg);
                 isLoading.setValue(false);
@@ -171,6 +202,123 @@ public class ProductViewModel extends AndroidViewModel {
                 isLoading.setValue(false);
             }
         });
+    }
+
+    /**
+     * Check if the cache is still valid
+     */
+    private boolean isCacheValid() {
+        return System.currentTimeMillis() - lastCacheTime < CACHE_DURATION;
+    }
+
+    /**
+     * Clear the cache (call this when needed, e.g., pull-to-refresh)
+     */
+    public void clearCache() {
+        categoryProductCache.clear();
+        lastCacheTime = 0;
+        loadProducts(); // Reload from network
+    }
+
+    /**
+     * Sort products by price ascending
+     */
+    public void sortByPriceAscending() {
+        List<Product> currentProducts = products.getValue();
+        if (currentProducts != null && !currentProducts.isEmpty()) {
+            List<Product> sortedProducts = new ArrayList<>(currentProducts);
+            Collections.sort(sortedProducts, new Comparator<Product>() {
+                @Override
+                public int compare(Product p1, Product p2) {
+                    return Double.compare(p1.getPrice(), p2.getPrice());
+                }
+            });
+            products.setValue(sortedProducts);
+        }
+    }
+
+    /**
+     * Sort products by price descending
+     */
+    public void sortByPriceDescending() {
+        List<Product> currentProducts = products.getValue();
+        if (currentProducts != null && !currentProducts.isEmpty()) {
+            List<Product> sortedProducts = new ArrayList<>(currentProducts);
+            Collections.sort(sortedProducts, new Comparator<Product>() {
+                @Override
+                public int compare(Product p1, Product p2) {
+                    return Double.compare(p2.getPrice(), p1.getPrice());
+                }
+            });
+            products.setValue(sortedProducts);
+        }
+    }    /**
+     * Sort products by popularity (rating descending as proxy for popularity)
+     */
+    public void sortByPopularity() {
+        List<Product> currentProducts = products.getValue();
+        if (currentProducts != null && !currentProducts.isEmpty()) {
+            List<Product> sortedProducts = new ArrayList<>(currentProducts);
+            Collections.sort(sortedProducts, new Comparator<Product>() {
+                @Override
+                public int compare(Product p1, Product p2) {
+                    // Use rating as proxy for popularity since orderCount doesn't exist
+                    return Float.compare(p2.getRating(), p1.getRating());
+                }
+            });
+            products.setValue(sortedProducts);
+        }
+    }
+
+    /**
+     * Sort products by newest (creation date descending)
+     */
+    public void sortByNewest() {
+        List<Product> currentProducts = products.getValue();
+        if (currentProducts != null && !currentProducts.isEmpty()) {
+            List<Product> sortedProducts = new ArrayList<>(currentProducts);
+            Collections.sort(sortedProducts, new Comparator<Product>() {
+                @Override
+                public int compare(Product p1, Product p2) {
+                    // Assuming newer products have higher ID or creation timestamp
+                    return p2.getId().compareTo(p1.getId());
+                }
+            });
+            products.setValue(sortedProducts);
+        }
+    }
+
+    /**
+     * Sort products by rating descending
+     */
+    public void sortByRating() {
+        List<Product> currentProducts = products.getValue();
+        if (currentProducts != null && !currentProducts.isEmpty()) {
+            List<Product> sortedProducts = new ArrayList<>(currentProducts);
+            Collections.sort(sortedProducts, new Comparator<Product>() {
+                @Override
+                public int compare(Product p1, Product p2) {
+                    return Double.compare(p2.getRating(), p1.getRating());
+                }
+            });
+            products.setValue(sortedProducts);
+        }
+    }
+
+    /**
+     * Filter to show only available products
+     */
+    public void filterAvailableOnly() {
+        List<Product> currentProducts = products.getValue();
+        if (currentProducts != null && !currentProducts.isEmpty()) {
+            List<Product> availableProducts = new ArrayList<>();
+            for (Product product : currentProducts) {
+                if (product.isAvailable()) {
+                    availableProducts.add(product);
+                }
+            }
+            products.setValue(availableProducts);
+        }
     }
 
     // Getters for LiveData

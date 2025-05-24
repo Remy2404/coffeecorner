@@ -30,15 +30,14 @@ public class CartViewModel extends ViewModel {
      * 
      * @param product  Product to add
      * @param quantity Quantity to add
-     * @param notes    Special instructions/notes
      */
-    public void addToCart(Product product, int quantity, String notes) {
+    public void addToCart(Product product, int quantity) {
         isLoading.setValue(true);
-        cartRepository.addToCart(product, quantity, notes, new CartRepository.CartOperationCallback() {
+        cartRepository.addToCart(product, quantity, new CartRepository.CartItemsCallback() {
             @Override
-            public void onSuccess(String successMessage) {
+            public void onCartItemsLoaded(List<CartItem> cartItems) {
                 isLoading.postValue(false);
-                message.postValue(successMessage);
+                message.postValue("Item added to cart");
             }
 
             @Override
@@ -59,9 +58,9 @@ public class CartViewModel extends ViewModel {
         isLoading.setValue(true);
         cartRepository.updateCartItemQuantity(itemId, newQuantity, new CartRepository.CartOperationCallback() {
             @Override
-            public void onSuccess(String successMessage) {
+            public void onSuccess(String successMsg) { // Changed from onSuccess()
                 isLoading.postValue(false);
-                message.postValue(successMessage);
+                message.postValue(successMsg); // Use the message from callback
             }
 
             @Override
@@ -79,11 +78,11 @@ public class CartViewModel extends ViewModel {
      */
     public void removeFromCart(String itemId) {
         isLoading.setValue(true);
-        cartRepository.removeFromCart(itemId, new CartRepository.CartOperationCallback() {
+        cartRepository.removeFromCart(itemId, new CartRepository.CartItemsCallback() {
             @Override
-            public void onSuccess(String successMessage) {
+            public void onCartItemsLoaded(List<CartItem> cartItems) {
                 isLoading.postValue(false);
-                message.postValue(successMessage);
+                message.postValue("Item removed from cart");
             }
 
             @Override
@@ -99,11 +98,11 @@ public class CartViewModel extends ViewModel {
      */
     public void clearCart() {
         isLoading.setValue(true);
-        cartRepository.clearCart(new CartRepository.CartOperationCallback() {
+        cartRepository.clearCart(new CartRepository.CartOperationCallback() { // Changed to CartOperationCallback
             @Override
-            public void onSuccess(String successMessage) {
+            public void onSuccess(String successMsg) {
                 isLoading.postValue(false);
-                message.postValue(successMessage);
+                message.postValue(successMsg);
             }
 
             @Override
@@ -120,7 +119,25 @@ public class CartViewModel extends ViewModel {
      * @return LiveData containing list of cart items
      */
     public LiveData<List<CartItem>> getCartItems() {
-        return cartRepository.getCartItems();
+        isLoading.setValue(true);
+        MutableLiveData<List<CartItem>> cartItemsLiveData = new MutableLiveData<>();
+
+        cartRepository.getCartItems(new CartRepository.CartItemsCallback() {
+            @Override
+            public void onCartItemsLoaded(List<CartItem> cartItems) {
+                isLoading.postValue(false);
+                cartItemsLiveData.postValue(cartItems);
+            }
+
+            @Override
+            public void onError(String errorMessage) {
+                isLoading.postValue(false);
+                message.postValue(errorMessage);
+                cartItemsLiveData.postValue(java.util.Collections.emptyList());
+            }
+        });
+
+        return cartItemsLiveData;
     }
 
     /**
@@ -129,7 +146,28 @@ public class CartViewModel extends ViewModel {
      * @return LiveData containing cart subtotal
      */
     public LiveData<Double> getCartSubtotal() {
-        return cartRepository.getCartSubtotal();
+        MutableLiveData<Double> subtotalLiveData = new MutableLiveData<>(0.0);
+
+        cartRepository.getCartItems(new CartRepository.CartItemsCallback() {
+            @Override
+            public void onCartItemsLoaded(List<CartItem> cartItems) {
+                double subtotal = 0.0;
+                if (cartItems != null) {
+                    for (CartItem item : cartItems) {
+                        subtotal += item.getPrice() * item.getQuantity();
+                    }
+                }
+                subtotalLiveData.postValue(subtotal);
+            }
+
+            @Override
+            public void onError(String errorMessage) {
+                message.postValue(errorMessage);
+                subtotalLiveData.postValue(0.0);
+            }
+        });
+
+        return subtotalLiveData;
     }
 
     /**
@@ -138,7 +176,28 @@ public class CartViewModel extends ViewModel {
      * @return LiveData containing number of items in cart
      */
     public LiveData<Integer> getCartItemCount() {
-        return cartRepository.getCartItemCount();
+        MutableLiveData<Integer> countLiveData = new MutableLiveData<>(0);
+
+        cartRepository.getCartItems(new CartRepository.CartItemsCallback() {
+            @Override
+            public void onCartItemsLoaded(List<CartItem> cartItems) {
+                int count = 0;
+                if (cartItems != null) {
+                    for (CartItem item : cartItems) {
+                        count += item.getQuantity();
+                    }
+                }
+                countLiveData.postValue(count);
+            }
+
+            @Override
+            public void onError(String errorMessage) {
+                message.postValue(errorMessage);
+                countLiveData.postValue(0);
+            }
+        });
+
+        return countLiveData;
     }
 
     /**

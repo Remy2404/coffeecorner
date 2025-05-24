@@ -27,6 +27,9 @@ public class PreferencesHelper {
     private static final String KEY_DEFAULT_PAYMENT = "default_payment";
     private static final String KEY_FIRST_TIME_USER = "first_time_user";
     private static final String KEY_ONBOARDING_COMPLETED = "onboarding_completed";
+    private static final String KEY_SELECTED_LOCATION = "selected_location";
+    private static final String KEY_LOYALTY_POINTS = "loyalty_points";
+    private static final String KEY_PROMO_CODE = "promo_code";
 
     private final SharedPreferences sharedPreferences;
 
@@ -335,5 +338,73 @@ public class PreferencesHelper {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString(KEY_USER_ID, id);
         editor.apply();
+    }
+
+    public void clearUserData() {
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.remove(KEY_USER_ID);
+        editor.remove(KEY_USER_NAME);
+        editor.remove(KEY_USER_EMAIL);
+        editor.remove(KEY_USER_PHONE);
+        editor.remove(KEY_USER_PROFILE_PIC);
+        editor.remove(KEY_USER_POINTS);
+        editor.remove(KEY_USER_TIER);
+        editor.remove(KEY_IS_LOGGED_IN);
+        editor.remove(KEY_AUTH_TOKEN);
+        editor.apply();
+    }
+
+    /**
+     * Save selected location
+     * 
+     * @param location Selected location
+     */
+    public void saveSelectedLocation(String location) {
+        sharedPreferences.edit().putString(KEY_SELECTED_LOCATION, location).apply();
+    }
+
+    /**
+     * Get selected location
+     * 
+     * @return Selected location
+     */
+    public String getSelectedLocation() {
+        return sharedPreferences.getString(KEY_SELECTED_LOCATION, "Downtown Coffee Corner");
+    }
+
+    /**
+     * Get loyalty points
+     * 
+     * @return Loyalty points
+     */
+    public int getLoyaltyPoints() {
+        return sharedPreferences.getInt(KEY_LOYALTY_POINTS, 0);
+    }
+
+    /**
+     * Save loyalty points
+     * 
+     * @param points Loyalty points
+     */
+    public void saveLoyaltyPoints(int points) {
+        sharedPreferences.edit().putInt(KEY_LOYALTY_POINTS, points).apply();
+    }
+
+    /**
+     * Get promo code
+     * 
+     * @return Promo code
+     */
+    public String getPromoCode() {
+        return sharedPreferences.getString(KEY_PROMO_CODE, "");
+    }
+
+    /**
+     * Save promo code
+     * 
+     * @param promoCode Promo code
+     */
+    public void savePromoCode(String promoCode) {
+        sharedPreferences.edit().putString(KEY_PROMO_CODE, promoCode).apply();
     }
 }
