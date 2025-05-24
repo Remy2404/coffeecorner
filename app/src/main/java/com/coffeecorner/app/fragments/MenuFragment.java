@@ -97,9 +97,14 @@ public class MenuFragment extends Fragment implements MenuItemAdapter.OnItemClic
                 adapter.submitList(products);
             }
         });
-
         productViewModel.getIsLoading().observe(getViewLifecycleOwner(), isLoading -> {
-            // TODO: Show/hide loading indicator
+            if (isLoading != null) {
+                if (isLoading) {
+                    showLoadingIndicator();
+                } else {
+                    hideLoadingIndicator();
+                }
+            }
         });
 
         productViewModel.getErrorMessage().observe(getViewLifecycleOwner(), errorMessage -> {
@@ -129,5 +134,28 @@ public class MenuFragment extends Fragment implements MenuItemAdapter.OnItemClic
     public void onAddToCartClick(Product product) {
         cartViewModel.addToCart(product, 1);
         Toast.makeText(requireContext(), product.getName() + " added to cart", Toast.LENGTH_SHORT).show();
+    }
+
+    private void showLoadingIndicator() {
+        // Show loading progress bar or shimmer effect
+        // You can add a ProgressBar to the layout and show it here
+        // For now, we'll use a simple approach
+        if (getActivity() != null) {
+            // If there's a progress bar in the layout, show it
+            View progressBar = getActivity().findViewById(R.id.progressBar);
+            if (progressBar != null) {
+                progressBar.setVisibility(View.VISIBLE);
+            }
+        }
+    }
+
+    private void hideLoadingIndicator() {
+        // Hide loading progress bar
+        if (getActivity() != null) {
+            View progressBar = getActivity().findViewById(R.id.progressBar);
+            if (progressBar != null) {
+                progressBar.setVisibility(View.GONE);
+            }
+        }
     }
 }
