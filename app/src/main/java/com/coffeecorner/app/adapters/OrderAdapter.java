@@ -42,8 +42,17 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
 
     @Override
     public void onBindViewHolder(@NonNull OrderViewHolder holder, int position) {
-        Order order = orders.get(position);        // Set order ID
-        holder.tvOrderId.setText("Order #" + order.getOrderId().substring(0, 8).toUpperCase());
+        Order order = orders.get(position);
+
+        // Set order ID with null check
+        String orderId = order.getOrderId();
+        if (orderId != null && orderId.length() >= 8) {
+            holder.tvOrderId.setText("Order #" + orderId.substring(0, 8).toUpperCase());
+        } else if (orderId != null && orderId.length() > 0) {
+            holder.tvOrderId.setText("Order #" + orderId.toUpperCase());
+        } else {
+            holder.tvOrderId.setText("Order #N/A");
+        }
 
         // Set order date
         if (order.getOrderDate() != null) {
@@ -63,12 +72,14 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
         holder.tvItemCount.setText(itemCount + " item" + (itemCount != 1 ? "s" : ""));
 
         // Configure primary button based on order status
-        configureActionButton(holder.btnPrimary, order);        // Set click listener for the entire item
+        configureActionButton(holder.btnPrimary, order); // Set click listener for the entire item
         holder.itemView.setOnClickListener(v -> {
             // Navigate to order details/tracking screen
-            Intent intent = new Intent(context, OrderTrackingActivity.class);
-            intent.putExtra("orderId", order.getOrderId());
-            context.startActivity(intent);
+            if (orderId != null && !orderId.isEmpty()) {
+                Intent intent = new Intent(context, OrderTrackingActivity.class);
+                intent.putExtra("orderId", orderId);
+                context.startActivity(intent);
+            }
         });
     }
 
@@ -96,7 +107,9 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
             default:
                 return "Unknown";
         }
-    }    private int getStatusColor(String status) {
+    }
+
+    private int getStatusColor(String status) {
         switch (status) {
             case Order.STATUS_CONFIRMED:
             case Order.STATUS_PREPARING:
@@ -114,23 +127,31 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
     }
 
     private void configureActionButton(Button button, Order order) {
-        switch (order.getStatus()) {            case Order.STATUS_CONFIRMED:
+        String orderId = order.getOrderId();
+
+        switch (order.getStatus()) {
+            case Order.STATUS_CONFIRMED:
             case Order.STATUS_PREPARING:
             case Order.STATUS_DELIVERING:
                 button.setText("Track Order");
                 button.setVisibility(View.VISIBLE);
                 button.setOnClickListener(v -> {
-                    Intent intent = new Intent(context, OrderTrackingActivity.class);
-                    intent.putExtra("orderId", order.getOrderId());
-                    context.startActivity(intent);
+                    if (orderId != null && !orderId.isEmpty()) {
+                        Intent intent = new Intent(context, OrderTrackingActivity.class);
+                        intent.putExtra("orderId", orderId);
+                        context.startActivity(intent);
+                    }
                 });
-                break;            case Order.STATUS_READY:
+                break;
+            case Order.STATUS_READY:
                 button.setText("Pick Up");
                 button.setVisibility(View.VISIBLE);
                 button.setOnClickListener(v -> {
-                    Intent intent = new Intent(context, OrderTrackingActivity.class);
-                    intent.putExtra("orderId", order.getOrderId());
-                    context.startActivity(intent);
+                    if (orderId != null && !orderId.isEmpty()) {
+                        Intent intent = new Intent(context, OrderTrackingActivity.class);
+                        intent.putExtra("orderId", orderId);
+                        context.startActivity(intent);
+                    }
                 });
                 break;
             case Order.STATUS_DELIVERED:

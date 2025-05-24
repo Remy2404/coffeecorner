@@ -46,12 +46,29 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
     public CartViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(context).inflate(R.layout.item_cart, parent, false);
         return new CartViewHolder(view);
-    }
-
-    @Override
+    }    @Override
     public void onBindViewHolder(@NonNull CartViewHolder holder, int position) {
         CartItem cartItem = cartItems.get(position);
         Product product = cartItem.getProduct();
+
+        // Check if product is null
+        if (product == null) {
+            holder.tvProductName.setText("Unknown Product");
+            holder.imgProduct.setImageResource(R.drawable.coffee_placeholder);
+            holder.tvProductVariant.setText("");
+            holder.tvPrice.setText(currencyFormatter.format(0.0));
+            holder.tvQuantity.setText(String.valueOf(cartItem.getQuantity()));
+            
+            // Disable buttons for invalid products
+            holder.btnRemove.setOnClickListener(v -> {
+                if (listener != null) {
+                    listener.onItemRemoved(cartItem);
+                }
+            });
+            holder.btnIncreaseQuantity.setOnClickListener(null);
+            holder.btnDecreaseQuantity.setOnClickListener(null);
+            return;
+        }
 
         // Set product name and image
         holder.tvProductName.setText(product.getName());
@@ -102,11 +119,9 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
             if (listener != null) {
                 listener.onItemRemoved(cartItem);
             }
-        });
-
-        holder.btnIncreaseQuantity.setOnClickListener(v -> {
+        });        holder.btnIncreaseQuantity.setOnClickListener(v -> {
             int newQuantity = cartItem.getQuantity() + 1;
-            if (newQuantity <= 10) { // Set a reasonable maximum
+            if (newQuantity <= 10 && product != null) { // Set a reasonable maximum and check product
                 cartItem.setQuantity(newQuantity);
                 holder.tvQuantity.setText(String.valueOf(newQuantity));
 
@@ -122,7 +137,7 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
 
         holder.btnDecreaseQuantity.setOnClickListener(v -> {
             int newQuantity = cartItem.getQuantity() - 1;
-            if (newQuantity >= 1) {
+            if (newQuantity >= 1 && product != null) {
                 cartItem.setQuantity(newQuantity);
                 holder.tvQuantity.setText(String.valueOf(newQuantity));
 

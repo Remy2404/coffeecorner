@@ -6,6 +6,7 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.coffeecorner.app.R;
@@ -24,17 +25,25 @@ public class OrderCompleteActivity extends AppCompatActivity {
 
         // Initialize views
         initViews();
-        
+
         // Get order details from intent
         String orderId = getIntent().getStringExtra("orderId");
         int estimatedTime = getIntent().getIntExtra("estimatedTime", 30);
-        
+
         // Set order details
         tvOrderId.setText(getString(R.string.order_id_format, orderId));
         tvEstimatedTime.setText(getString(R.string.estimated_delivery_format, estimatedTime));
-        
+
         // Set click listeners
         setupClickListeners(orderId);
+
+        // Setup back press handler
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                navigateToHome();
+            }
+        });
     }
 
     private void initViews() {
@@ -42,11 +51,11 @@ public class OrderCompleteActivity extends AppCompatActivity {
         tvEstimatedTime = findViewById(R.id.tvEstimatedTime);
         btnViewOrder = findViewById(R.id.btnViewOrder);
         btnContinueShopping = findViewById(R.id.btnContinueShopping);
-        
+
         ImageButton btnBack = findViewById(R.id.btnBack);
         btnBack.setOnClickListener(v -> navigateToHome());
     }
-    
+
     private void setupClickListeners(String orderId) {
         btnViewOrder.setOnClickListener(v -> {
             // Navigate to order tracking screen
@@ -55,23 +64,16 @@ public class OrderCompleteActivity extends AppCompatActivity {
             startActivity(intent);
             finish();
         });
-        
+
         btnContinueShopping.setOnClickListener(v -> {
             navigateToHome();
         });
     }
-    
+
     private void navigateToHome() {
         Intent intent = new Intent(this, MainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(intent);
         finish();
-    }
-    
-    @Override
-    public void onBackPressed() {
-        // Override back button to go to home instead of checkout
-        super.onBackPressed();
-        navigateToHome();
     }
 }

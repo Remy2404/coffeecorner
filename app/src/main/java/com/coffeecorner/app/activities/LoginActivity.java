@@ -58,9 +58,7 @@ public class LoginActivity extends AppCompatActivity {
 
         // Observe login result
         observeLoginResult();
-    }
-
-    /**
+    }    /**
      * Initialize all UI elements
      */
     private void initViews() {
@@ -71,7 +69,6 @@ public class LoginActivity extends AppCompatActivity {
         btnLogin = findViewById(R.id.btnLogin);
         btnSignUp = findViewById(R.id.btnSignUp);
         tvForgotPassword = findViewById(R.id.tvForgotPassword);
-        // Finding the checkbox but not storing it as a field since it's not used yet
         findViewById(R.id.cbRememberPassword);
         btnGoogleLogin = findViewById(R.id.btnGoogleLogin);
         btnFacebookLogin = findViewById(R.id.btnFacebookLogin);
