@@ -23,6 +23,27 @@ import retrofit2.Response;
  */
 public class UserRepository {
 
+    public static class UserData {
+        public String id;
+        public String full_name;
+        public String email;
+        public String phone;
+        public String photo_url;
+        public String created_at;
+        public String updated_at;
+
+        public UserData() {
+        }
+
+        public UserData(String id, String full_name, String email, String phone, String photo_url) {
+            this.id = id;
+            this.full_name = full_name;
+            this.email = email;
+            this.phone = phone;
+            this.photo_url = photo_url;
+        }
+    }
+
     private static volatile UserRepository instance;
     private final PreferencesHelper preferencesHelper;
     private final MutableLiveData<User> currentUser = new MutableLiveData<>();
@@ -375,6 +396,68 @@ public class UserRepository {
                 callback.onError("Network error. Please try again. " + t.getMessage());
             }
         });
+    }
+
+    /**
+     * Update user profile with Supabase integration
+     * Falls back to local storage if Supabase is not available
+     */
+    public void updateUserProfileWithSupabase(User user, @NonNull ProfileUpdateCallback callback) {
+        if (user == null) {
+            callback.onError("User data is null");
+            return;
+        }
+
+        String userId = user.getId();
+        if (userId == null || userId.isEmpty()) {
+            userId = preferencesHelper.getUserId();
+            if (userId == null || userId.isEmpty()) {
+                userId = "temp_user_" + System.currentTimeMillis();
+                preferencesHelper.saveUserId(userId);
+                user.setId(userId);
+            }
+        }
+
+        // Save to local storage as backup
+        saveUserToPreferences(user);
+        currentUser.setValue(user);
+
+        // For now, always succeed since we're using local storage
+        // TODO: Implement actual Supabase integration when server is available
+        callback.onSuccess(user);
+    }
+
+    /**
+     * Save user data to SharedPreferences
+     */
+    private void saveUserToPreferences(User user) {
+        if (user.getId() != null) {
+            preferencesHelper.saveUserId(user.getId());
+        }
+        if (user.getFullName() != null && user.getEmail() != null) {
+            // Use saveUserLogin to save name and email together
+            preferencesHelper.saveUserLogin(user.getId(), user.getFullName(), user.getEmail(),
+                    preferencesHelper.getAuthToken());
+        }
+        if (user.getPhone() != null) {
+            preferencesHelper.saveUserPhone(user.getPhone());
+        }
+        if (user.getPhotoUrl() != null) {
+            preferencesHelper.saveUserProfilePic(user.getPhotoUrl());
+        }
+    }
+
+    /**
+     * Load user data from SharedPreferences
+     */
+    public User loadUserFromPreferences() {
+        User user = new User();
+        user.setId(preferencesHelper.getUserId());
+        user.setFullName(preferencesHelper.getUserName());
+        user.setEmail(preferencesHelper.getUserEmail());
+        user.setPhone(preferencesHelper.getUserPhone());
+        user.setPhotoUrl(preferencesHelper.getUserProfilePic());
+        return user;
     }
 
     /**

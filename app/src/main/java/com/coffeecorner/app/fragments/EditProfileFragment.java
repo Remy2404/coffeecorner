@@ -27,6 +27,7 @@ import androidx.navigation.Navigation;
 import com.bumptech.glide.Glide;
 import com.coffeecorner.app.R;
 import com.coffeecorner.app.models.User;
+import com.coffeecorner.app.repositories.UserRepository;
 import com.coffeecorner.app.utils.PreferencesHelper;
 // Temporarily commented out due to dependency conflicts
 // import com.coffeecorner.app.utils.SupabaseClientManager;
@@ -113,47 +114,21 @@ public class EditProfileFragment extends Fragment {
     }
 
     private void loadUserData() {
-        // Show loading state
         progressBar.setVisibility(View.VISIBLE);
 
-        String userId = preferencesHelper.getUserId();
-        if (userId == null || userId.isEmpty()) {
-            progressBar.setVisibility(View.GONE);
-            Toast.makeText(requireContext(), "Unable to load user data", Toast.LENGTH_SHORT).show();
-            navigateBack();
-            return;
-        } // Temporarily commented out due to dependency conflicts
-        /*
-         * // Get Supabase client and fetch user data
-         * SupabaseClientManager.getInstance().getClient()
-         * .getSupabase()
-         * .getPlugin(Postgrest.class)
-         * .from("users")
-         * .select()
-         * .eq("id", userId)
-         * .single()
-         * .executeWithResponseHandlers(
-         * response -> {
-         * currentUser = response.getData(User.class);
-         * requireActivity().runOnUiThread(() -> {
-         * populateUserData();
-         * progressBar.setVisibility(View.GONE);
-         * });
-         * },
-         * throwable -> {
-         * requireActivity().runOnUiThread(() -> {
-         * progressBar.setVisibility(View.GONE);
-         * Toast.makeText(requireContext(), "Failed to load user data",
-         * Toast.LENGTH_SHORT).show();
-         * navigateBack();
-         * });
-         * });
-         */
+        // Use UserRepository to get current user
+        UserRepository userRepository = UserRepository.getInstance(requireContext());
+        currentUser = userRepository.loadUserFromPreferences();
 
-        // TODO: Replace with actual data loading implementation
-        // For now, create a dummy user or load from shared preferences
+        if (currentUser != null && currentUser.getId() != null && !currentUser.getId().isEmpty()) {
+            populateUserData();
+        } else {
+            // Create default user if no data exists
+            currentUser = createDefaultUser();
+            populateUserData();
+        }
+
         progressBar.setVisibility(View.GONE);
-        Toast.makeText(requireContext(), "Profile loading temporarily disabled", Toast.LENGTH_SHORT).show();
     }
 
     private void populateUserData() {
@@ -179,9 +154,7 @@ public class EditProfileFragment extends Fragment {
                         radioOther.setChecked(true);
                         break;
                 }
-            }
-
-            // Load profile image
+            } // Load profile image
             if (currentUser.getPhotoUrl() != null && !currentUser.getPhotoUrl().isEmpty()) {
                 Glide.with(this)
                         .load(currentUser.getPhotoUrl())
@@ -190,6 +163,25 @@ public class EditProfileFragment extends Fragment {
                         .into(imgProfile);
             }
         }
+    }
+
+    private User createDefaultUser() {
+        String userId = preferencesHelper.getUserId();
+        if (userId == null || userId.isEmpty()) {
+            userId = "temp_user_" + System.currentTimeMillis();
+        }
+
+        // Create a default user with empty values
+        User user = new User();
+        user.setId(userId);
+        user.setFullName(preferencesHelper.getUserName() != null ? preferencesHelper.getUserName() : "");
+        user.setEmail(preferencesHelper.getUserEmail() != null ? preferencesHelper.getUserEmail() : "");
+        user.setPhone("");
+        user.setGender("other");
+        user.setPhotoUrl("");
+        user.setDateOfBirth("");
+
+        return user;
     }
 
     private void showDatePicker() {
@@ -327,7 +319,8 @@ public class EditProfileFragment extends Fragment {
             uploadProfileImage(fullName, email, phone, dateOfBirth, gender);
         } else {
             // Otherwise just update user data
-            updateUserData(fullName, email, phone, dateOfBirth, gender, currentUser.getPhotoUrl());
+            String existingPhotoUrl = currentUser != null ? currentUser.getPhotoUrl() : "";
+            updateUserData(fullName, email, phone, dateOfBirth, gender, existingPhotoUrl);
         }
     }
 
@@ -381,8 +374,13 @@ public class EditProfileFragment extends Fragment {
     private void updateUserData(String fullName, String email, String phone, String dateOfBirth, String gender,
             String profileImageUrl) {
         // Update user object
+        String userId = currentUser != null ? currentUser.getId() : preferencesHelper.getUserId();
+        if (userId == null || userId.isEmpty()) {
+            userId = "temp_user_" + System.currentTimeMillis();
+        }
+
         User updatedUser = new User(
-                currentUser.getId(),
+                userId,
                 fullName,
                 email,
                 phone,
@@ -390,37 +388,28 @@ public class EditProfileFragment extends Fragment {
                 profileImageUrl,
                 dateOfBirth);
 
-        // Temporarily commented out due to dependency conflicts
-        /*
-         * // Save to Supabase
-         * SupabaseClientManager.getInstance().getClient()
-         * .getSupabase()
-         * .getPlugin(Postgrest.class)
-         * .from("users")
-         * .update(updatedUser)
-         * .eq("id", currentUser.getId())
-         * .executeWithResponseHandlers(
-         * response -> {
-         * requireActivity().runOnUiThread(() -> {
-         * progressBar.setVisibility(View.GONE);
-         * Toast.makeText(requireContext(), "Profile updated successfully",
-         * Toast.LENGTH_SHORT)
-         * .show();
-         * navigateBack();
-         * });
-         * },
-         * throwable -> {
-         * requireActivity().runOnUiThread(() -> {
-         * progressBar.setVisibility(View.GONE);
-         * Toast.makeText(requireContext(), "Failed to update profile",
-         * Toast.LENGTH_SHORT).show();
-         * });
-         * });
-         */
+        // Use UserRepository to update profile
+        UserRepository userRepository = UserRepository.getInstance(requireContext());
+        userRepository.updateUserProfileWithSupabase(updatedUser, new UserRepository.ProfileUpdateCallback() {
+            @Override
+            public void onSuccess(User user) {
+                requireActivity().runOnUiThread(() -> {
+                    currentUser = user;
+                    progressBar.setVisibility(View.GONE);
+                    Toast.makeText(requireContext(), "Profile updated successfully", Toast.LENGTH_SHORT).show();
+                    navigateBack();
+                });
+            }
 
-        // TODO: Replace with actual user data update implementation
-        progressBar.setVisibility(View.GONE);
-        Toast.makeText(requireContext(), "Profile update temporarily disabled", Toast.LENGTH_SHORT).show();
+            @Override
+            public void onError(String errorMessage) {
+                requireActivity().runOnUiThread(() -> {
+                    progressBar.setVisibility(View.GONE);
+                    Toast.makeText(requireContext(), "Failed to update profile: " + errorMessage, Toast.LENGTH_SHORT)
+                            .show();
+                });
+            }
+        });
     }
 
     private void showChangePasswordDialog() {

@@ -3,14 +3,16 @@ import java.util.Properties
 plugins {
     alias(libs.plugins.android.application)
     id("com.google.gms.google-services")
+     kotlin("android") version "2.1.10"
+     kotlin("plugin.serialization") version "2.1.10"
 }
 
 configurations.all {
     resolutionStrategy {
-        force("io.github.jan-tennert.supabase:storage-kt:2.1.2")
+        // Use consistent Supabase versions from BOM
         eachDependency {
-            if (requested.group == "io.github.jan-tennert.supabase" && requested.name == "storage-kt") {
-                useVersion("2.1.2")
+            if (requested.group == "io.github.jan-tennert.supabase") {
+                useVersion("3.1.4")
             }
         }
     }
@@ -103,10 +105,10 @@ dependencies {
     implementation("com.github.bumptech.glide:glide:4.16.0")
     annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
     
-    // Supabase - Temporarily disabled due to dependency conflicts
+    // Supabase - Fixed version conflicts
     implementation(platform("io.github.jan-tennert.supabase:bom:3.1.4"))
     implementation("io.github.jan-tennert.supabase:postgrest-kt:3.1.4")
-    implementation ("io.github.jan-tennert.supabase:storage-kt:2.6.0")
+    implementation("io.github.jan-tennert.supabase:storage-kt:3.1.4")
     implementation("io.github.jan-tennert.supabase:realtime-kt:3.1.4")
     
     // Ktor (required for Supabase) - Temporarily disabled
