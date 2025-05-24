@@ -232,4 +232,20 @@ public class AppUtils {
         // but for simplicity we'll just make a phone call
         dialPhoneNumber(context, "1-800-COFFEE");
     }
+
+    /**
+     * Open URL in browser
+     * 
+     * @param context Context
+     * @param url     URL to open
+     */
+    public static void openUrl(Context context, String url) {
+        try {
+            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+            context.startActivity(intent);
+        } catch (Exception e) {
+            Log.e(TAG, "Error opening URL: " + e.getMessage());
+            Toast.makeText(context, "Could not open link. Please try again later.", Toast.LENGTH_SHORT).show();
+        }
+    }
 }

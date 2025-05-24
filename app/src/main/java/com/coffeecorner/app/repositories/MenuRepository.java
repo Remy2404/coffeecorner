@@ -58,29 +58,44 @@ public class MenuRepository {
 
     public LiveData<List<MenuItem>> getMenuItems() {
         MutableLiveData<List<MenuItem>> data = new MutableLiveData<>();
-        // TODO: Implement API call to fetch menu items and update the LiveData
-        // apiService.getMenuItems(...)
-        // If your API returns List<Product>, you should use List<Product> here, or
-        // convert to MenuItem if needed.
+
         apiService.getProducts().enqueue(new Callback<ApiResponse<List<Product>>>() {
             @Override
             public void onResponse(Call<ApiResponse<List<Product>>> call,
                     Response<ApiResponse<List<Product>>> response) {
                 if (response.isSuccessful() && response.body() != null && response.body().getData() != null) {
-                    // If you need MenuItem, convert Product to MenuItem here
-                    // For now, just log or ignore
+                    List<Product> products = response.body().getData();
+                    List<MenuItem> menuItems = convertProductsToMenuItems(products);
+                    data.postValue(menuItems);
                 } else {
                     android.util.Log.e("MenuRepository", "Failed to fetch menu items: " + response.message());
+                    data.postValue(new java.util.ArrayList<>());
                 }
             }
 
             @Override
             public void onFailure(Call<ApiResponse<List<Product>>> call, Throwable t) {
                 android.util.Log.e("MenuRepository", "Network error fetching menu items", t);
+                data.postValue(new java.util.ArrayList<>());
                 t.printStackTrace();
             }
         });
         return data;
+    }
+
+    private List<MenuItem> convertProductsToMenuItems(List<Product> products) {
+        List<MenuItem> menuItems = new java.util.ArrayList<>();
+        for (Product product : products) {
+            MenuItem menuItem = new MenuItem(
+                    product.getId(),
+                    product.getName(),
+                    product.getDescription(),
+                    product.getPrice(),
+                    product.getImageUrl(),
+                    product.getCategory());
+            menuItems.add(menuItem);
+        }
+        return menuItems;
     }
 
     /**

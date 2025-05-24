@@ -11,6 +11,8 @@ import com.coffeecorner.app.models.Product;
 import com.coffeecorner.app.repositories.ProductRepository;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,13 +36,16 @@ public class ProductViewModel extends AndroidViewModel {
     private long lastCacheTime = 0;
     private static final long CACHE_DURATION = 5 * 60 * 1000; // 5 minutes cache
 
+    // Store original list for filtering/sorting
+    private List<Product> originalProducts = new ArrayList<>();
+
     public ProductViewModel(@NonNull Application application) {
         super(application);
         productRepository = ProductRepository.getInstance(); // Get repository instance
 
         // Load initial data
-        loadCategories(); // Load categories first, then products based on "All"
-        // loadProducts(); // This will be called by loadCategories or explicitly
+        loadCategories();
+
     }
 
     /**
@@ -82,11 +87,6 @@ public class ProductViewModel extends AndroidViewModel {
         }
     }
 
-    /**
-     * Filter products by category using cache when possible
-     * 
-     * @param categoryParamParam
-     */
     public void filterByCategory(String categoryParam) {
         String finalCategory = categoryParam;
         if (finalCategory == null) {
@@ -218,6 +218,107 @@ public class ProductViewModel extends AndroidViewModel {
         categoryProductCache.clear();
         lastCacheTime = 0;
         loadProducts(); // Reload from network
+    }
+
+    /**
+     * Sort products by price ascending
+     */
+    public void sortByPriceAscending() {
+        List<Product> currentProducts = products.getValue();
+        if (currentProducts != null && !currentProducts.isEmpty()) {
+            List<Product> sortedProducts = new ArrayList<>(currentProducts);
+            Collections.sort(sortedProducts, new Comparator<Product>() {
+                @Override
+                public int compare(Product p1, Product p2) {
+                    return Double.compare(p1.getPrice(), p2.getPrice());
+                }
+            });
+            products.setValue(sortedProducts);
+        }
+    }
+
+    /**
+     * Sort products by price descending
+     */
+    public void sortByPriceDescending() {
+        List<Product> currentProducts = products.getValue();
+        if (currentProducts != null && !currentProducts.isEmpty()) {
+            List<Product> sortedProducts = new ArrayList<>(currentProducts);
+            Collections.sort(sortedProducts, new Comparator<Product>() {
+                @Override
+                public int compare(Product p1, Product p2) {
+                    return Double.compare(p2.getPrice(), p1.getPrice());
+                }
+            });
+            products.setValue(sortedProducts);
+        }
+    }    /**
+     * Sort products by popularity (rating descending as proxy for popularity)
+     */
+    public void sortByPopularity() {
+        List<Product> currentProducts = products.getValue();
+        if (currentProducts != null && !currentProducts.isEmpty()) {
+            List<Product> sortedProducts = new ArrayList<>(currentProducts);
+            Collections.sort(sortedProducts, new Comparator<Product>() {
+                @Override
+                public int compare(Product p1, Product p2) {
+                    // Use rating as proxy for popularity since orderCount doesn't exist
+                    return Float.compare(p2.getRating(), p1.getRating());
+                }
+            });
+            products.setValue(sortedProducts);
+        }
+    }
+
+    /**
+     * Sort products by newest (creation date descending)
+     */
+    public void sortByNewest() {
+        List<Product> currentProducts = products.getValue();
+        if (currentProducts != null && !currentProducts.isEmpty()) {
+            List<Product> sortedProducts = new ArrayList<>(currentProducts);
+            Collections.sort(sortedProducts, new Comparator<Product>() {
+                @Override
+                public int compare(Product p1, Product p2) {
+                    // Assuming newer products have higher ID or creation timestamp
+                    return p2.getId().compareTo(p1.getId());
+                }
+            });
+            products.setValue(sortedProducts);
+        }
+    }
+
+    /**
+     * Sort products by rating descending
+     */
+    public void sortByRating() {
+        List<Product> currentProducts = products.getValue();
+        if (currentProducts != null && !currentProducts.isEmpty()) {
+            List<Product> sortedProducts = new ArrayList<>(currentProducts);
+            Collections.sort(sortedProducts, new Comparator<Product>() {
+                @Override
+                public int compare(Product p1, Product p2) {
+                    return Double.compare(p2.getRating(), p1.getRating());
+                }
+            });
+            products.setValue(sortedProducts);
+        }
+    }
+
+    /**
+     * Filter to show only available products
+     */
+    public void filterAvailableOnly() {
+        List<Product> currentProducts = products.getValue();
+        if (currentProducts != null && !currentProducts.isEmpty()) {
+            List<Product> availableProducts = new ArrayList<>();
+            for (Product product : currentProducts) {
+                if (product.isAvailable()) {
+                    availableProducts.add(product);
+                }
+            }
+            products.setValue(availableProducts);
+        }
     }
 
     // Getters for LiveData

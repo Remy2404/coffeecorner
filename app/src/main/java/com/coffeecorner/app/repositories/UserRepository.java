@@ -52,22 +52,14 @@ public class UserRepository {
      * @param callback Callback to handle result
      */
     public void login(String email, String password, @NonNull AuthCallback callback) {
-        // TODO: Replace with actual User model for login request if different
-        User loginRequest = new User(); // Or a specific LoginRequest model
-        loginRequest.setEmail(email);
-        // loginRequest.setPassword(password); // Assuming password is part of the
-        // request
-
-        apiService.login(email, password).enqueue(new Callback<ApiResponse<User>>() { // Corrected API call and callback
-                                                                                      // type
+        apiService.login(email, password).enqueue(new Callback<ApiResponse<User>>() {
             @Override
             public void onResponse(@NonNull Call<ApiResponse<User>> call,
                     @NonNull Response<ApiResponse<User>> response) {
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                     User user = response.body().getData();
                     currentUser.setValue(user);
-                    // preferencesHelper.saveUserId(user.getId()); // Save user ID upon successful
-                    // login
+                    preferencesHelper.saveUserId(user.getId());
                     callback.onSuccess(user);
                 } else {
                     // Log error for debugging
@@ -188,8 +180,10 @@ public class UserRepository {
     public void clearUserId() {
         preferencesHelper.clearUserId();
         currentUser.setValue(null);
-        // TODO: Add API call for server-side logout if necessary
-        // apiService.logoutUser().enqueue(...);
+
+        // Optional: Add API call for server-side logout if needed
+        // For now, local logout is sufficient
+        android.util.Log.d("UserRepository", "User logged out successfully");
     }
 
     /**
@@ -362,12 +356,8 @@ public class UserRepository {
             callback.onError("User ID cannot be null or empty.");
             return;
         }
-        // TODO: Need to create a specific API method for change password if not already
-        // available or if the existing one in ApiService doesn't match.
-        // Based on ApiService, `changePassword` takes userId, oldPassword, newPassword.
-        apiService.changePassword(userId, oldPassword, newPassword).enqueue(new Callback<ApiResponse<Void>>() { // Corrected
-                                                                                                                // API
-                                                                                                                // call
+
+        apiService.changePassword(userId, oldPassword, newPassword).enqueue(new Callback<ApiResponse<Void>>() {
             @Override
             public void onResponse(@NonNull Call<ApiResponse<Void>> call,
                     @NonNull Response<ApiResponse<Void>> response) {
