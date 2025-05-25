@@ -15,6 +15,10 @@ configurations.all {
                 useVersion("3.1.4")
             }
         }
+        // Force specific versions to avoid conflicts
+        force("io.github.jan-tennert.supabase:storage-kt:3.1.4")
+        force("io.github.jan-tennert.supabase:postgrest-kt:3.1.4")
+        force("io.github.jan-tennert.supabase:realtime-kt:3.1.4")
     }
 }
 
@@ -69,7 +73,10 @@ android {
             excludes += "/META-INF/LICENSE.txt"
             excludes += "/META-INF/NOTICE"
             excludes += "/META-INF/NOTICE.txt"
+            // Handle duplicate Supabase classes
             pickFirsts += "**/UploadData.class"
+            pickFirsts += "**/storage/*.class"
+            pickFirsts += "**/io/github/jan/supabase/storage/*.class"
         }
         jniLibs {
             pickFirsts += "**/libc++_shared.so"
@@ -105,16 +112,19 @@ dependencies {
     implementation("com.github.bumptech.glide:glide:4.16.0")
     annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
     
-    // Supabase - Fixed version conflicts
-    implementation(platform("io.github.jan-tennert.supabase:bom:3.1.4"))
-    implementation("io.github.jan-tennert.supabase:postgrest-kt:3.1.4")
-    implementation("io.github.jan-tennert.supabase:storage-kt:3.1.4")
-    implementation("io.github.jan-tennert.supabase:realtime-kt:3.1.4")
+    // Supabase - Temporarily disabled due to dependency conflicts
+    // TODO: Re-enable when server integration is ready
+    // implementation(platform("io.github.jan-tennert.supabase:bom:3.1.4"))
+    // implementation("io.github.jan-tennert.supabase:postgrest-kt:3.1.4")
+    // implementation("io.github.jan-tennert.supabase:storage-kt:3.1.4")
+    // implementation("io.github.jan-tennert.supabase:realtime-kt:3.1.4")
+    implementation ("io.reactivex.rxjava2:rxjava:2.2.21")
+    implementation("io.reactivex.rxjava2:rxandroid:2.1.1")
     
-    // Ktor (required for Supabase) - Temporarily disabled
-     implementation("io.ktor:ktor-client-android:2.3.11")
-     implementation("io.ktor:ktor-client-content-negotiation:2.3.11")
-     implementation("io.ktor:ktor-serialization-kotlinx-json:2.3.11")
+    // Ktor (required for Supabase) - Temporarily disabled due to dependency conflicts
+    // implementation("io.ktor:ktor-client-android:2.3.11")
+    // implementation("io.ktor:ktor-client-content-negotiation:2.3.11")
+    // implementation("io.ktor:ktor-serialization-kotlinx-json:2.3.11")
     
     // Navigation Component
     implementation("androidx.navigation:navigation-fragment:2.9.0")

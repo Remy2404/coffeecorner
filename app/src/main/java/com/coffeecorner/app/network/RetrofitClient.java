@@ -74,4 +74,13 @@ public class RetrofitClient {
         }
         return retrofit.create(ApiService.class);
     }
+
+    /**
+     * Get API service interface (alias method)
+     * 
+     * @return ApiService instance
+     */
+    public static ApiService getApi() {
+        return getApiService();
+    }
 }

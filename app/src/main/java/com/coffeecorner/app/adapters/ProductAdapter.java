@@ -1,6 +1,7 @@
 package com.coffeecorner.app.adapters;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,9 +12,9 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.bumptech.glide.Glide;
 import com.coffeecorner.app.R;
 import com.coffeecorner.app.models.Product;
+import com.coffeecorner.app.utils.ImageLoader;
 import com.google.android.material.card.MaterialCardView;
 
 import java.text.NumberFormat;
@@ -79,19 +80,25 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
         // Format and set price
         NumberFormat currencyFormatter = NumberFormat.getCurrencyInstance(Locale.US);
         String formattedPrice = currencyFormatter.format(product.getPrice());
-        holder.tvPrice.setText(formattedPrice);
+        holder.tvPrice.setText(formattedPrice); // Load image using ImageLoader utility
+        ImageLoader.loadImage(
+                context,
+                product.getImageUrl(),
+                holder.ivProductImage,
+                R.drawable.coffee_coco,
+                R.drawable.coffee_coco,
+                new ImageLoader.ImageLoadListener() {
+                    @Override
+                    public void onSuccess() {
+                        // Image loaded successfully
+                    }
 
-        // Load image using Glide
-        if (product.getImageUrl() != null && !product.getImageUrl().isEmpty()) {
-            Glide.with(context)
-                    .load(product.getImageUrl())
-                    .placeholder(R.drawable.coffee_coco)
-                    .error(R.drawable.coffee_coco)
-                    .centerCrop()
-                    .into(holder.ivProductImage);
-        } else {
-            holder.ivProductImage.setImageResource(R.drawable.coffee_coco);
-        }
+                    @Override
+                    public void onError() {
+                        // Log error but UI already shows fallback image
+                        Log.w("ProductAdapter", "Failed to load image for product: " + product.getName());
+                    }
+                });
 
         // Set click listeners
         holder.cardView.setOnClickListener(v -> {

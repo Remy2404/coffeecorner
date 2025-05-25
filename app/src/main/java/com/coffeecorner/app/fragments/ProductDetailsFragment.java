@@ -19,19 +19,23 @@ import androidx.navigation.Navigation;
 
 import com.bumptech.glide.Glide;
 import com.coffeecorner.app.R;
+import com.coffeecorner.app.models.CartItem;
 import com.coffeecorner.app.models.Product;
 import com.coffeecorner.app.utils.CartManager;
-// Temporarily commented out due to dependency conflicts
-// import com.coffeecorner.app.utils.SupabaseClientManager;
-import com.google.android.material.appbar.CollapsingToolbarLayout;
+import com.coffeecorner.app.network.ApiService;
+import com.coffeecorner.app.network.RetrofitClient;
+import com.coffeecorner.app.network.ApiResponse;
+import com.coffeecorner.app.models.ProductResponse;
+import java.util.Arrays;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
+import com.google.android.material.appbar.CollapsingToolbarLayout;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 import java.text.NumberFormat;
 import java.util.Locale;
-
-// Temporarily commented out due to dependency conflicts
-// import io.github.jan.supabase.postgrest.Postgrest;
 
 public class ProductDetailsFragment extends Fragment {
 
@@ -64,6 +68,8 @@ public class ProductDetailsFragment extends Fragment {
 
         // Initialize views
         initViews(view);
+        // Setup chip change listeners to update price dynamically
+        setChipListeners();
 
         // Set click listeners
         setClickListeners();
@@ -107,6 +113,10 @@ public class ProductDetailsFragment extends Fragment {
         if (tvQuantity != null) {
             tvQuantity.setText(String.valueOf(quantity));
         }
+        // Default size selection
+        if (chipSizeS != null) {
+            chipSizeS.setChecked(true);
+        }
 
         // Configure collapsing toolbar
         collapsingToolbar = view.findViewById(R.id.collapsingToolbarProductDetails);
@@ -149,45 +159,53 @@ public class ProductDetailsFragment extends Fragment {
         });
     }
 
+    /**
+     * Attach listeners to chips to recalculate price when selection changes.
+     */
+    private void setChipListeners() {
+        chipSizeS.setOnCheckedChangeListener((button, isChecked) -> updateTotalPrice());
+        chipSizeM.setOnCheckedChangeListener((button, isChecked) -> updateTotalPrice());
+        chipSizeL.setOnCheckedChangeListener((button, isChecked) -> updateTotalPrice());
+        if (chipGroupExtras != null) {
+            for (int i = 0; i < chipGroupExtras.getChildCount(); i++) {
+                Chip chip = (Chip) chipGroupExtras.getChildAt(i);
+                chip.setOnCheckedChangeListener((button, isChecked) -> updateTotalPrice());
+            }
+        }
+    }
+
     private void loadProduct(String productId) {
-        // Temporarily commented out due to dependency conflicts
-        /*
-         * SupabaseClientManager.getInstance().getClient()
-         * .getSupabase()
-         * .getPlugin(Postgrest.class)
-         * .from("products")
-         * .select()
-         * .eq("id", productId)
-         * .single()
-         * .executeWithResponseHandlers(
-         * response -> {
-         * product = response.getData(Product.class);
-         * requireActivity().runOnUiThread(() -> {
-         * displayProduct();
-         * });
-         * checkFavoriteStatus(productId);
-         * },
-         * throwable -> {
-         * requireActivity().runOnUiThread(() -> {
-         * Toast.makeText(requireContext(), "Failed to load product",
-         * Toast.LENGTH_SHORT).show();
-         * Navigation.findNavController(requireView()).popBackStack();
-         * });
-         * }
-         * );
-         */
-        // TODO: Replace with actual product loading implementation
-        // For now, create a dummy product for testing
-        product = new Product(
-                productId,
-                "Sample Coffee",
-                "A delicious sample coffee for testing",
-                4.99,
-                "Coffee",
-                "coffee_placeholder");
-        product.setCalories(150);
-        displayProduct();
-        checkFavoriteStatus(productId);
+        ApiService api = RetrofitClient.getInstance().getApi();
+        api.getProductById(productId).enqueue(new Callback<ApiResponse<Product>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<Product>> call,
+                    Response<ApiResponse<Product>> response) {                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                    product = response.body().getData();
+                    if (product.getCalories() == 0) {
+                        product.setCalories(150); // Default calories if not set
+                    }
+                    product.setAvailableSizes(Arrays.asList("Small", "Medium", "Large"));
+                    product.setAvailableAddons(Arrays.asList("Extra Shot", "Whipped Cream", "Caramel"));
+                    requireActivity().runOnUiThread(() -> {
+                        displayProduct();
+                        checkFavoriteStatus(productId);
+                    });
+                } else {
+                    requireActivity().runOnUiThread(() -> {
+                        Toast.makeText(requireContext(), "Failed to load product", Toast.LENGTH_SHORT).show();
+                        Navigation.findNavController(requireView()).popBackStack();
+                    });
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse<Product>> call, Throwable t) {
+                requireActivity().runOnUiThread(() -> {
+                    Toast.makeText(requireContext(), "Error loading product", Toast.LENGTH_SHORT).show();
+                    Navigation.findNavController(requireView()).popBackStack();
+                });
+            }
+        });
     }
 
     private void displayProduct() {
@@ -255,8 +273,10 @@ public class ProductDetailsFragment extends Fragment {
     }
 
     private void addToCart() {
-        if (product == null)
+        if (product == null) {
+            Toast.makeText(requireContext(), "Product information not available", Toast.LENGTH_SHORT).show();
             return;
+        }
 
         // Get selected size
         String size = "Small"; // Default
@@ -283,19 +303,34 @@ public class ProductDetailsFragment extends Fragment {
             }
         }
 
-        // Add to cart
-        CartManager.getInstance().addToCart(
+        // Add to cart with null safety check
+        CartItem addedItem = CartManager.getInstance().addToCart(
                 product,
                 quantity,
                 size,
                 temperature,
                 customizations.length() > 0 ? customizations.toString() : null);
 
-        // Show success message
-        Toast.makeText(requireContext(), getString(R.string.added_to_cart), Toast.LENGTH_SHORT).show();
+        if (addedItem != null) {
+            // Show success message
+            Toast.makeText(requireContext(), getString(R.string.added_to_cart), Toast.LENGTH_SHORT).show();
 
-        // Navigate back
-        Navigation.findNavController(requireView()).popBackStack();
+            // Navigate back safely
+            try {
+                if (isAdded() && getView() != null) {
+                    Navigation.findNavController(requireView()).popBackStack();
+                }
+            } catch (Exception e) {
+                android.util.Log.e("ProductDetailsFragment", "Navigation error: " + e.getMessage());
+                // Fallback: try to finish the activity or fragment manually
+                if (getActivity() != null) {
+                    getActivity().onBackPressed();
+                }
+            }
+        } else {
+            // Show error message
+            Toast.makeText(requireContext(), "Failed to add item to cart", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void checkFavoriteStatus(String productId) {

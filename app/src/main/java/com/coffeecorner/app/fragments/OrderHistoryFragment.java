@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 
 import androidx.annotation.NonNull;
@@ -25,11 +26,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class OrderHistoryFragment extends Fragment {
-
     private ViewPager2 viewPager;
     private TabLayout tabLayout;
     private LinearLayout emptyView;
     private Button btnOrderNow;
+    private ImageView btnBack;
     private OrderHistoryPagerAdapter pagerAdapter;
     private OrderViewModel orderViewModel;
 
@@ -53,13 +54,12 @@ public class OrderHistoryFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         // Initialize ViewModel
-        orderViewModel = new ViewModelProvider(requireActivity()).get(OrderViewModel.class);
-
-        // Initialize views
+        orderViewModel = new ViewModelProvider(requireActivity()).get(OrderViewModel.class); // Initialize views
         viewPager = view.findViewById(R.id.viewPager);
         tabLayout = view.findViewById(R.id.tabLayout);
         emptyView = view.findViewById(R.id.emptyView);
         btnOrderNow = view.findViewById(R.id.btnOrderNow);
+        btnBack = view.findViewById(R.id.btnBack);
 
         // Set up ViewPager
         pagerAdapter = new OrderHistoryPagerAdapter(this);
@@ -78,12 +78,16 @@ public class OrderHistoryFragment extends Fragment {
                     tab.setText("Cancelled");
                     break;
             }
-        }).attach();
-
-        // Set button click listener
+        }).attach(); // Set button click listener
         btnOrderNow.setOnClickListener(v -> {
             // Navigate to menu
             Navigation.findNavController(view).navigate(R.id.action_to_menu);
+        });
+
+        // Set back button click listener
+        btnBack.setOnClickListener(v -> {
+            // Navigate back to previous fragment
+            Navigation.findNavController(view).navigateUp();
         });
 
         // Setup observers

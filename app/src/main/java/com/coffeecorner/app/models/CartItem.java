@@ -3,11 +3,11 @@ package com.coffeecorner.app.models;
 public class CartItem {
     private Product product;
     private int quantity;
-    private String size; // e.g., "Medium", "Large"
-    private String milkOption; // e.g., "Whole Milk", "Almond Milk"
-    private double extraCharge; // For options like special milk, etc.
-    private String temperature; // e.g., "Hot", "Iced"
-    private String customizations; // Additional customizations
+    private String size;
+    private String milkOption;
+    private double extraCharge;
+    private String temperature;
+    private String customizations;
 
     // Default constructor needed by CartManager
     public CartItem() {
@@ -19,11 +19,11 @@ public class CartItem {
     public CartItem(Product product, int quantity) {
         this.product = product;
         this.quantity = quantity;
-        this.size = "Medium"; // Default size
-        this.milkOption = "Whole Milk"; // Default milk
+        this.size = "Medium";
+        this.milkOption = "Whole Milk";
         this.extraCharge = 0.0;
-        this.temperature = "Hot"; // Default temperature
-        this.customizations = ""; // Default no customizations
+        this.temperature = "Hot";
+        this.customizations = "";
     }
 
     public CartItem(Product product, int quantity, String size, String milkOption) {
@@ -32,8 +32,8 @@ public class CartItem {
         this.size = size;
         this.milkOption = milkOption;
         this.extraCharge = calculateExtraCharge(size, milkOption); // Keep internal calculation for this constructor
-        this.temperature = "Hot"; // Default temperature
-        this.customizations = ""; // Default no customizations
+        this.temperature = "Hot";
+        this.customizations = "";
     }
 
     public CartItem(Product product, int quantity, String size, String milkOption, double extraCharge) {
@@ -42,8 +42,8 @@ public class CartItem {
         this.size = size;
         this.milkOption = milkOption;
         this.extraCharge = extraCharge;
-        this.temperature = "Hot"; // Default temperature
-        this.customizations = ""; // Default no customizations
+        this.temperature = "Hot";
+        this.customizations = "";
     }
 
     public CartItem(Product product, int quantity, String size, String milkOption, String temperature,
@@ -133,6 +133,10 @@ public class CartItem {
     }
 
     public double getTotalPrice() {
+        if (product == null) {
+            android.util.Log.w("CartItem", "getTotalPrice: Product is null, returning 0");
+            return 0.0;
+        }
         return (product.getPrice() + extraCharge) * quantity;
     }
 

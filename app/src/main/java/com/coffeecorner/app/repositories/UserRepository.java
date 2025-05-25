@@ -121,7 +121,7 @@ public class UserRepository {
         // registrationRequest.setPassword(password); // Assuming password is part of
         // the request
 
-        apiService.register(name, email, password, recaptchaToken).enqueue(new Callback<ApiResponse<User>>() {
+        apiService.register(name, email, password).enqueue(new Callback<ApiResponse<User>>() {
             @Override
             public void onResponse(@NonNull Call<ApiResponse<User>> call,
                     @NonNull Response<ApiResponse<User>> response) {
@@ -458,6 +458,40 @@ public class UserRepository {
         user.setPhone(preferencesHelper.getUserPhone());
         user.setPhotoUrl(preferencesHelper.getUserProfilePic());
         return user;
+    }
+
+    /**
+     * Authenticate with backend using Firebase ID token
+     */
+    public void authenticateWithFirebase(String firebaseToken, @NonNull AuthCallback callback) {
+        apiService.authenticateWithFirebase(firebaseToken).enqueue(new Callback<ApiResponse<User>>() {
+            @Override
+            public void onResponse(@NonNull Call<ApiResponse<User>> call,
+                    @NonNull Response<ApiResponse<User>> response) {
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                    User user = response.body().getData();
+                    currentUser.setValue(user);
+                    saveUserToPreferences(user);
+                    callback.onSuccess(user);
+                } else {
+                    Log.e("UserRepository", "Firebase auth failed: " + response.code() + " - " + response.message());
+                    try {
+                        if (response.errorBody() != null) {
+                            Log.e("UserRepository", "Error body: " + response.errorBody().string());
+                        }
+                    } catch (Exception e) {
+                        Log.e("UserRepository", "Error parsing error body", e);
+                    }
+                    callback.onError("Authentication failed. Please try again.");
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<ApiResponse<User>> call, @NonNull Throwable t) {
+                Log.e("UserRepository", "Firebase auth network error", t);
+                callback.onError("Network error. Please try again. " + t.getMessage());
+            }
+        });
     }
 
     /**

@@ -17,6 +17,10 @@ public class Product {
     private float rating;
     private int calories; // Added calories field
 
+    // Default constructor for GSON
+    public Product() {
+    }
+
     // Constructor for basic products
     public Product(String id, String name, String description, double price, String category, String imageUrl) {
         this.id = id;
