@@ -42,7 +42,7 @@ class ProductResponse(BaseModel):
     description: str
     price: float
     category: str
-    image_url: str
+    image_url: Optional[str] = None
     calories: Optional[int] = None
     rating: Optional[float] = None
     review_count: Optional[int] = None

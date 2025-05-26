@@ -1,8 +1,3 @@
-#!/usr/bin/env python3
-"""
-Test Firebase Admin SDK integration
-"""
-
 import os
 import logging
 from dotenv import load_dotenv

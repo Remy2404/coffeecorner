@@ -69,3 +69,17 @@ async def get_cart_total(current_user: UserResponse = Depends(get_current_user))
         message="Cart total calculated successfully",
         data={"total": total},
     )
+
+
+@router.get("/{user_id}", response_model=ApiResponse)
+async def get_cart_by_user_id(user_id: str):
+    """Get cart items by user ID (for testing purposes)"""
+    try:
+        cart_items = await CartService.get_user_cart(user_id)
+        return ApiResponse(
+            success=True, message="Cart retrieved successfully", data=cart_items
+        )
+    except Exception as e:
+        return ApiResponse(
+            success=False, message="Failed to get cart", data=[]
+        )
