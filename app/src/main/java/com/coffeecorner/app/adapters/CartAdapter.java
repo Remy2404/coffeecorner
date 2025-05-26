@@ -44,9 +44,11 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
     @NonNull
     @Override
     public CartViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(context).inflate(R.layout.item_cart, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_cart, parent, false);
         return new CartViewHolder(view);
-    }    @Override
+    }
+
+    @Override
     public void onBindViewHolder(@NonNull CartViewHolder holder, int position) {
         CartItem cartItem = cartItems.get(position);
         Product product = cartItem.getProduct();
@@ -58,7 +60,7 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
             holder.tvProductVariant.setText("");
             holder.tvPrice.setText(currencyFormatter.format(0.0));
             holder.tvQuantity.setText(String.valueOf(cartItem.getQuantity()));
-            
+
             // Disable buttons for invalid products
             holder.btnRemove.setOnClickListener(v -> {
                 if (listener != null) {
@@ -119,7 +121,8 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
             if (listener != null) {
                 listener.onItemRemoved(cartItem);
             }
-        });        holder.btnIncreaseQuantity.setOnClickListener(v -> {
+        });
+        holder.btnIncreaseQuantity.setOnClickListener(v -> {
             int newQuantity = cartItem.getQuantity() + 1;
             if (newQuantity <= 10 && product != null) { // Set a reasonable maximum and check product
                 cartItem.setQuantity(newQuantity);

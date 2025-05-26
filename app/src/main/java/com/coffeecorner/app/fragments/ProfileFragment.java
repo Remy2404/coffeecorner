@@ -51,7 +51,8 @@ public class ProfileFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_profile, container, false);
 
         // Initialize ViewModel with custom factory
-        userViewModel = new ViewModelProvider(requireActivity(), new UserViewModelFactory(requireContext())).get(UserViewModel.class);
+        userViewModel = new ViewModelProvider(requireActivity(), new UserViewModelFactory(requireContext()))
+                .get(UserViewModel.class);
 
         return view;
     }
@@ -74,7 +75,8 @@ public class ProfileFragment extends Fragment {
         switchTheme.setChecked(getDarkModePref());
         isThemeSwitching = false;
         switchTheme.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            if (isThemeSwitching) return;
+            if (isThemeSwitching)
+                return;
             saveDarkModePref(isChecked);
             int newMode = isChecked ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO;
             if (AppCompatDelegate.getDefaultNightMode() != newMode) {
@@ -111,14 +113,46 @@ public class ProfileFragment extends Fragment {
             // Navigate to edit profile screen
             Navigation.findNavController(v).navigate(R.id.action_profileFragment_to_editProfileFragment);
         });
-
         btnSettings.setOnClickListener(v -> {
-            Toast.makeText(requireContext(), "Settings clicked", Toast.LENGTH_SHORT).show();
+            try {
+                Navigation.findNavController(v).navigate(R.id.action_profileFragment_to_settingsFragment);
+            } catch (Exception e) {
+                Toast.makeText(requireContext(), "Settings screen is under development", Toast.LENGTH_SHORT).show();
+            }
         });
 
         // Setup click listeners for action items
         view.findViewById(R.id.layoutMyOrders).setOnClickListener(v -> {
             Navigation.findNavController(v).navigate(R.id.action_profileFragment_to_orderHistoryFragment);
+        }); // Add click listener for Payment Methods
+        view.findViewById(R.id.layoutPaymentMethods).setOnClickListener(v -> {
+            try {
+                Navigation.findNavController(v).navigate(R.id.action_profileFragment_to_paymentMethodsFragment);
+            } catch (Exception e) {
+                Toast.makeText(requireContext(), "Payment Methods screen is under development", Toast.LENGTH_SHORT)
+                        .show();
+            }
+        }); // Add click listener for My Rewards
+        view.findViewById(R.id.layoutMyRewards).setOnClickListener(v -> {
+            try {
+                Navigation.findNavController(v).navigate(R.id.action_profileFragment_to_myRewardsFragment);
+            } catch (Exception e) {
+                Toast.makeText(requireContext(), "My Rewards screen is under development", Toast.LENGTH_SHORT).show();
+            }
+        }); // Add click listener for About Us
+        view.findViewById(R.id.layoutAboutUs).setOnClickListener(v -> {
+            try {
+                Navigation.findNavController(v).navigate(R.id.action_profileFragment_to_aboutUsFragment);
+            } catch (Exception e) {
+                Toast.makeText(requireContext(), "About Us screen is under development", Toast.LENGTH_SHORT).show();
+            }
+        }); // Add click listener for My Addresses
+        view.findViewById(R.id.layoutMyAddresses).setOnClickListener(v -> {
+            try {
+                Navigation.findNavController(v).navigate(R.id.action_profileFragment_to_myAddressesFragment);
+            } catch (Exception e) {
+                Toast.makeText(requireContext(), "My Addresses screen is under development", Toast.LENGTH_SHORT).show();
+            }
         });
 
         view.findViewById(R.id.layoutLogout).setOnClickListener(v -> {
@@ -172,13 +206,13 @@ public class ProfileFragment extends Fragment {
 
     private void saveDarkModePref(boolean isDark) {
         requireContext().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-            .edit()
-            .putBoolean(KEY_DARK_MODE, isDark)
-            .apply();
+                .edit()
+                .putBoolean(KEY_DARK_MODE, isDark)
+                .apply();
     }
 
     private boolean getDarkModePref() {
         return requireContext().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-            .getBoolean(KEY_DARK_MODE, false);
+                .getBoolean(KEY_DARK_MODE, false);
     }
 }

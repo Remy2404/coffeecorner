@@ -22,6 +22,7 @@ backend/.venv
 backend/.env
 backend/__pycache__
 backend/coffee-corner-2697f-firebase-adminsdk-fbsvc-dd6a599348.json
+.github/copilot-mcp-instructions.md
 
 # Supabase credentials
 app/src/main/assets/supabase.properties

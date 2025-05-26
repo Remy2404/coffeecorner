@@ -229,6 +229,15 @@ public class PreferencesHelper {
     }
 
     /**
+     * Check if notifications are enabled (alias method)
+     * 
+     * @return True if notifications are enabled
+     */
+    public boolean isNotificationsEnabled() {
+        return areNotificationsEnabled();
+    }
+
+    /**
      * Set notifications setting
      * 
      * @param enabled True to enable notifications
@@ -334,6 +343,13 @@ public class PreferencesHelper {
         sharedPreferences.edit().clear().apply();
     }
 
+    /**
+     * Clear all preferences (alias method)
+     */
+    public void clear() {
+        clearAll();
+    }
+
     public void saveUserId(String id) {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString(KEY_USER_ID, id);
@@ -396,7 +412,7 @@ public class PreferencesHelper {
      * @return Promo code
      */
     public String getPromoCode() {
-        return sharedPreferences.getString(KEY_PROMO_CODE, "");
+        return sharedPreferences.getString(KEY_PROMO_CODE, null);
     }
 
     /**

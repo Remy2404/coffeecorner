@@ -3,7 +3,7 @@ package com.coffeecorner.app.models;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Product {
+public class Product implements Cloneable {
     private String id;
     private String name;
     private String description;
@@ -186,5 +186,26 @@ public class Product {
 
     public boolean hasAddons() {
         return availableAddons != null && availableAddons.size() > 0;
+    }
+
+    @Override
+    public Product clone() {
+        try {
+            Product cloned = (Product) super.clone();
+
+            // Deep copy of list fields
+            if (this.availableSizes != null) {
+                cloned.availableSizes = new ArrayList<>(this.availableSizes);
+            }
+
+            if (this.availableAddons != null) {
+                cloned.availableAddons = new ArrayList<>(this.availableAddons);
+            }
+
+            return cloned;
+        } catch (CloneNotSupportedException e) {
+            // This should never happen since we implement Cloneable
+            throw new RuntimeException("Clone not supported", e);
+        }
     }
 }

@@ -24,20 +24,20 @@ public class CheckoutItemAdapter extends RecyclerView.Adapter<CheckoutItemAdapte
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(context)
-            .inflate(R.layout.item_checkout, parent, false);
+        View view = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.item_checkout, parent, false);
         return new ViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         CartItem item = items.get(position);
-        
+
         holder.tvItemName.setText(item.getProduct().getName());
         holder.tvQuantity.setText(String.format("x%d", item.getQuantity()));
         holder.tvSize.setText(item.getSize());
         holder.tvMilkOption.setText(item.getMilkOption());
-        
+
         double totalPrice = item.getTotalPrice();
         holder.tvPrice.setText(String.format("$%.2f", totalPrice));
     }

@@ -80,6 +80,4 @@ async def get_cart_by_user_id(user_id: str):
             success=True, message="Cart retrieved successfully", data=cart_items
         )
     except Exception as e:
-        return ApiResponse(
-            success=False, message="Failed to get cart", data=[]
-        )
+        return ApiResponse(success=False, message="Failed to get cart", data=[])

@@ -68,7 +68,7 @@ public class MainActivity extends AppCompatActivity {
                 // Configure the bottom navigation with the nav controller
                 // Use the fragment IDs from nav_graph.xml that match the bottom_nav_menu.xml
                 AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(
-                        R.id.homeFragment, R.id.menuFragment, R.id.orderHistoryFragment, R.id.profileFragment)
+                        R.id.homeFragment, R.id.menuFragment, R.id.cartFragment, R.id.orderHistoryFragment, R.id.profileFragment)
                         .build();
 
                 // Setup the bottom navigation view with the nav controller
