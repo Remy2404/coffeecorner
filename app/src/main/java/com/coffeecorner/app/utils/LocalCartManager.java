@@ -29,40 +29,51 @@ public class LocalCartManager {
     public List<CartItem> getCartItems() {
         String cartJson = preferences.getString(KEY_CART_ITEMS, null);
         if (cartJson != null) {
-            Type type = new TypeToken<List<CartItem>>() {}.getType();
+            Type type = new TypeToken<List<CartItem>>() {
+            }.getType();
             List<CartItem> items = gson.fromJson(cartJson, type);
             return items != null ? items : new ArrayList<>();
         }
         return new ArrayList<>();
     }
 
-    public void addToCart(Product product, int quantity) {
-        List<CartItem> cartItems = getCartItems();
+    public synchronized void addToCart(Product product, int quantity) {
+        if (product == null) {
+            Log.w(TAG, "Attempted to add null product to cart");
+            return;
+        }
 
-        CartItem existingItem = null;
-        for (CartItem item : cartItems) {
-            if (item.getProduct() != null && 
-                item.getProduct().getId() != null && 
-                item.getProduct().getId().equals(product.getId())) {
-                existingItem = item;
-                break;
+        try {
+            List<CartItem> cartItems = getCartItems();
+
+            CartItem existingItem = null;
+            for (CartItem item : cartItems) {
+                if (item.getProduct() != null &&
+                        item.getProduct().getId() != null &&
+                        product.getId() != null &&
+                        item.getProduct().getId().equals(product.getId())) {
+                    existingItem = item;
+                    break;
+                }
             }
-        }
 
-        if (existingItem != null) {
-            existingItem.setQuantity(existingItem.getQuantity() + quantity);
-        } else {
-            CartItem newItem = new CartItem(product, quantity);
-            cartItems.add(newItem);
-        }
+            if (existingItem != null) {
+                existingItem.setQuantity(existingItem.getQuantity() + quantity);
+            } else {
+                CartItem newItem = new CartItem(product, quantity);
+                cartItems.add(newItem);
+            }
 
-        saveCartItems(cartItems);
-        Log.d(TAG, "Added " + quantity + " of " + product.getName() + " to local cart");
+            saveCartItems(cartItems);
+            Log.d(TAG, "Added " + quantity + " of " + product.getName() + " to local cart");
+        } catch (Exception e) {
+            Log.e(TAG, "Error adding product to cart", e);
+        }
     }
 
     public void addToCart(CartItem cartItem) {
         List<CartItem> cartItems = getCartItems();
-        
+
         // Check if item already exists in cart
         boolean found = false;
         for (CartItem existingItem : cartItems) {
@@ -72,56 +83,76 @@ public class LocalCartManager {
             String newSize = cartItem.getSize();
             String existingMilk = existingItem.getMilkOption();
             String newMilk = cartItem.getMilkOption();
-            
+
             if (existingProductId != null && existingProductId.equals(newProductId) &&
-                existingSize != null && existingSize.equals(newSize) &&
-                existingMilk != null && existingMilk.equals(newMilk)) {
+                    existingSize != null && existingSize.equals(newSize) &&
+                    existingMilk != null && existingMilk.equals(newMilk)) {
                 // Update quantity
                 existingItem.setQuantity(existingItem.getQuantity() + cartItem.getQuantity());
                 found = true;
                 break;
             }
         }
-        
+
         // If not found, add new item
         if (!found) {
             cartItems.add(cartItem);
         }
-        
+
         saveCartItems(cartItems);
     }
 
-    public void removeFromCart(String productId) {
+    public synchronized void removeFromCart(String productId) {
+        if (productId == null) {
+            Log.w(TAG, "Attempted to remove null productId from cart");
+            return;
+        }
+
         List<CartItem> cartItems = getCartItems();
         List<CartItem> updatedItems = new ArrayList<>();
-        
+
         for (CartItem item : cartItems) {
             if (item.getProductId() == null || !item.getProductId().equals(productId)) {
                 updatedItems.add(item);
             }
         }
-        
+
         saveCartItems(updatedItems);
         Log.d(TAG, "Removed item " + productId + " from local cart");
     }
 
-    public void updateQuantity(String productId, int quantity) {
-        List<CartItem> cartItems = getCartItems();
-
-        if (quantity <= 0) {
-            removeFromCart(productId);
+    public synchronized void updateQuantity(String productId, int quantity) {
+        if (productId == null) {
+            Log.w(TAG, "Attempted to update quantity for null productId");
             return;
         }
 
-        for (CartItem item : cartItems) {
-            if (item.getProductId() != null && item.getProductId().equals(productId)) {
-                item.setQuantity(quantity);
-                break;
-            }
-        }
+        try {
+            List<CartItem> cartItems = getCartItems();
 
-        saveCartItems(cartItems);
-        Log.d(TAG, "Updated item " + productId + " quantity to " + quantity);
+            if (quantity <= 0) {
+                removeFromCart(productId);
+                return;
+            }
+
+            boolean itemFound = false;
+            for (CartItem item : cartItems) {
+                if (item.getProductId() != null && item.getProductId().equals(productId)) {
+                    item.setQuantity(quantity);
+                    itemFound = true;
+                    break;
+                }
+            }
+
+            if (itemFound) {
+                saveCartItems(cartItems);
+                Log.d(TAG, "Updated item " + productId + " quantity to " + quantity);
+            } else {
+                Log.w(TAG, "Item with productId " + productId + " not found in cart");
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error updating quantity for productId: " + productId, e);
+        }
     }
 
     public void clearCart() {
@@ -147,9 +178,13 @@ public class LocalCartManager {
         return total;
     }
 
-    private void saveCartItems(List<CartItem> cartItems) {
-        String cartJson = gson.toJson(cartItems);
-        preferences.edit().putString(KEY_CART_ITEMS, cartJson).apply();
+    private synchronized void saveCartItems(List<CartItem> cartItems) {
+        try {
+            String cartJson = gson.toJson(cartItems);
+            preferences.edit().putString(KEY_CART_ITEMS, cartJson).apply();
+        } catch (Exception e) {
+            Log.e(TAG, "Error saving cart items", e);
+        }
     }
 
     public boolean hasItems() {
@@ -158,6 +193,7 @@ public class LocalCartManager {
 
     /**
      * Sync local cart items to server when user logs in
+     * 
      * @return List of cart items to be synced
      */
     public List<CartItem> getItemsForSync() {

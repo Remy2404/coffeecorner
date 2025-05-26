@@ -1,9 +1,13 @@
 package com.coffeecorner.app.activities;
 
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.view.WindowManager;
+import android.os.Looper;
+import android.view.View;
+import android.view.Window;
+import android.view.WindowInsetsController;
 import android.widget.Button;
 import com.coffeecorner.app.R;
 import com.coffeecorner.app.utils.PreferencesHelper;
@@ -24,27 +28,35 @@ public class SplashActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+        super.onCreate(savedInstanceState); // Initialize PreferencesHelper
+        preferencesHelper = new PreferencesHelper(this); // Make the activity fullscreen using the latest recommended
+                                                         // approach
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            @SuppressWarnings("deprecation")
+            Window window = getWindow();
+            window.setDecorFitsSystemWindows(false);
 
-        // Initialize PreferencesHelper
-        preferencesHelper = new PreferencesHelper(this);
-
-        // Make the activity fullscreen
-        getWindow().setFlags(
-                WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                WindowManager.LayoutParams.FLAG_FULLSCREEN);
+            // Additionally, we can control system bar appearance
+            window.getInsetsController().setSystemBarsBehavior(
+                    WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+        } else {
+            // For older versions, use the older method
+            @SuppressWarnings("deprecation")
+            int flags = View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
+                    View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
+            getWindow().getDecorView().setSystemUiVisibility(flags);
+        }
 
         // Set the layout for this activity
         setContentView(R.layout.activity_splash);
 
         // Initialize the continue button and set its click listener
         Button btnContinue = findViewById(R.id.btnContinue);
-        btnContinue.setOnClickListener(v -> navigateToNextScreen());
-
-        // If auto-transition is enabled, set a timer to move to the next screen
+        btnContinue.setOnClickListener(v -> navigateToNextScreen()); // If auto-transition is enabled, set a timer to
+                                                                     // move to the next screen
         // automatically
         if (isAutoTransition) {
-            new Handler().postDelayed(this::navigateToNextScreen, SPLASH_DISPLAY_LENGTH);
+            new Handler(Looper.getMainLooper()).postDelayed(this::navigateToNextScreen, SPLASH_DISPLAY_LENGTH);
         }
     }
 

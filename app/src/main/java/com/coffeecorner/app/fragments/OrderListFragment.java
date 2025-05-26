@@ -1,5 +1,6 @@
 package com.coffeecorner.app.fragments;
 
+import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -65,18 +66,27 @@ public class OrderListFragment extends Fragment {
         // Set up RecyclerView
         recyclerOrders.setLayoutManager(new LinearLayoutManager(requireContext()));
         orderAdapter = new OrderAdapter(requireContext(), orders);
-        recyclerOrders.setAdapter(orderAdapter);
-        // Get the orders from arguments
+        recyclerOrders.setAdapter(orderAdapter); // Get the orders from arguments
         if (getArguments() != null) {
-            // Using type-safe approach to avoid unchecked cast warning
-            Serializable serializable = getArguments().getSerializable(ARG_ORDERS);
-            if (serializable instanceof ArrayList<?>) {
-                ArrayList<?> list = (ArrayList<?>) serializable;
-                if (!list.isEmpty() && list.get(0) instanceof Order) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                // Modern approach for API 33+ (Android 13+)
+                @SuppressWarnings("unchecked")
+                ArrayList<Order> orderList = (ArrayList<Order>) getArguments().getSerializable(ARG_ORDERS,
+                        ArrayList.class);
+                if (orderList != null && !orderList.isEmpty()) {
                     orders.clear();
-                    for (Object o : list) {
-                        orders.add((Order) o);
-                    }
+                    orders.addAll(orderList);
+                    updateOrdersList();
+                }
+            } else {
+                // Backward compatibility for older Android versions
+                @SuppressWarnings("deprecation")
+                Serializable serializable = getArguments().getSerializable(ARG_ORDERS);
+                if (serializable instanceof ArrayList<?>) {
+                    @SuppressWarnings("unchecked")
+                    ArrayList<Order> orderList = (ArrayList<Order>) serializable;
+                    orders.clear();
+                    orders.addAll(orderList);
                     updateOrdersList();
                 }
             }

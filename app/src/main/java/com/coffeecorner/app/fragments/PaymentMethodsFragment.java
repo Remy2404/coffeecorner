@@ -52,11 +52,10 @@ public class PaymentMethodsFragment extends Fragment implements PaymentMethodAda
         updateUI();
     }
 
-    private void initializeViews(View view) {
-        // Set up the back button
+    private void initializeViews(View view) { // Set up the back button
         ImageButton btnBack = view.findViewById(R.id.btnBack);
         if (btnBack != null) {
-            btnBack.setOnClickListener(v -> requireActivity().onBackPressed());
+            btnBack.setOnClickListener(v -> requireActivity().getSupportFragmentManager().popBackStack());
         }
         recyclerViewPaymentMethods = view.findViewById(R.id.rvPaymentMethods);
         layoutEmptyPaymentMethods = view.findViewById(R.id.layoutNoPaymentMethods);

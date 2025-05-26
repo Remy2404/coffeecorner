@@ -125,15 +125,14 @@ public class CartFragment extends Fragment implements CartAdapter.CartItemListen
             if (!cartItems.isEmpty()) {
                 showClearCartConfirmation();
             }
-        });
-
-        // Add click listener for back button
+        }); // Add click listener for back button
         view.findViewById(R.id.btnBackCart).setOnClickListener(v -> {
             // Go back to previous screen
-            if (getActivity() != null) {
-                getActivity().onBackPressed();
+            if (isAdded()) {
+                requireActivity().getSupportFragmentManager().popBackStack();
             }
         });
+
     }
 
     private void loadCartItems() {

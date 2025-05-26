@@ -50,9 +50,8 @@ public class AboutUsFragment extends Fragment {
         btnFacebook = view.findViewById(R.id.btnFacebook);
         btnInstagram = view.findViewById(R.id.btnInstagram);
         btnTwitter = view.findViewById(R.id.btnTwitter);
-
         if (btnBack != null) {
-            btnBack.setOnClickListener(v -> requireActivity().onBackPressed());
+            btnBack.setOnClickListener(v -> requireActivity().getSupportFragmentManager().popBackStack());
         }
     }
 

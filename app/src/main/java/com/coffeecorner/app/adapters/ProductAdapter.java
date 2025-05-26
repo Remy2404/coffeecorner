@@ -103,13 +103,13 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
         // Set click listeners
         holder.cardView.setOnClickListener(v -> {
             if (listener != null) {
-                listener.onProductClick(product, holder.getAdapterPosition());
+                listener.onProductClick(product, holder.getBindingAdapterPosition());
             }
         });
 
         holder.btnAdd.setOnClickListener(v -> {
             if (cartListener != null) {
-                cartListener.onAddToCartClick(product, holder.getAdapterPosition());
+                cartListener.onAddToCartClick(product, holder.getBindingAdapterPosition());
             }
         });
     }

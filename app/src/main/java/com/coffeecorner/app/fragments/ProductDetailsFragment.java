@@ -116,12 +116,11 @@ public class ProductDetailsFragment extends Fragment {
         // Default size selection
         if (chipSizeS != null) {
             chipSizeS.setChecked(true);
-        }
-
-        // Configure collapsing toolbar
+        } // Configure collapsing toolbar
         collapsingToolbar = view.findViewById(R.id.collapsingToolbarProductDetails);
         if (collapsingToolbar != null) {
-            collapsingToolbar.setExpandedTitleColor(getResources().getColor(android.R.color.transparent));
+            collapsingToolbar.setExpandedTitleColor(
+                    androidx.core.content.ContextCompat.getColor(requireContext(), android.R.color.transparent));
         }
     }
 
@@ -175,11 +174,12 @@ public class ProductDetailsFragment extends Fragment {
     }
 
     private void loadProduct(String productId) {
-        ApiService api = RetrofitClient.getInstance().getApi();
+        ApiService api = RetrofitClient.getApi();
         api.getProductById(productId).enqueue(new Callback<ApiResponse<Product>>() {
             @Override
             public void onResponse(Call<ApiResponse<Product>> call,
-                    Response<ApiResponse<Product>> response) {                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                    Response<ApiResponse<Product>> response) {
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                     product = response.body().getData();
                     if (product.getCalories() == 0) {
                         product.setCalories(150); // Default calories if not set
@@ -321,10 +321,11 @@ public class ProductDetailsFragment extends Fragment {
                     Navigation.findNavController(requireView()).popBackStack();
                 }
             } catch (Exception e) {
-                android.util.Log.e("ProductDetailsFragment", "Navigation error: " + e.getMessage());
-                // Fallback: try to finish the activity or fragment manually
-                if (getActivity() != null) {
-                    getActivity().onBackPressed();
+                android.util.Log.e("ProductDetailsFragment", "Navigation error: " + e.getMessage()); // Fallback: try to
+                                                                                                     // pop the
+                                                                                                     // backstack
+                if (isAdded()) {
+                    requireActivity().getSupportFragmentManager().popBackStack();
                 }
             }
         } else {

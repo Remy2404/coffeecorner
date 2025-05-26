@@ -439,10 +439,9 @@ public class CartRepository {
                         }
                     });
         }
-
         localCartManager.clearCart();
 
-        new android.os.Handler().postDelayed(() -> getCartItems(callback), 2000);
+        new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> getCartItems(callback), 2000);
     }
 
     /**

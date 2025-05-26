@@ -80,7 +80,7 @@ public class FeedbackAdapter extends RecyclerView.Adapter<FeedbackAdapter.Feedba
         // Set up interaction listeners
         holder.tvHelpful.setOnClickListener(v -> {
             if (listener != null) {
-                listener.onHelpfulClicked(item, holder.getAdapterPosition());
+                listener.onHelpfulClicked(item, holder.getBindingAdapterPosition());
             } else {
                 // Fallback if no listener is set
                 Toast.makeText(context, "Marked as helpful", Toast.LENGTH_SHORT).show();
@@ -89,7 +89,7 @@ public class FeedbackAdapter extends RecyclerView.Adapter<FeedbackAdapter.Feedba
 
         holder.tvReply.setOnClickListener(v -> {
             if (listener != null) {
-                listener.onReplyClicked(item, holder.getAdapterPosition());
+                listener.onReplyClicked(item, holder.getBindingAdapterPosition());
             } else {
                 // Fallback if no listener is set
                 Toast.makeText(context, "Reply option coming soon", Toast.LENGTH_SHORT).show();

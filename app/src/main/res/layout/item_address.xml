@@ -57,4 +57,61 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <!-- Added Default Label TextView -->
+    <TextView
+        android:id="@+id/tvDefaultLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Default"
+        android:textColor="@color/primary"
+        android:textSize="12sp"
+        android:background="@drawable/bg_tag"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp"
+        android:paddingTop="2dp"
+        android:paddingBottom="2dp"
+        android:layout_marginTop="8dp"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@id/tvAddressDetails"
+        app:layout_constraintStart_toEndOf="@id/ivAddressIcon"
+        app:layout_constraintStart_toStartOf="@id/tvAddressDetails" />
+
+    <!-- Added Action Buttons -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnEdit"
+        style="@style/Widget.MaterialComponents.Button.TextButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Edit"
+        android:textColor="@color/primary"
+        android:textSize="12sp"
+        app:icon="@drawable/ic_edit"
+        app:iconTint="@color/primary"
+        app:layout_constraintEnd_toStartOf="@id/btnDelete"
+        app:layout_constraintTop_toBottomOf="@id/tvAddressDetails" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnDelete"
+        style="@style/Widget.MaterialComponents.Button.TextButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Delete"
+        android:textColor="@color/error_color"
+        android:textSize="12sp"
+        app:icon="@drawable/ic_delete"
+        app:iconTint="@color/error_color"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvAddressDetails" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnSetDefault"
+        style="@style/Widget.MaterialComponents.Button.TextButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Set Default"
+        android:textColor="@color/primary"
+        android:textSize="12sp"
+        app:layout_constraintStart_toStartOf="@id/tvAddressDetails"
+        app:layout_constraintTop_toBottomOf="@id/tvAddressDetails" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

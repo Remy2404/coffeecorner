@@ -71,9 +71,8 @@ public class MyRewardsFragment extends Fragment implements RewardAdapter.OnRewar
         progressReward = view.findViewById(R.id.progressReward);
         rvRewards = view.findViewById(R.id.rvRewards);
         rvPointsHistory = view.findViewById(R.id.rvPointsHistory);
-
         if (btnBack != null) {
-            btnBack.setOnClickListener(v -> requireActivity().onBackPressed());
+            btnBack.setOnClickListener(v -> requireActivity().getSupportFragmentManager().popBackStack());
         }
     }
 

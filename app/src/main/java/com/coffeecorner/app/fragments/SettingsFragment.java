@@ -37,7 +37,13 @@ public class SettingsFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_settings, container, false);
+        try {
+            return inflater.inflate(R.layout.fragment_settings, container, false);
+        } catch (Exception e) {
+            // Log the error and provide a fallback empty view if inflation fails
+            android.util.Log.e("SettingsFragment", "Error inflating layout", e);
+            return new View(requireContext());
+        }
     }
 
     @Override
@@ -45,12 +51,10 @@ public class SettingsFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         navController = Navigation.findNavController(view);
-        preferencesHelper = new PreferencesHelper(requireContext());
-
-        // Set up the back button
+        preferencesHelper = new PreferencesHelper(requireContext()); // Set up the back button
         ImageButton btnBack = view.findViewById(R.id.btnBack);
         if (btnBack != null) {
-            btnBack.setOnClickListener(v -> requireActivity().onBackPressed());
+            btnBack.setOnClickListener(v -> requireActivity().getSupportFragmentManager().popBackStack());
         }
 
         // Initialize UI elements

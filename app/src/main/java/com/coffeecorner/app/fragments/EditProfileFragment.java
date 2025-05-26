@@ -4,7 +4,9 @@ import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.ImageDecoder;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.text.TextUtils;
@@ -60,16 +62,10 @@ public class EditProfileFragment extends Fragment {
     private PreferencesHelper preferencesHelper;
     private UserRepository userRepository;
     private Uri selectedImageUri;
-    private boolean isImageChanged = false;
-
-    // Activity result launchers
-    private final ActivityResultLauncher<Intent> galleryLauncher = registerForActivityResult(
-            new ActivityResultContracts.StartActivityForResult(),
-            result -> handleGalleryResult(result.getResultCode(), result.getData()));
-
-    private final ActivityResultLauncher<Intent> cameraLauncher = registerForActivityResult(
-            new ActivityResultContracts.StartActivityForResult(),
-            result -> handleCameraResult(result.getResultCode(), result.getData()));
+    private boolean isImageChanged = false; // Activity result launchers - initialized in onViewCreated to avoid
+                                            // this-escape warnings
+    private ActivityResultLauncher<Intent> galleryLauncher;
+    private ActivityResultLauncher<Intent> cameraLauncher;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -83,6 +79,9 @@ public class EditProfileFragment extends Fragment {
         // Initialize dependencies
         preferencesHelper = new PreferencesHelper(requireContext());
         userRepository = UserRepository.getInstance(requireContext());
+
+        // Initialize activity result launchers after fragment is fully created
+        initializeActivityResultLaunchers();
 
         initializeViews(view);
         setupListeners();
@@ -250,10 +249,21 @@ public class EditProfileFragment extends Fragment {
 
     private void handleCameraResult(int resultCode, Intent data) {
         if (resultCode == Activity.RESULT_OK && data != null) {
-            Bitmap bitmap = (Bitmap) data.getExtras().get("data");
-            if (bitmap != null) {
-                selectedImageUri = getImageUri(bitmap);
-                loadImage(selectedImageUri);
+            Bundle extras = data.getExtras();
+            if (extras != null) {
+                Bitmap bitmap;
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    bitmap = extras.getParcelable("data", Bitmap.class);
+                } else {
+                    @SuppressWarnings("deprecation")
+                    Bitmap legacyBitmap = (Bitmap) extras.getParcelable("data");
+                    bitmap = legacyBitmap;
+                }
+
+                if (bitmap != null) {
+                    selectedImageUri = getImageUri(bitmap);
+                    loadImage(selectedImageUri);
+                }
             }
         }
     }
@@ -268,11 +278,48 @@ public class EditProfileFragment extends Fragment {
     private Uri getImageUri(Bitmap bitmap) {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bytes);
+
+        // Create a name for the image file
+        String fileName = "profile_" + UUID.randomUUID().toString() + ".jpg";
+
+        // Modern approach using ContentResolver and ContentValues
+        Uri imageCollection;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+            imageCollection = MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY);
+        } else {
+            imageCollection = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+        }
+
+        android.content.ContentValues contentValues = new android.content.ContentValues();
+        contentValues.put(MediaStore.Images.Media.DISPLAY_NAME, fileName);
+        contentValues.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
+
+        Uri imageUri = requireActivity().getContentResolver().insert(imageCollection, contentValues);
+
+        try {
+            if (imageUri != null) {
+                try (java.io.OutputStream outputStream = requireActivity().getContentResolver()
+                        .openOutputStream(imageUri)) {
+                    if (outputStream != null) {
+                        bitmap.compress(Bitmap.CompressFormat.JPEG, 95, outputStream);
+                    }
+                }
+                return imageUri;
+            }
+        } catch (Exception e) {
+            if (imageUri != null) {
+                requireActivity().getContentResolver().delete(imageUri, null, null);
+            }
+        }
+
+        // Fallback to the old method if the above fails
+        @SuppressWarnings("deprecation")
         String path = MediaStore.Images.Media.insertImage(
                 requireActivity().getContentResolver(),
                 bitmap,
-                UUID.randomUUID().toString(),
+                fileName,
                 null);
+
         return Uri.parse(Objects.requireNonNull(path));
     }
 
@@ -325,9 +372,21 @@ public class EditProfileFragment extends Fragment {
     private void uploadImageAndUpdateProfile(String fullName, String email, String phone,
             String dateOfBirth, String gender) {
         try {
-            Bitmap bitmap = MediaStore.Images.Media.getBitmap(
-                    requireActivity().getContentResolver(),
-                    selectedImageUri);
+            Bitmap bitmap;
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
+                // For API 28 and above
+                ImageDecoder.Source source = ImageDecoder.createSource(
+                        requireActivity().getContentResolver(),
+                        selectedImageUri);
+                bitmap = ImageDecoder.decodeBitmap(source);
+            } else {
+                // For older versions
+                @SuppressWarnings("deprecation")
+                Bitmap tempBitmap = MediaStore.Images.Media.getBitmap(
+                        requireActivity().getContentResolver(),
+                        selectedImageUri);
+                bitmap = tempBitmap;
+            }
 
             ByteArrayOutputStream stream = new ByteArrayOutputStream();
             bitmap.compress(Bitmap.CompressFormat.JPEG, 90, stream);
@@ -402,5 +461,19 @@ public class EditProfileFragment extends Fragment {
 
     private void showSuccess(String message) {
         Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
+    }
+
+    /**
+     * Initialize activity result launchers after fragment is fully created
+     * to avoid "this-escape" warnings
+     */
+    private void initializeActivityResultLaunchers() {
+        galleryLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> handleGalleryResult(result.getResultCode(), result.getData()));
+
+        cameraLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> handleCameraResult(result.getResultCode(), result.getData()));
     }
 }
