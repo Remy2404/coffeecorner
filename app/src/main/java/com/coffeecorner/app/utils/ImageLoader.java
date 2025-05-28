@@ -85,6 +85,19 @@ public class ImageLoader {
             Log.d("ImageLoader", "Loading image from URL: " + imageUrl);
             if (!imageUrl.startsWith("http://") && !imageUrl.startsWith("https://")) {
                 Log.w("ImageLoader", "URL doesn't start with http:// or https:// - might be invalid: " + imageUrl);
+                imageView.setImageResource(errorImage);
+                if (listener != null) {
+                    listener.onError();
+                }
+                return;
+            }
+
+            // Additional validation for common URL patterns
+            String lowerUrl = imageUrl.toLowerCase();
+            if (!lowerUrl.endsWith(".jpg") && !lowerUrl.endsWith(".jpeg") &&
+                    !lowerUrl.endsWith(".png") && !lowerUrl.endsWith(".webp") &&
+                    !lowerUrl.endsWith(".gif") && !lowerUrl.contains("/images/")) {
+                Log.w("ImageLoader", "URL doesn't end with common image extensions: " + imageUrl);
             }
 
             RequestOptions options = new RequestOptions()

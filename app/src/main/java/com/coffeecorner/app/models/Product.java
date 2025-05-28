@@ -21,6 +21,22 @@ public class Product implements Cloneable {
     private float rating;
     private int calories; // Added calories field
 
+    // Working backup image URLs by category
+    private static final String DEFAULT_IMAGE_URL = "https://images.unsplash.com/photo-1509042239860-f550ce710b93?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60";
+    private static final String[] COFFEE_IMAGES = {
+        "https://images.unsplash.com/photo-1509042239860-f550ce710b93?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60",
+        "https://images.unsplash.com/photo-1517701550927-30cf4ba1dba5?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60",
+        "https://images.unsplash.com/photo-1497935586351-b67a49e012bf?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60"
+    };
+    private static final String[] FOOD_IMAGES = {
+        "https://images.unsplash.com/photo-1525351484163-7529414344d8?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60",
+        "https://images.unsplash.com/photo-1506354666786-959d6d497f1a?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60"
+    };
+    private static final String[] DESSERT_IMAGES = {
+        "https://images.unsplash.com/photo-1495147466023-ac5c588e2e94?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60",
+        "https://images.unsplash.com/photo-1488477181946-6428a0291777?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60"
+    };
+
     // Default constructor for GSON
     public Product() {
     }
@@ -112,7 +128,65 @@ public class Product implements Cloneable {
     }
 
     public String getImageUrl() {
+        // Enhanced image URL handling with fallbacks
+        if (imageUrl == null || imageUrl.trim().isEmpty()) {
+            return getFallbackImageUrl();
+        }
+        
+        // Check if the URL ends with a typical image extension
+        String lowerUrl = imageUrl.toLowerCase();
+        if (!lowerUrl.endsWith(".jpg") && !lowerUrl.endsWith(".jpeg") && 
+            !lowerUrl.endsWith(".png") && !lowerUrl.endsWith(".webp") && 
+            !lowerUrl.endsWith(".gif") && !lowerUrl.startsWith("http")) {
+                
+            return getFallbackImageUrl();
+        }
+        
         return imageUrl;
+    }
+    
+    /**
+     * Get a fallback image URL based on the product category
+     * @return A working image URL
+     */
+    private String getFallbackImageUrl() {
+        if (category == null) {
+            return DEFAULT_IMAGE_URL;
+        }
+        
+        String lowercaseCategory = category.toLowerCase();
+        
+        if (lowercaseCategory.contains("coffee") || 
+            lowercaseCategory.contains("espresso") ||
+            lowercaseCategory.contains("latte") ||
+            lowercaseCategory.contains("cappuccino") ||
+            lowercaseCategory.contains("mocha")) {
+            
+            // Pick a random coffee image
+            int index = Math.abs(name != null ? name.hashCode() : 0) % COFFEE_IMAGES.length;
+            return COFFEE_IMAGES[index];
+        } 
+        else if (lowercaseCategory.contains("food") ||
+                lowercaseCategory.contains("sandwich") || 
+                lowercaseCategory.contains("breakfast") ||
+                lowercaseCategory.contains("lunch")) {
+            
+            // Pick a random food image
+            int index = Math.abs(name != null ? name.hashCode() : 0) % FOOD_IMAGES.length;
+            return FOOD_IMAGES[index];
+        }
+        else if (lowercaseCategory.contains("dessert") ||
+                lowercaseCategory.contains("cake") ||
+                lowercaseCategory.contains("pastry") ||
+                lowercaseCategory.contains("sweet")) {
+            
+            // Pick a random dessert image
+            int index = Math.abs(name != null ? name.hashCode() : 0) % DESSERT_IMAGES.length;
+            return DESSERT_IMAGES[index];
+        }
+        
+        // Default fallback image
+        return DEFAULT_IMAGE_URL;
     }
 
     public void setImageUrl(String imageUrl) {

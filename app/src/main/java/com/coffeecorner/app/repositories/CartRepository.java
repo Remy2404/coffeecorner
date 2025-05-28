@@ -113,24 +113,55 @@ public class CartRepository {
                 return;
             }
 
-            localCartManager.addToCart(product, quantity);
-            List<CartItem> updatedCart = localCartManager.getCartItems();
-            callback.onCartItemsLoaded(updatedCart);
+            try {
+                // Log product details before adding to cart
+                Log.d(TAG, "Product details before adding to cart: " +
+                        "ID=" + product.getId() + ", " +
+                        "Name=" + product.getName() + ", " +
+                        "Price=" + product.getPrice());
+
+                // Add to local cart
+                localCartManager.addToCart(product, quantity);
+
+                // Get updated cart and verify the item was added
+                List<CartItem> updatedCart = localCartManager.getCartItems();
+                boolean found = false;
+                for (CartItem item : updatedCart) {
+                    if (item != null && item.getProduct() != null &&
+                            product.getId().equals(item.getProduct().getId())) {
+                        found = true;
+                        Log.d(TAG, "Product verified in cart: " + item.getProduct().getName() +
+                                " with quantity " + item.getQuantity());
+                        break;
+                    }
+                }
+
+                if (!found) {
+                    Log.e(TAG, "Failed to find product in cart after adding it!");
+                }
+
+                // Return updated cart
+                callback.onCartItemsLoaded(updatedCart);
+            } catch (Exception e) {
+                Log.e(TAG, "Exception while adding to local cart", e);
+                callback.onError("Failed to add item to cart: " + e.getMessage());
+            }
             return;
         }
+
         if (product == null || product.getId() == null || quantity <= 0) {
             Log.w(TAG, "addToCart: Invalid product or quantity.");
             callback.onError("Invalid product or quantity.");
             return;
         }
-        Log.d(TAG, "addToCart: Adding productId: " + product.getId() + " quantity: " + quantity);
+        Log.d(TAG, "addToCart: Adding productId: " + product.getId() + " quantity: " + quantity + " for userId: "
+                + userId);
 
-        // Use the addToCart method that matches the backend's expected format
-        // The user_id will be extracted from the auth token on the server
-        apiService.addToCart(product.getId(), quantity).enqueue(new Callback<>() {
+        // Use the user-specific addToCart endpoint
+        apiService.addToCart(userId, product.getId(), quantity).enqueue(new Callback<>() {
             @Override
             public void onResponse(@NonNull Call<ApiResponse<List<CartItem>>> call,
-                                   @NonNull Response<ApiResponse<List<CartItem>>> response) {
+                    @NonNull Response<ApiResponse<List<CartItem>>> response) {
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                     Log.d(TAG, "addToCart onSuccess: Item added. New cart size: "
                             + (response.body().getData() != null ? response.body().getData().size() : 0));
@@ -415,7 +446,8 @@ public class CartRepository {
             return;
         }
 
-        Log.d(TAG, "syncLocalCartWithServer: Syncing " + localItems.size() + " local items");        for (CartItem item : localItems) {
+        Log.d(TAG, "syncLocalCartWithServer: Syncing " + localItems.size() + " local items");
+        for (CartItem item : localItems) {
             Product product = item.getProduct();
             int quantity = item.getQuantity();
 

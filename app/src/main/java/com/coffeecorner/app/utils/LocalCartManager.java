@@ -7,6 +7,7 @@ import android.util.Log;
 import com.coffeecorner.app.models.CartItem;
 import com.coffeecorner.app.models.Product;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
 import java.lang.reflect.Type;
@@ -23,16 +24,42 @@ public class LocalCartManager {
 
     public LocalCartManager(Context context) {
         preferences = context.getSharedPreferences(CART_PREFS, Context.MODE_PRIVATE);
-        gson = new Gson();
+        // Create a Gson instance that correctly handles serialization and
+        // deserialization
+        gson = new GsonBuilder()
+                .setLenient()
+                .create();
     }
 
     public List<CartItem> getCartItems() {
         String cartJson = preferences.getString(KEY_CART_ITEMS, null);
-        if (cartJson != null) {
-            Type type = new TypeToken<List<CartItem>>() {
-            }.getType();
-            List<CartItem> items = gson.fromJson(cartJson, type);
-            return items != null ? items : new ArrayList<>();
+        Log.d(TAG, "Raw cart data from SharedPreferences: " + cartJson);
+
+        if (cartJson != null && !cartJson.isEmpty()) {
+            try {
+                Type type = new TypeToken<List<CartItem>>() {
+                }.getType();
+                List<CartItem> items = gson.fromJson(cartJson, type);
+                if (items != null) {
+                    Log.d(TAG, "Successfully loaded " + items.size() + " cart items.");
+                    // Check for data integrity
+                    List<CartItem> validItems = new ArrayList<>();
+                    for (CartItem item : items) {
+                        if (item != null && item.getProduct() != null && item.getProduct().getId() != null) {
+                            validItems.add(item);
+                        } else {
+                            Log.w(TAG, "Removed invalid cart item during load");
+                        }
+                    }
+                    return validItems;
+                } else {
+                    Log.w(TAG, "Deserialized cart items is null");
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "Error deserializing cart items", e);
+            }
+        } else {
+            Log.d(TAG, "Cart is empty in SharedPreferences");
         }
         return new ArrayList<>();
     }
@@ -45,22 +72,32 @@ public class LocalCartManager {
 
         try {
             List<CartItem> cartItems = getCartItems();
+            Log.d(TAG, "Current cart has " + cartItems.size() + " items");
 
+            // Find existing item with the same product
             CartItem existingItem = null;
             for (CartItem item : cartItems) {
                 if (item.getProduct() != null &&
                         item.getProduct().getId() != null &&
                         product.getId() != null &&
-                        item.getProduct().getId().equals(product.getId())) {
+                        item.getProduct().getId().equals(product.getId()) &&
+                        ((item.getSize() == null && "Medium".equals("Medium")) || // Default size is Medium
+                                (item.getSize() != null && item.getSize().equals("Medium")))
+                        &&
+                        ((item.getMilkOption() == null && "Whole Milk".equals("Whole Milk")) || // Default milk is Whole
+                                (item.getMilkOption() != null && item.getMilkOption().equals("Whole Milk")))) {
                     existingItem = item;
                     break;
                 }
             }
 
             if (existingItem != null) {
+                Log.d(TAG, "Found existing item for product: " + product.getName() + ", updating quantity from "
+                        + existingItem.getQuantity() + " to " + (existingItem.getQuantity() + quantity));
                 existingItem.setQuantity(existingItem.getQuantity() + quantity);
             } else {
                 CartItem newItem = new CartItem(product, quantity);
+                Log.d(TAG, "Adding new cart item: " + product.getName() + " x" + quantity);
                 cartItems.add(newItem);
             }
 
@@ -72,34 +109,53 @@ public class LocalCartManager {
     }
 
     public void addToCart(CartItem cartItem) {
-        List<CartItem> cartItems = getCartItems();
+        if (cartItem == null || cartItem.getProduct() == null) {
+            Log.w(TAG, "Attempted to add null cart item to cart");
+            return;
+        }
 
-        // Check if item already exists in cart
-        boolean found = false;
-        for (CartItem existingItem : cartItems) {
-            String existingProductId = existingItem.getProductId();
-            String newProductId = cartItem.getProductId();
-            String existingSize = existingItem.getSize();
-            String newSize = cartItem.getSize();
-            String existingMilk = existingItem.getMilkOption();
-            String newMilk = cartItem.getMilkOption();
+        try {
+            List<CartItem> cartItems = getCartItems();
 
-            if (existingProductId != null && existingProductId.equals(newProductId) &&
-                    existingSize != null && existingSize.equals(newSize) &&
-                    existingMilk != null && existingMilk.equals(newMilk)) {
-                // Update quantity
-                existingItem.setQuantity(existingItem.getQuantity() + cartItem.getQuantity());
-                found = true;
-                break;
+            // Check if item already exists in cart
+            boolean found = false;
+            for (CartItem existingItem : cartItems) {
+                if (existingItem == null || existingItem.getProduct() == null)
+                    continue;
+
+                String existingProductId = existingItem.getProductId();
+                String newProductId = cartItem.getProductId();
+                String existingSize = existingItem.getSize();
+                String newSize = cartItem.getSize();
+                String existingMilk = existingItem.getMilkOption();
+                String newMilk = cartItem.getMilkOption();
+
+                if (existingProductId != null && existingProductId.equals(newProductId) &&
+                        ((existingSize == null && newSize == null) ||
+                                (existingSize != null && existingSize.equals(newSize)))
+                        &&
+                        ((existingMilk == null && newMilk == null) ||
+                                (existingMilk != null && existingMilk.equals(newMilk)))) {
+                    // Update quantity
+                    Log.d(TAG, "Found existing item, updating quantity: " + existingItem.getQuantity() +
+                            " + " + cartItem.getQuantity() + " = "
+                            + (existingItem.getQuantity() + cartItem.getQuantity()));
+                    existingItem.setQuantity(existingItem.getQuantity() + cartItem.getQuantity());
+                    found = true;
+                    break;
+                }
             }
-        }
 
-        // If not found, add new item
-        if (!found) {
-            cartItems.add(cartItem);
-        }
+            // If not found, add new item
+            if (!found) {
+                Log.d(TAG, "Adding new item to cart: " + cartItem.getProduct().getName());
+                cartItems.add(cartItem);
+            }
 
-        saveCartItems(cartItems);
+            saveCartItems(cartItems);
+        } catch (Exception e) {
+            Log.e(TAG, "Error adding cart item", e);
+        }
     }
 
     public synchronized void removeFromCart(String productId) {
@@ -108,17 +164,22 @@ public class LocalCartManager {
             return;
         }
 
-        List<CartItem> cartItems = getCartItems();
-        List<CartItem> updatedItems = new ArrayList<>();
+        try {
+            List<CartItem> cartItems = getCartItems();
+            List<CartItem> updatedItems = new ArrayList<>();
 
-        for (CartItem item : cartItems) {
-            if (item.getProductId() == null || !item.getProductId().equals(productId)) {
-                updatedItems.add(item);
+            for (CartItem item : cartItems) {
+                if (item != null && item.getProduct() != null &&
+                        item.getProductId() != null && !item.getProductId().equals(productId)) {
+                    updatedItems.add(item);
+                }
             }
-        }
 
-        saveCartItems(updatedItems);
-        Log.d(TAG, "Removed item " + productId + " from local cart");
+            saveCartItems(updatedItems);
+            Log.d(TAG, "Removed item " + productId + " from local cart");
+        } catch (Exception e) {
+            Log.e(TAG, "Error removing item from cart", e);
+        }
     }
 
     public synchronized void updateQuantity(String productId, int quantity) {
@@ -131,13 +192,17 @@ public class LocalCartManager {
             List<CartItem> cartItems = getCartItems();
 
             if (quantity <= 0) {
+                Log.d(TAG, "Quantity is 0 or less, removing item: " + productId);
                 removeFromCart(productId);
                 return;
             }
 
             boolean itemFound = false;
             for (CartItem item : cartItems) {
-                if (item.getProductId() != null && item.getProductId().equals(productId)) {
+                if (item != null && item.getProduct() != null &&
+                        item.getProductId() != null && item.getProductId().equals(productId)) {
+                    Log.d(TAG, "Updating quantity for " + item.getProduct().getName() + " from " +
+                            item.getQuantity() + " to " + quantity);
                     item.setQuantity(quantity);
                     itemFound = true;
                     break;
@@ -179,9 +244,37 @@ public class LocalCartManager {
     }
 
     private synchronized void saveCartItems(List<CartItem> cartItems) {
+        if (cartItems == null) {
+            Log.w(TAG, "Attempted to save null cartItems list");
+            return;
+        }
+
+        // Filter out any null or invalid items before serializing
+        List<CartItem> validItems = new ArrayList<>();
+        for (CartItem item : cartItems) {
+            if (item != null && item.getProduct() != null && item.getProduct().getId() != null) {
+                validItems.add(item);
+            }
+        }
+
         try {
-            String cartJson = gson.toJson(cartItems);
-            preferences.edit().putString(KEY_CART_ITEMS, cartJson).apply();
+            String cartJson = gson.toJson(validItems);
+            Log.d(TAG, "Saving " + validItems.size() + " items to SharedPreferences");
+
+            SharedPreferences.Editor editor = preferences.edit();
+            editor.putString(KEY_CART_ITEMS, cartJson);
+            boolean success = editor.commit(); // Using commit to ensure the write is synchronous
+
+            if (success) {
+                Log.d(TAG, "Successfully saved cart items to SharedPreferences");
+                // Verify save was successful by reading back
+                String savedJson = preferences.getString(KEY_CART_ITEMS, null);
+                if (savedJson == null || !savedJson.equals(cartJson)) {
+                    Log.w(TAG, "Verification failed - saved data doesn't match what we tried to save");
+                }
+            } else {
+                Log.e(TAG, "Failed to save cart items to SharedPreferences");
+            }
         } catch (Exception e) {
             Log.e(TAG, "Error saving cart items", e);
         }

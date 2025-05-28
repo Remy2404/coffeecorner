@@ -1,12 +1,27 @@
 package com.coffeecorner.app.models;
 
+import com.google.gson.annotations.SerializedName;
+
 public class CartItem {
+    @SerializedName("product")
     private Product product;
+
+    @SerializedName("quantity")
     private int quantity;
+
+    @SerializedName("size")
     private String size;
+
+    @SerializedName("milk_option")
     private String milkOption;
+
+    @SerializedName("extra_charge")
     private double extraCharge;
+
+    @SerializedName("temperature")
     private String temperature;
+
+    @SerializedName("customizations")
     private String customizations;
 
     // Default constructor needed by CartManager

@@ -8,7 +8,7 @@ import android.content.SharedPreferences;
  */
 public class PreferencesHelper {
     // Shared Preferences file name
-    private static final String PREF_NAME = "CoffeeCornerPrefs";    // Preference keys
+    private static final String PREF_NAME = "CoffeeCornerPrefs"; // Preference keys
     private static final String KEY_USER_ID = "user_id";
     private static final String KEY_USER_NAME = "user_name";
     private static final String KEY_USER_EMAIL = "user_email";
@@ -17,7 +17,7 @@ public class PreferencesHelper {
     private static final String KEY_USER_POINTS = "user_points";
     private static final String KEY_USER_TIER = "user_tier";
     private static final String KEY_IS_LOGGED_IN = "is_logged_in";
-    
+
     // Default values
     private static final String DEFAULT_USER_ID = "user1"; // Default user ID for API calls
     private static final String KEY_AUTH_TOKEN = "auth_token";
@@ -92,13 +92,33 @@ public class PreferencesHelper {
      */
     public String getAuthToken() {
         return sharedPreferences.getString(KEY_AUTH_TOKEN, null);
-    }    /**
+    }
+
+    /**
+     * Save authentication token
+     * 
+     * @param token Authentication token
+     */
+    public void saveAuthToken(String token) {
+        sharedPreferences.edit().putString(KEY_AUTH_TOKEN, token).apply();
+    }
+
+    /**
      * Get user ID
      * 
      * @return User ID or default user ID if not set
      */
     public String getUserId() {
         return sharedPreferences.getString(KEY_USER_ID, DEFAULT_USER_ID);
+    }
+
+    /**
+     * Save user ID
+     * 
+     * @param userId User ID to save
+     */
+    public void saveUserId(String userId) {
+        sharedPreferences.edit().putString(KEY_USER_ID, userId).apply();
     }
 
     /**
@@ -347,12 +367,6 @@ public class PreferencesHelper {
      */
     public void clear() {
         clearAll();
-    }
-
-    public void saveUserId(String id) {
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString(KEY_USER_ID, id);
-        editor.apply();
     }
 
     public void clearUserData() {

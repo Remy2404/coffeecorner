@@ -13,6 +13,7 @@ import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
 import com.coffeecorner.app.R;
+import com.coffeecorner.app.services.GuestAuthService;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class MainActivity extends AppCompatActivity {
@@ -20,6 +21,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
     private BottomNavigationView bottomNavigationView;
     private NavController navController;
+    private GuestAuthService guestAuthService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,6 +34,12 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // Initialize guest authentication service
+        guestAuthService = new GuestAuthService(this);
+
+        // Initialize guest authentication for cart functionality
+        initializeGuestAuth();
+
         // Initialize UI elements
         initializeViews();
 
@@ -40,6 +48,24 @@ public class MainActivity extends AppCompatActivity {
 
         // Log successful initialization
         Log.d(TAG, "MainActivity initialized successfully");
+    }
+
+    /**
+     * Initialize guest authentication to enable cart functionality
+     */
+    private void initializeGuestAuth() {
+        guestAuthService.authenticateGuest(new GuestAuthService.AuthCallback() {
+            @Override
+            public void onSuccess(String token, String userId) {
+                Log.d(TAG, "Guest authentication successful - User ID: " + userId);
+            }
+
+            @Override
+            public void onError(String error) {
+                Log.e(TAG, "Guest authentication failed: " + error);
+                Toast.makeText(MainActivity.this, "Authentication failed", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void initializeViews() {
