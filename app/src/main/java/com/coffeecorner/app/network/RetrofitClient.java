@@ -64,8 +64,7 @@ public class RetrofitClient {
                             .method(original.method(), original.body());
 
                     // Add Accept header for JSON
-                    builder.header("Accept", "application/json");
-                    // Get auth token from preferences if available
+                    builder.header("Accept", "application/json");                    // Get auth token from preferences if available
                     Context appContext = com.coffeecorner.app.CoffeeCornerApplication.getInstance()
                             .getApplicationContext();
                     PreferencesHelper preferencesHelper = new PreferencesHelper(appContext);
@@ -74,6 +73,10 @@ public class RetrofitClient {
                     // Add Authorization header if token exists
                     if (token != null && !token.isEmpty()) {
                         builder.header("Authorization", "Bearer " + token);
+                        android.util.Log.d("RetrofitClient", "Adding Authorization header with token: " + 
+                            (token.length() > 10 ? token.substring(0, 10) + "..." : token));
+                    } else {
+                        android.util.Log.w("RetrofitClient", "No auth token found - request will be made without authentication");
                     }
 
                     return chain.proceed(builder.build());

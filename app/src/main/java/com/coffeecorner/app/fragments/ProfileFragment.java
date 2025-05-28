@@ -26,6 +26,7 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.coffeecorner.app.R;
 import com.coffeecorner.app.activities.LoginActivity;
+import com.coffeecorner.app.activities.MainActivity;
 import com.coffeecorner.app.models.User;
 import com.coffeecorner.app.utils.PreferencesHelper;
 import com.coffeecorner.app.viewmodel.UserViewModel;
@@ -41,6 +42,7 @@ public class ProfileFragment extends Fragment {
     private UserViewModel userViewModel;
     private Switch switchTheme;
     private PreferencesHelper preferencesHelper;
+    private int debugClickCount = 0;
 
     // Theme switching state management
     private boolean isThemeSwitching = false;
@@ -48,6 +50,104 @@ public class ProfileFragment extends Fragment {
 
     public ProfileFragment() {
         // Required empty public constructor
+    }
+    
+    /**
+     * Setup debug features - tap profile picture 7 times to show debug menu
+     */
+    private void setupDebugFeatures(View view) {
+        ivProfilePic.setOnClickListener(v -> {
+            debugClickCount++;
+            
+            if (debugClickCount >= 7) {
+                debugClickCount = 0;
+                showDebugMenu();
+            } else {
+                // Reset counter after 2 seconds if not reached
+                themeHandler.removeCallbacks(() -> debugClickCount = 0);
+                themeHandler.postDelayed(() -> debugClickCount = 0, 2000);
+            }
+        });
+    }
+    
+    /**
+     * Show debug menu for authentication testing
+     */
+    private void showDebugMenu() {
+        String[] options = {
+            "Run Auth Diagnostic",
+            "Check Auth State", 
+            "Force Re-auth",
+            "Clear Auth Data",
+            "Cancel"
+        };
+        
+        new MaterialAlertDialogBuilder(requireContext())
+            .setTitle("Debug Menu")
+            .setItems(options, (dialog, which) -> {
+                switch (which) {
+                    case 0: // Run Auth Diagnostic
+                        runAuthDiagnostic();
+                        break;
+                    case 1: // Check Auth State
+                        checkAuthState();
+                        break;
+                    case 2: // Force Re-auth
+                        forceReauth();
+                        break;
+                    case 3: // Clear Auth Data
+                        clearAuthData();
+                        break;
+                    default: // Cancel
+                        break;
+                }
+            })
+            .show();
+    }
+    
+    /**
+     * Run authentication diagnostic
+     */
+    private void runAuthDiagnostic() {
+        if (getActivity() instanceof MainActivity) {
+            ((MainActivity) getActivity()).runAuthDiagnostic();
+        }
+    }
+    
+    /**
+     * Check current authentication state
+     */
+    private void checkAuthState() {
+        if (getActivity() instanceof MainActivity) {
+            ((MainActivity) getActivity()).checkAuthState();
+        }
+    }
+    
+    /**
+     * Force re-authentication
+     */
+    private void forceReauth() {
+        if (getActivity() instanceof MainActivity) {
+            ((MainActivity) getActivity()).forceReauth();
+        }
+    }
+    
+    /**
+     * Clear all authentication data
+     */
+    private void clearAuthData() {
+        new MaterialAlertDialogBuilder(requireContext())
+            .setTitle("Clear Auth Data")
+            .setMessage("This will log you out and clear all authentication data. Continue?")
+            .setPositiveButton("Yes", (dialog, which) -> {
+                if (getActivity() instanceof MainActivity) {
+                    ((MainActivity) getActivity()).clearAuthData();
+                }
+                // Navigate to login after clearing data
+                navigateToLogin();
+            })
+            .setNegativeButton("No", null)
+            .show();
     }
 
     @Override
@@ -75,7 +175,10 @@ public class ProfileFragment extends Fragment {
         setupObservers();
 
         // Setup click listeners
-        setupClickListeners(view); // Set initial switch state from PreferencesHelper (centralized source of truth)
+        setupClickListeners(view);
+        
+        // Setup debug functionality
+        setupDebugFeatures(view); // Set initial switch state from PreferencesHelper (centralized source of truth)
         isThemeSwitching = true;
         switchTheme.setChecked(preferencesHelper.isDarkModeEnabled());
         isThemeSwitching = false;
@@ -238,5 +341,8 @@ public class ProfileFragment extends Fragment {
         if (themeHandler != null) {
             themeHandler.removeCallbacksAndMessages(null);
         }
+        
+        // Reset debug click count
+        debugClickCount = 0;
     }
 }
