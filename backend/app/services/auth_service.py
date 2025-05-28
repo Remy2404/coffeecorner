@@ -4,7 +4,7 @@ from passlib.context import CryptContext
 from jose import jwt, JWTError
 from datetime import datetime, timedelta
 from app.core.config import settings
-from app.database.supabase import supabase
+from app.database.supabase import supabase, SupabaseClient
 from app.models.schemas import UserCreate, UserLogin, UserResponse, AuthResponse
 from app.services.firebase_auth_service import FirebaseAuthService
 import logging
@@ -69,7 +69,7 @@ class AuthService:
             access_token = AuthService.create_access_token(
                 data={
                     "sub": firebase_user["email"],
-                    "user_id": user_profile.id,
+                    "user_id": user_profile.id,  # This is now Firebase UID as TEXT
                     "firebase_uid": firebase_user["uid"],
                 }
             )
@@ -94,52 +94,151 @@ class AuthService:
     async def get_or_create_user_profile(firebase_user: dict) -> UserResponse:
         """Get existing user profile or create new one in Supabase"""
         try:
-            # Try to find existing user by Firebase UID
+            # Try to find existing user by Firebase UID using admin client
+            admin_client = SupabaseClient.get_admin_client()
+
+            # Firebase UID is used as TEXT ID directly
+            firebase_uid = firebase_user["uid"]
+
+            # First try to find by Firebase UID (which is now stored as TEXT in id column)
             existing_user = (
-                supabase.table("profiles")
+                admin_client.table("profiles")
                 .select("*")
-                .eq("firebase_uid", firebase_user["uid"])
+                .eq("id", firebase_uid)  # id column is now TEXT, not UUID
                 .execute()
             )
 
             if existing_user.data:
-                return UserResponse(**existing_user.data[0])
+                # Map database columns to UserResponse format
+                user_data = existing_user.data[0]
+                response_data = {
+                    "id": user_data["id"],  # This is now the Firebase UID as TEXT
+                    "name": user_data.get("full_name", ""),
+                    "email": user_data["email"],
+                    "phone": user_data.get("phone", ""),
+                    "gender": "",
+                    "profile_image_url": "",
+                    "date_of_birth": "",
+                    "created_at": user_data.get("created_at"),
+                    "updated_at": user_data.get("updated_at"),
+                }
+                return UserResponse(**response_data)
+
+            # Also try to find by firebase_uid column (for backward compatibility)
+            existing_firebase_user = (
+                admin_client.table("profiles")
+                .select("*")
+                .eq("firebase_uid", firebase_uid)
+                .execute()
+            )
+
+            if existing_firebase_user.data:
+                # User exists with firebase_uid, return it
+                user_data = existing_firebase_user.data[0]
+                response_data = {
+                    "id": user_data["id"],
+                    "name": user_data.get("full_name", ""),
+                    "email": user_data["email"],
+                    "phone": user_data.get("phone", ""),
+                    "gender": "",
+                    "profile_image_url": "",
+                    "date_of_birth": "",
+                    "created_at": user_data.get("created_at"),
+                    "updated_at": user_data.get("updated_at"),
+                }
+                return UserResponse(**response_data)
 
             # Try to find by email (for migration purposes)
             existing_email_user = (
-                supabase.table("profiles")
+                admin_client.table("profiles")
                 .select("*")
                 .eq("email", firebase_user["email"])
                 .execute()
             )
 
             if existing_email_user.data:
-                # Update existing user with Firebase UID
-                updated_user = (
-                    supabase.table("profiles")
-                    .update({"firebase_uid": firebase_user["uid"]})
-                    .eq("email", firebase_user["email"])
-                    .execute()
+                # Update existing user with Firebase UID as the primary ID
+                logger.info(
+                    f"Updating existing user profile with Firebase UID as ID for {firebase_user['email']}"
                 )
 
-                return UserResponse(**updated_user.data[0])
+                # Delete the old record and create a new one with Firebase UID as ID
+                old_user_data = existing_email_user.data[0]
 
-            # Create new user profile
-            new_user_data = {
-                "firebase_uid": firebase_user["uid"],
-                "email": firebase_user["email"],
-                "name": firebase_user.get("name", ""),
-                "phone": "",
-                "gender": "",
-                "profile_image_url": "",
-                "date_of_birth": None,
-                "email_verified": firebase_user.get("email_verified", False),
-            }
+                # Delete old record
+                admin_client.table("profiles").delete().eq(
+                    "id", old_user_data["id"]
+                ).execute()
 
-            new_user = supabase.table("profiles").insert(new_user_data).execute()
+                # Create new record with Firebase UID as ID
+                new_user_data = {
+                    "id": firebase_uid,  # Use Firebase UID as TEXT ID
+                    "firebase_uid": firebase_uid,
+                    "email": firebase_user["email"],
+                    "full_name": old_user_data.get(
+                        "full_name", firebase_user.get("name", "")
+                    ),
+                    "phone": old_user_data.get("phone", ""),
+                    "created_at": old_user_data.get("created_at"),
+                }
+
+                updated_user = (
+                    admin_client.table("profiles").insert(new_user_data).execute()
+                )
+
+                # Map database columns to UserResponse format
+                user_data = updated_user.data[0]
+                response_data = {
+                    "id": user_data["id"],
+                    "name": user_data.get("full_name", ""),
+                    "email": user_data["email"],
+                    "phone": user_data.get("phone", ""),
+                    "gender": "",
+                    "profile_image_url": "",
+                    "date_of_birth": "",
+                    "created_at": user_data.get("created_at"),
+                    "updated_at": user_data.get("updated_at"),
+                }
+                return UserResponse(**response_data)
+
+            # Create new user profile using Firebase UID as TEXT ID
+            try:
+                new_user_data = {
+                    "id": firebase_uid,  # Use Firebase UID directly as TEXT ID
+                    "firebase_uid": firebase_uid,  # Also store in firebase_uid column for reference
+                    "email": firebase_user["email"],
+                    "full_name": firebase_user.get("name", ""),
+                    "phone": "",
+                }
+
+                logger.info(
+                    f"Creating new user profile with Firebase UID as ID: {firebase_uid} for {firebase_user['email']}"
+                )
+
+                new_user = (
+                    admin_client.table("profiles").insert(new_user_data).execute()
+                )
+                logger.info(f"User profile created successfully: {new_user.data}")
+
+            except Exception as e:
+                logger.error(f"Error creating user with admin client: {e}")
+                raise
 
             if new_user.data:
-                return UserResponse(**new_user.data[0])
+                # Map database columns to UserResponse format
+                user_data = new_user.data[0]
+                response_data = {
+                    "id": user_data["id"],  # This is the Firebase UID as TEXT
+                    "name": user_data.get("full_name", ""),
+                    "email": user_data["email"],
+                    "phone": user_data.get("phone", ""),
+                    "gender": "",
+                    "profile_image_url": "",
+                    "date_of_birth": "",
+                    "created_at": user_data.get("created_at"),
+                    "updated_at": user_data.get("updated_at"),
+                }
+                return UserResponse(**response_data)
             else:
                 raise HTTPException(
                     status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

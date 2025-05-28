@@ -1,12 +1,17 @@
 package com.coffeecorner.app.models;
 
+import com.google.gson.annotations.SerializedName;
+
 public class ProductResponse {
     private String id;
     private String name;
     private String description;
     private double price;
     private String category;
+
+    @SerializedName("image_url")
     private String imageUrl;
+
     private Integer calories;
     private Float rating;
     private Integer reviewCount;

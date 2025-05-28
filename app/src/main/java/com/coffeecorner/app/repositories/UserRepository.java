@@ -470,9 +470,14 @@ public class UserRepository {
                     @NonNull Response<ApiResponse<User>> response) {
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                     User user = response.body().getData();
-                    currentUser.setValue(user);
-                    saveUserToPreferences(user);
-                    callback.onSuccess(user);
+                    if (user != null) {
+                        currentUser.setValue(user);
+                        saveUserToPreferences(user);
+                        callback.onSuccess(user);
+                    } else {
+                        Log.e("UserRepository", "User object is null in response");
+                        callback.onError("User data is missing from server response.");
+                    }
                 } else {
                     Log.e("UserRepository", "Firebase auth failed: " + response.code() + " - " + response.message());
                     try {

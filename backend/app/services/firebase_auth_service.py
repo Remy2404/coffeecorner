@@ -19,14 +19,21 @@ class FirebaseAuthService:
         try:
             # Check if Firebase is already initialized
             firebase_admin.get_app()
+            logger.info("Firebase Admin SDK already initialized")
         except ValueError:
             # Firebase not initialized, let's initialize it
             try:
                 # Try to use service account file
                 if os.path.exists(settings.firebase_admin_sdk_path):
+                    logger.info(
+                        f"Initializing Firebase with service account: {settings.firebase_admin_sdk_path}"
+                    )
                     cred = credentials.Certificate(settings.firebase_admin_sdk_path)
                     firebase_admin.initialize_app(cred)
                 else:
+                    logger.warning(
+                        f"Service account file not found: {settings.firebase_admin_sdk_path}"
+                    )
                     # Use default credentials (for production with environment variables)
                     cred = credentials.ApplicationDefault()
                     firebase_admin.initialize_app(
@@ -42,16 +49,21 @@ class FirebaseAuthService:
             except Exception as e:
                 logger.error(f"Failed to initialize Firebase Admin SDK: {e}")
                 # For development, we'll continue without Firebase if it fails
-                pass
+                raise
 
     @classmethod
     def verify_firebase_token(cls, id_token: str) -> dict:
         """Verify Firebase ID token and return user data"""
+        logger.info("Starting Firebase token verification...")
         cls.initialize_firebase()
 
         try:
+            logger.info(f"Attempting to verify token of length: {len(id_token)}")
             # Verify the ID token
             decoded_token = auth.verify_id_token(id_token)
+            logger.info(
+                f"Token verified successfully for user: {decoded_token.get('email')}"
+            )
             return {
                 "uid": decoded_token["uid"],
                 "email": decoded_token.get("email"),
@@ -61,6 +73,7 @@ class FirebaseAuthService:
             }
         except Exception as e:
             logger.error(f"Firebase token verification failed: {e}")
+            logger.error(f"Token being verified: {id_token[:50]}...")
             raise ValueError("Invalid Firebase token")
 
     @classmethod

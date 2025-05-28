@@ -80,7 +80,13 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
         // Format and set price
         NumberFormat currencyFormatter = NumberFormat.getCurrencyInstance(Locale.US);
         String formattedPrice = currencyFormatter.format(product.getPrice());
-        holder.tvPrice.setText(formattedPrice); // Load image using ImageLoader utility
+        holder.tvPrice.setText(formattedPrice);
+
+        // Log detailed product information for debugging
+        Log.d("ProductAdapter", "Product at position " + position + ": " + product.getName());
+        Log.d("ProductAdapter", "Image URL: " + product.getImageUrl());
+
+        // Load image using ImageLoader utility
         ImageLoader.loadImage(
                 context,
                 product.getImageUrl(),
@@ -90,26 +96,25 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
                 new ImageLoader.ImageLoadListener() {
                     @Override
                     public void onSuccess() {
-                        // Image loaded successfully
+                        Log.d("ProductAdapter", "Successfully loaded image for product: " + product.getName());
                     }
 
                     @Override
                     public void onError() {
                         // Log error but UI already shows fallback image
-                        Log.w("ProductAdapter", "Failed to load image for product: " + product.getName());
+                        Log.e("ProductAdapter", "Failed to load image for product: " + product.getName() + ", URL: "
+                                + product.getImageUrl());
                     }
-                });
-
-        // Set click listeners
+                });// Set click listeners
         holder.cardView.setOnClickListener(v -> {
             if (listener != null) {
-                listener.onProductClick(product, holder.getBindingAdapterPosition());
+                listener.onProductClick(product, holder.getAdapterPosition());
             }
         });
 
         holder.btnAdd.setOnClickListener(v -> {
             if (cartListener != null) {
-                cartListener.onAddToCartClick(product, holder.getBindingAdapterPosition());
+                cartListener.onAddToCartClick(product, holder.getAdapterPosition());
             }
         });
     }

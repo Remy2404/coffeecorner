@@ -1,5 +1,6 @@
 package com.coffeecorner.app.models;
 
+import com.google.gson.annotations.SerializedName;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,7 +10,10 @@ public class Product implements Cloneable {
     private String description;
     private double price;
     private String category;
+
+    @SerializedName("image_url")
     private String imageUrl;
+
     private boolean isFeatured;
     private boolean isAvailable;
     private List<String> availableSizes;

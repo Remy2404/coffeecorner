@@ -3,6 +3,8 @@ package com.coffeecorner.app.fragments;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,17 +26,23 @@ import com.coffeecorner.app.activities.LoginActivity;
 import com.coffeecorner.app.utils.PreferencesHelper;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 
+import java.util.Objects;
+
 public class SettingsFragment extends Fragment {
 
     private NavController navController;
     private PreferencesHelper preferencesHelper;
+
+    // Theme switching state management
+    private boolean isThemeSwitching = false;
+    private Handler themeHandler = new Handler(Looper.getMainLooper());
 
     public SettingsFragment() {
         // Required empty public constructor
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         try {
@@ -63,16 +71,16 @@ public class SettingsFragment extends Fragment {
         SwitchMaterial switchDarkMode = view.findViewById(R.id.switchDarkMode);
         RelativeLayout layoutPrivacyPolicy = view.findViewById(R.id.layoutPrivacyPolicy);
         RelativeLayout layoutTermsConditions = view.findViewById(R.id.layoutTermsConditions);
-        Button btnLogout = view.findViewById(R.id.btnLogout);
-
-        // Set initial states for switches
+        Button btnLogout = view.findViewById(R.id.btnLogout); // Set initial states for switches
         switchNotifications.setChecked(preferencesHelper.isNotificationsEnabled());
-        switchDarkMode.setChecked(AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES);
+        // Initialize dark mode switch from PreferencesHelper (centralized source of
+        // truth)
+        switchDarkMode.setChecked(preferencesHelper.isDarkModeEnabled());
 
         // Set up click listeners
         layoutEditProfile.setOnClickListener(v -> {
             // Navigate to EditProfileFragment - Ensure this action exists in your nav_graph
-            if (navController.getCurrentDestination().getId() == R.id.settingsFragment) {
+            if (Objects.requireNonNull(navController.getCurrentDestination()).getId() == R.id.settingsFragment) {
                 navController.navigate(R.id.action_settingsFragment_to_editProfileFragment);
             }
         });
@@ -82,21 +90,34 @@ public class SettingsFragment extends Fragment {
             Toast.makeText(requireContext(), "Notifications " + (isChecked ? "Enabled" : "Disabled"),
                     Toast.LENGTH_SHORT).show();
         });
-
         switchDarkMode.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            if (isChecked) {
-                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
-            } else {
-                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+            // Prevent recursive calls during theme switching
+            if (isThemeSwitching) {
+                return;
             }
-            // It's good practice to recreate the activity to apply the theme change
-            // immediately
-            // However, for a fragment, you might need to signal the activity or handle it
-            // differently
-            // For simplicity, a Toast message is shown here.
-            Toast.makeText(requireContext(),
-                    "Dark Mode " + (isChecked ? "Enabled" : "Disabled") + ". Restart app to see full changes.",
-                    Toast.LENGTH_LONG).show();
+
+            // Set switching flag to prevent multiple rapid changes
+            isThemeSwitching = true;
+
+            // Save preference immediately to PreferencesHelper (single source of truth)
+            preferencesHelper.setDarkModeEnabled(isChecked);
+
+            // Remove any pending theme changes to prevent conflicts
+            themeHandler.removeCallbacksAndMessages(null);
+
+            // Apply theme change with debouncing for smooth transition
+            themeHandler.postDelayed(() -> {
+                try {
+                    int targetMode = isChecked ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO;
+                    // Only apply if different from current mode to prevent unnecessary recreation
+                    if (AppCompatDelegate.getDefaultNightMode() != targetMode) {
+                        AppCompatDelegate.setDefaultNightMode(targetMode);
+                    }
+                } finally {
+                    // Reset switching flag after completion
+                    isThemeSwitching = false;
+                }
+            }, 200); // 200ms delay for smooth transition
         });
 
         layoutPrivacyPolicy.setOnClickListener(v -> {
@@ -115,21 +136,27 @@ public class SettingsFragment extends Fragment {
             startActivity(i);
         });
 
-        btnLogout.setOnClickListener(v -> {
-            new AlertDialog.Builder(requireContext())
-                    .setTitle("Logout")
-                    .setMessage("Are you sure you want to logout?")
-                    .setPositiveButton("Logout", (dialog, which) -> {
-                        // Clear user session/preferences
-                        preferencesHelper.clear(); // Assuming you have a clear method in PreferencesHelper
-                        // Navigate to LoginActivity
-                        Intent intent = new Intent(requireActivity(), LoginActivity.class);
-                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                        startActivity(intent);
-                        requireActivity().finish();
-                    })
-                    .setNegativeButton("Cancel", null)
-                    .show();
-        });
+        btnLogout.setOnClickListener(v -> new AlertDialog.Builder(requireContext())
+                .setTitle("Logout")
+                .setMessage("Are you sure you want to logout?")
+                .setPositiveButton("Logout", (dialog, which) -> {
+                    // Clear user session/preferences
+                    preferencesHelper.clear(); // Assuming you have a clear method in PreferencesHelper
+                    // Navigate to LoginActivity
+                    Intent intent = new Intent(requireActivity(), LoginActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(intent);
+                    requireActivity().finish();
+                }).setNegativeButton("Cancel", null)
+                .show());
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        // Clean up handler to prevent memory leaks
+        if (themeHandler != null) {
+            themeHandler.removeCallbacksAndMessages(null);
+        }
     }
 }

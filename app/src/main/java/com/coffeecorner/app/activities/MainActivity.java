@@ -1,6 +1,5 @@
 package com.coffeecorner.app.activities;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
@@ -15,13 +14,11 @@ import androidx.navigation.ui.NavigationUI;
 
 import com.coffeecorner.app.R;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
     private BottomNavigationView bottomNavigationView;
-    private FloatingActionButton fabCart;
     private NavController navController;
 
     @Override
@@ -29,7 +26,8 @@ public class MainActivity extends AppCompatActivity {
         // Set theme to follow user preference (light/dark)
         android.content.SharedPreferences prefs = getSharedPreferences("app_prefs", MODE_PRIVATE);
         boolean isDark = prefs.getBoolean("dark_mode", false);
-        AppCompatDelegate.setDefaultNightMode(isDark ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO);
+        AppCompatDelegate
+                .setDefaultNightMode(isDark ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO);
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
@@ -46,15 +44,6 @@ public class MainActivity extends AppCompatActivity {
 
     private void initializeViews() {
         bottomNavigationView = findViewById(R.id.bottom_navigation);
-        fabCart = findViewById(R.id.fab_cart);
-
-        fabCart.setOnClickListener(v -> {
-            if (navController != null) {
-                navController.navigate(R.id.cartFragment);
-            } else {
-                Toast.makeText(this, "Navigation not ready", Toast.LENGTH_SHORT).show();
-            }
-        });
     }
 
     private void setupNavigation() {
@@ -68,12 +57,29 @@ public class MainActivity extends AppCompatActivity {
                 // Configure the bottom navigation with the nav controller
                 // Use the fragment IDs from nav_graph.xml that match the bottom_nav_menu.xml
                 AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(
-                        R.id.homeFragment, R.id.menuFragment, R.id.cartFragment, R.id.orderHistoryFragment, R.id.profileFragment)
+                        R.id.homeFragment, R.id.menuFragment, R.id.cartFragment, R.id.orderHistoryFragment,
+                        R.id.profileFragment)
                         .build();
 
                 // Setup the bottom navigation view with the nav controller
                 NavigationUI.setupWithNavController(bottomNavigationView, navController);
-                Log.d(TAG, "Navigation setup completed successfully");
+
+                // Set up custom click listener to override default behavior
+                bottomNavigationView.setOnItemSelectedListener(item -> {
+                    // Get the selected fragment id from the menu item
+                    int selectedFragmentId = item.getItemId();
+
+                    // Navigate directly to the selected fragment without adding to back stack
+                    // This enables direct navigation between tabs without requiring Back button
+                    navController.popBackStack(navController.getGraph().getStartDestination(), false);
+
+                    // Navigate to the selected destination
+                    navController.navigate(selectedFragmentId);
+
+                    return true;
+                });
+
+                Log.d(TAG, "Navigation setup completed successfully with custom tab handling");
             } else {
                 Log.e(TAG, "navHostFragment is not an instance of NavHostFragment");
                 Toast.makeText(this, "Navigation setup failed", Toast.LENGTH_SHORT).show();
@@ -84,29 +90,25 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    // Navigation helper methods
-    public void navigateToCheckout() {
-        startActivity(new Intent(this, CheckoutActivity.class));
-    }
-
     public void showToast(String message) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
 
     /**
-     * Update cart badge on the floating action button
+     * Update cart badge in the bottom navigation
+     * 
      * @param itemCount Number of items in cart
      */
     public void updateCartBadge(int itemCount) {
-        // For now, we'll use a simple approach by updating the FAB's content description
-        // In a more advanced implementation, you could use Material Design Badge API
-        if (fabCart != null) {
+        // Now we'll update the badge on the bottom navigation cart item instead of the
+        // FAB
+        if (bottomNavigationView != null) {
             if (itemCount > 0) {
-                fabCart.setContentDescription("Cart (" + itemCount + " items)");
-                // You could also change the FAB appearance here
-                // For example, change color or add an overlay
+                // Set badge on the cart menu item
+                bottomNavigationView.getOrCreateBadge(R.id.cartFragment).setNumber(itemCount);
             } else {
-                fabCart.setContentDescription("Cart (empty)");
+                // Remove the badge when cart is empty
+                bottomNavigationView.removeBadge(R.id.cartFragment);
             }
         }
         Log.d(TAG, "Cart badge updated: " + itemCount + " items");

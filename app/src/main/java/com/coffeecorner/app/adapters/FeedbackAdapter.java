@@ -75,12 +75,10 @@ public class FeedbackAdapter extends RecyclerView.Adapter<FeedbackAdapter.Feedba
         } else {
             // Set default user photo
             holder.ivUserPhoto.setImageResource(R.drawable.ic_default_user);
-        }
-
-        // Set up interaction listeners
+        }        // Set up interaction listeners
         holder.tvHelpful.setOnClickListener(v -> {
             if (listener != null) {
-                listener.onHelpfulClicked(item, holder.getBindingAdapterPosition());
+                listener.onHelpfulClicked(item, holder.getAdapterPosition());
             } else {
                 // Fallback if no listener is set
                 Toast.makeText(context, "Marked as helpful", Toast.LENGTH_SHORT).show();
@@ -89,7 +87,7 @@ public class FeedbackAdapter extends RecyclerView.Adapter<FeedbackAdapter.Feedba
 
         holder.tvReply.setOnClickListener(v -> {
             if (listener != null) {
-                listener.onReplyClicked(item, holder.getBindingAdapterPosition());
+                listener.onReplyClicked(item, holder.getAdapterPosition());
             } else {
                 // Fallback if no listener is set
                 Toast.makeText(context, "Reply option coming soon", Toast.LENGTH_SHORT).show();

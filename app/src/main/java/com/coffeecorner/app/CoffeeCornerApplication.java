@@ -11,13 +11,24 @@ import com.coffeecorner.app.utils.SupabaseClientManager;
 public class CoffeeCornerApplication extends Application {
 
     private static final String TAG = "CoffeeCornerApp";
+    private static CoffeeCornerApplication instance;
 
     @Override
     public void onCreate() {
         super.onCreate();
+        instance = this;
 
         // Initialize Supabase client
         initializeSupabase();
+    }
+
+    /**
+     * Get singleton instance of the application
+     * 
+     * @return Application instance
+     */
+    public static CoffeeCornerApplication getInstance() {
+        return instance;
     }
 
     private void initializeSupabase() {

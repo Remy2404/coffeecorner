@@ -2,6 +2,7 @@ package com.coffeecorner.app.utils;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
+import android.util.Log;
 import android.widget.ImageView;
 
 import androidx.annotation.Nullable;
@@ -63,6 +64,7 @@ public class ImageLoader {
         try {
             // Check for null context or detached view
             if (context == null || imageView == null) {
+                Log.e("ImageLoader", "Context or ImageView is null");
                 if (listener != null) {
                     listener.onError();
                 }
@@ -71,11 +73,18 @@ public class ImageLoader {
 
             // Handle empty URL
             if (imageUrl == null || imageUrl.trim().isEmpty()) {
+                Log.e("ImageLoader", "Image URL is null or empty for " + imageView.getTag());
                 imageView.setImageResource(errorImage);
                 if (listener != null) {
                     listener.onError();
                 }
                 return;
+            }
+
+            // Enhanced logging with URL validation check
+            Log.d("ImageLoader", "Loading image from URL: " + imageUrl);
+            if (!imageUrl.startsWith("http://") && !imageUrl.startsWith("https://")) {
+                Log.w("ImageLoader", "URL doesn't start with http:// or https:// - might be invalid: " + imageUrl);
             }
 
             RequestOptions options = new RequestOptions()
@@ -92,6 +101,12 @@ public class ImageLoader {
                     @Override
                     public boolean onLoadFailed(@Nullable GlideException e, Object model,
                             Target<Drawable> target, boolean isFirstResource) {
+                        Log.e("ImageLoader", "Failed to load image: " + imageUrl, e);
+                        if (e != null) {
+                            for (Throwable t : e.getRootCauses()) {
+                                Log.e("ImageLoader", "Root cause: " + t.getMessage());
+                            }
+                        }
                         listener.onError();
                         return false;
                     }
@@ -100,6 +115,7 @@ public class ImageLoader {
                     public boolean onResourceReady(Drawable resource, Object model,
                             Target<Drawable> target, DataSource dataSource,
                             boolean isFirstResource) {
+                        Log.d("ImageLoader", "Successfully loaded image: " + imageUrl);
                         listener.onSuccess();
                         return false;
                     }
@@ -109,6 +125,7 @@ public class ImageLoader {
             requestBuilder.into(imageView);
         } catch (Exception e) {
             // Fallback to error image in case of any exception
+            Log.e("ImageLoader", "Exception when loading image: " + imageUrl, e);
             imageView.setImageResource(errorImage);
             if (listener != null) {
                 listener.onError();

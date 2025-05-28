@@ -63,7 +63,7 @@ public class CartRepository {
         }
 
         Log.d(TAG, "getCartItems: Fetching cart for userId: " + userId);
-        apiService.getCart(userId).enqueue(new Callback<ApiResponse<List<CartItem>>>() {
+        apiService.getCart(userId).enqueue(new Callback<>() {
             @Override
             public void onResponse(@NonNull Call<ApiResponse<List<CartItem>>> call,
                     @NonNull Response<ApiResponse<List<CartItem>>> response) {
@@ -118,19 +118,19 @@ public class CartRepository {
             callback.onCartItemsLoaded(updatedCart);
             return;
         }
-
         if (product == null || product.getId() == null || quantity <= 0) {
             Log.w(TAG, "addToCart: Invalid product or quantity.");
             callback.onError("Invalid product or quantity.");
             return;
         }
+        Log.d(TAG, "addToCart: Adding productId: " + product.getId() + " quantity: " + quantity);
 
-        Log.d(TAG, "addToCart: Adding productId: " + product.getId() + " quantity: " + quantity + " for userId: "
-                + userId);
-        apiService.addToCart(userId, product.getId(), quantity).enqueue(new Callback<ApiResponse<List<CartItem>>>() {
+        // Use the addToCart method that matches the backend's expected format
+        // The user_id will be extracted from the auth token on the server
+        apiService.addToCart(product.getId(), quantity).enqueue(new Callback<>() {
             @Override
             public void onResponse(@NonNull Call<ApiResponse<List<CartItem>>> call,
-                    @NonNull Response<ApiResponse<List<CartItem>>> response) {
+                                   @NonNull Response<ApiResponse<List<CartItem>>> response) {
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                     Log.d(TAG, "addToCart onSuccess: Item added. New cart size: "
                             + (response.body().getData() != null ? response.body().getData().size() : 0));
@@ -415,9 +415,7 @@ public class CartRepository {
             return;
         }
 
-        Log.d(TAG, "syncLocalCartWithServer: Syncing " + localItems.size() + " local items");
-
-        for (CartItem item : localItems) {
+        Log.d(TAG, "syncLocalCartWithServer: Syncing " + localItems.size() + " local items");        for (CartItem item : localItems) {
             Product product = item.getProduct();
             int quantity = item.getQuantity();
 
