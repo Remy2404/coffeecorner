@@ -379,9 +379,7 @@
                     <View
                         android:layout_width="match_parent"
                         android:layout_height="1dp"
-                        android:background="@color/divider" />
-
-                    <LinearLayout
+                        android:background="@color/divider" />                    <LinearLayout
                         android:id="@+id/layoutMyRewards"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -395,7 +393,7 @@
                         <ImageView
                             android:layout_width="24dp"
                             android:layout_height="24dp"
-                            android:src="@drawable/ic_reward"
+                            android:src="@drawable/onboarding_rewards"
                             app:tint="@color/primary" />
 
                         <TextView
@@ -404,6 +402,43 @@
                             android:layout_marginStart="16dp"
                             android:layout_weight="1"
                             android:text="My Rewards"
+                            android:textColor="@color/text_primary"
+                            android:textSize="16sp" />
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/ic_chevron_right"
+                            app:tint="@color/text_secondary" />
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="@color/divider" />
+
+                    <LinearLayout
+                        android:id="@+id/layoutLoyaltyProgram"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:padding="16dp">
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/ic_loyalty_program"
+                            app:tint="@color/primary" />
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="16dp"
+                            android:layout_weight="1"
+                            android:text="Loyalty Program"
                             android:textColor="@color/text_primary"
                             android:textSize="16sp" />
 

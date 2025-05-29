@@ -1,0 +1,43 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="200dp"
+    android:height="300dp"
+    android:viewportWidth="200"
+    android:viewportHeight="300">
+
+    <!-- Red ribbon -->
+    <path
+        android:fillColor="#d32f2f"
+        android:pathData="M60,0 L90,0 L100,100 L50,100 Z" />
+
+    <!-- Blue ribbon -->
+    <path
+        android:fillColor="#1976d2"
+        android:pathData="M110,0 L140,0 L150,100 L100,100 Z" />
+
+    <!-- Gold medal circle -->
+    <path
+        android:strokeColor="#f57f17"
+        android:strokeWidth="5"
+        android:fillColor="#fbc02d"
+        android:pathData="M100,120
+                          A60,60 0 1,1 99.9,120 Z" />
+
+    <!-- Star inside medal -->
+    <path
+        android:fillColor="#fff176"
+        android:strokeColor="#f57f17"
+        android:strokeWidth="2"
+        android:pathData="M100,135
+                          L110,165 L140,165
+                          L115,185 L125,215
+                          L100,195 L75,215
+                          L85,185 L60,165
+                          L90,165 Z" />
+
+    <!-- Shine effect -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:fillAlpha="0.5"
+        android:pathData="M80,155
+                          A5,5 0 1,1 79.9,155 Z" />
+</vector>

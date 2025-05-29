@@ -14,6 +14,7 @@ import com.coffeecorner.app.R;
 import com.coffeecorner.app.utils.PreferencesHelper;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 
 import java.util.Objects;
 
@@ -28,17 +29,23 @@ public class SplashActivity extends AppCompatActivity {
     // enabled)
     private static final long SPLASH_DISPLAY_LENGTH = 3000;
     private final boolean isAutoTransition = false; // Set to true to enable automatic transition
-    private PreferencesHelper preferencesHelper;
-
-    @Override
+    private PreferencesHelper preferencesHelper;    @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // Apply theme before calling super.onCreate()
+        PreferencesHelper preferencesHelper = new PreferencesHelper(this);
+        if (preferencesHelper.isDarkModeEnabled()) {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+        } else {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+        }
+
         super.onCreate(savedInstanceState);
 
         // Set the layout for this activity FIRST
         setContentView(R.layout.activity_splash);
 
         // Initialize PreferencesHelper
-        preferencesHelper = new PreferencesHelper(this);
+        this.preferencesHelper = preferencesHelper;
 
         // Make the activity fullscreen using the latest recommended approach
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {

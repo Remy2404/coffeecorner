@@ -94,15 +94,15 @@ public class ProfileFragment extends Fragment {
             preferencesHelper.setDarkModeEnabled(isChecked);
 
             // Remove any pending theme changes to prevent conflicts
-            themeHandler.removeCallbacksAndMessages(null);
-
-            // Apply theme change with debouncing for smooth transition
+            themeHandler.removeCallbacksAndMessages(null);            // Apply theme change with debouncing for smooth transition
             themeHandler.postDelayed(() -> {
                 try {
                     int targetMode = isChecked ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO;
                     // Only apply if different from current mode to prevent unnecessary recreation
                     if (AppCompatDelegate.getDefaultNightMode() != targetMode) {
                         AppCompatDelegate.setDefaultNightMode(targetMode);
+                        // Recreate the activity to apply the theme change
+                        requireActivity().recreate();
                     }
                 } finally {
                     // Reset switching flag after completion
@@ -159,12 +159,21 @@ public class ProfileFragment extends Fragment {
                 Toast.makeText(requireContext(), "Payment Methods screen is under development", Toast.LENGTH_SHORT)
                         .show();
             }
-        }); // Add click listener for My Rewards
+        });        // Add click listener for My Rewards
         view.findViewById(R.id.layoutMyRewards).setOnClickListener(v -> {
             try {
                 Navigation.findNavController(v).navigate(R.id.action_profileFragment_to_myRewardsFragment);
             } catch (Exception e) {
                 Toast.makeText(requireContext(), "My Rewards screen is under development", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        // Add click listener for Loyalty Program
+        view.findViewById(R.id.layoutLoyaltyProgram).setOnClickListener(v -> {
+            try {
+                Navigation.findNavController(v).navigate(R.id.action_profileFragment_to_loyaltyFragment);
+            } catch (Exception e) {
+                Toast.makeText(requireContext(), "Loyalty Program screen is under development", Toast.LENGTH_SHORT).show();
             }
         }); // Add click listener for About Us
         view.findViewById(R.id.layoutAboutUs).setOnClickListener(v -> {
