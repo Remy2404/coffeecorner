@@ -404,8 +404,8 @@ public class UserRepository {
      * Change user password (overloaded method for EditProfileFragment)
      *
      * @param currentPassword Current password
-     * @param newPassword    New password
-     * @param callback       Callback to handle result
+     * @param newPassword     New password
+     * @param callback        Callback to handle result
      */
     public void changePassword(String currentPassword, String newPassword, @NonNull PasswordChangeCallback callback) {
         String userId = preferencesHelper.getUserId();
@@ -476,7 +476,7 @@ public class UserRepository {
                         errorMsg = response.body().getMessage();
                     }
                     Log.e("UserRepository", "Server error: " + errorMsg + ", Code: " + response.code());
-                    
+
                     // Still consider it a "success" since we have local data saved
                     // This ensures the user experience isn't disrupted if server has issues
                     Log.w("UserRepository", "Using local profile data despite server error");
@@ -535,9 +535,9 @@ public class UserRepository {
         // Try both authentication methods - form-encoded and JSON
         // First try JSON approach
         FirebaseAuthRequest jsonRequest = new FirebaseAuthRequest(firebaseToken);
-        
+
         Log.d("UserRepository", "Trying Firebase auth with JSON body...");
-        
+
         apiService.authenticateWithFirebaseJson(jsonRequest).enqueue(new Callback<AuthResponse>() {
             @Override
             public void onResponse(@NonNull Call<AuthResponse> call,
@@ -553,13 +553,13 @@ public class UserRepository {
             }
         });
     }
-    
+
     /**
      * Try authenticating with form-encoded parameters
      */
     private void tryFormEncodedAuth(String firebaseToken, @NonNull AuthCallback callback) {
         Log.d("UserRepository", "Trying Firebase auth with form-encoded...");
-        
+
         apiService.authenticateWithFirebase(firebaseToken).enqueue(new Callback<AuthResponse>() {
             @Override
             public void onResponse(@NonNull Call<AuthResponse> call,
@@ -574,36 +574,38 @@ public class UserRepository {
             }
         });
     }
-    
+
     /**
      * Process authentication response
      */
-    private void processAuthResponse(Response<AuthResponse> response, AuthCallback callback, 
-                                    String firebaseToken, boolean isLastAttempt) {
+    private void processAuthResponse(Response<AuthResponse> response, AuthCallback callback,
+            String firebaseToken, boolean isLastAttempt) {
         if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
             AuthResponse authResponse = response.body();
             User user = authResponse.getUser();
-            
+
             if (user != null) {
                 // Save access token
                 if (authResponse.getAccessToken() != null) {
                     preferencesHelper.saveAuthToken(authResponse.getAccessToken());
-                    Log.d("UserRepository", "Access token saved successfully: " + 
-                          authResponse.getAccessToken().substring(0, Math.min(15, authResponse.getAccessToken().length())) + "...");
+                    Log.d("UserRepository", "Access token saved successfully: " +
+                            authResponse.getAccessToken().substring(0,
+                                    Math.min(15, authResponse.getAccessToken().length()))
+                            + "...");
                 }
-                
+
                 // Save user data
                 currentUser.setValue(user);
                 saveUserToPreferences(user);
-                
+
                 Log.d("UserRepository", "Firebase authentication successful for user: " + user.getEmail());
                 callback.onSuccess(user);
             } else {
                 Log.e("UserRepository", "User object is null in AuthResponse");
-                Log.e("UserRepository", "Full response: success=" + authResponse.isSuccess() + 
-                       ", message=" + authResponse.getMessage() + 
-                       ", accessToken=" + (authResponse.getAccessToken() != null ? "present" : "null"));
-                
+                Log.e("UserRepository", "Full response: success=" + authResponse.isSuccess() +
+                        ", message=" + authResponse.getMessage() +
+                        ", accessToken=" + (authResponse.getAccessToken() != null ? "present" : "null"));
+
                 // If this was our last attempt, report the error
                 if (isLastAttempt) {
                     callback.onError("User data is missing from server response.");
@@ -625,15 +627,16 @@ public class UserRepository {
             } catch (Exception e) {
                 Log.e("UserRepository", "Error parsing error body", e);
             }
-            
+
             // If this was our last attempt, report the error
             if (isLastAttempt) {
                 callback.onError("Authentication failed. Please try again.");
             } else {
                 // Try the form-encoded approach
                 tryFormEncodedAuth(firebaseToken, callback);
-            }            }
+            }
         }
+    }
 
     /**
      * Interface for authentication callbacks
