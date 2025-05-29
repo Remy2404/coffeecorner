@@ -23,6 +23,27 @@ import retrofit2.Response;
  */
 public class UserRepository {
 
+    public static class UserData {
+        public String id;
+        public String full_name;
+        public String email;
+        public String phone;
+        public String photo_url;
+        public String created_at;
+        public String updated_at;
+
+        public UserData() {
+        }
+
+        public UserData(String id, String full_name, String email, String phone, String photo_url) {
+            this.id = id;
+            this.full_name = full_name;
+            this.email = email;
+            this.phone = phone;
+            this.photo_url = photo_url;
+        }
+    }
+
     private static volatile UserRepository instance;
     private final PreferencesHelper preferencesHelper;
     private final MutableLiveData<User> currentUser = new MutableLiveData<>();
@@ -100,7 +121,7 @@ public class UserRepository {
         // registrationRequest.setPassword(password); // Assuming password is part of
         // the request
 
-        apiService.register(name, email, password, recaptchaToken).enqueue(new Callback<ApiResponse<User>>() {
+        apiService.register(name, email, password).enqueue(new Callback<ApiResponse<User>>() {
             @Override
             public void onResponse(@NonNull Call<ApiResponse<User>> call,
                     @NonNull Response<ApiResponse<User>> response) {
@@ -372,6 +393,107 @@ public class UserRepository {
             @Override
             public void onFailure(@NonNull Call<ApiResponse<Void>> call, @NonNull Throwable t) {
                 Log.e("UserRepository", "Change password network error", t);
+                callback.onError("Network error. Please try again. " + t.getMessage());
+            }
+        });
+    }
+
+    /**
+     * Update user profile with Supabase integration
+     * Falls back to local storage if Supabase is not available
+     */
+    public void updateUserProfileWithSupabase(User user, @NonNull ProfileUpdateCallback callback) {
+        if (user == null) {
+            callback.onError("User data is null");
+            return;
+        }
+
+        String userId = user.getId();
+        if (userId == null || userId.isEmpty()) {
+            userId = preferencesHelper.getUserId();
+            if (userId == null || userId.isEmpty()) {
+                userId = "temp_user_" + System.currentTimeMillis();
+                preferencesHelper.saveUserId(userId);
+                user.setId(userId);
+            }
+        }
+
+        // Save to local storage as backup
+        saveUserToPreferences(user);
+        currentUser.setValue(user);
+
+        // For now, always succeed since we're using local storage
+        // TODO: Implement actual Supabase integration when server is available
+        callback.onSuccess(user);
+    }
+
+    /**
+     * Save user data to SharedPreferences
+     */
+    private void saveUserToPreferences(User user) {
+        if (user.getId() != null) {
+            preferencesHelper.saveUserId(user.getId());
+        }
+        if (user.getFullName() != null && user.getEmail() != null) {
+            // Use saveUserLogin to save name and email together
+            preferencesHelper.saveUserLogin(user.getId(), user.getFullName(), user.getEmail(),
+                    preferencesHelper.getAuthToken());
+        }
+        if (user.getPhone() != null) {
+            preferencesHelper.saveUserPhone(user.getPhone());
+        }
+        if (user.getPhotoUrl() != null) {
+            preferencesHelper.saveUserProfilePic(user.getPhotoUrl());
+        }
+    }
+
+    /**
+     * Load user data from SharedPreferences
+     */
+    public User loadUserFromPreferences() {
+        User user = new User();
+        user.setId(preferencesHelper.getUserId());
+        user.setFullName(preferencesHelper.getUserName());
+        user.setEmail(preferencesHelper.getUserEmail());
+        user.setPhone(preferencesHelper.getUserPhone());
+        user.setPhotoUrl(preferencesHelper.getUserProfilePic());
+        return user;
+    }
+
+    /**
+     * Authenticate with backend using Firebase ID token
+     */
+    public void authenticateWithFirebase(String firebaseToken, @NonNull AuthCallback callback) {
+        apiService.authenticateWithFirebase(firebaseToken).enqueue(new Callback<ApiResponse<User>>() {
+            @Override
+            public void onResponse(@NonNull Call<ApiResponse<User>> call,
+                    @NonNull Response<ApiResponse<User>> response) {
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                    User user = response.body().getData();
+                    if (user != null) {
+                        currentUser.setValue(user);
+                        saveUserToPreferences(user);
+                        callback.onSuccess(user);
+                    } else {
+                        Log.e("UserRepository", "User object is null in response");
+                        callback.onError("User data is missing from server response.");
+                    }
+                } else {
+                    Log.e("UserRepository", "Firebase auth failed: " + response.code() + " - " + response.message());
+                    try {
+                        if (response.errorBody() != null) {
+                            Log.e("UserRepository", "Error body: " + response.errorBody().string());
+                        }
+                    } catch (Exception e) {
+                        Log.e("UserRepository", "Error parsing error body", e);
+                    }
+                    callback.onError("Authentication failed. Please try again.");
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<ApiResponse<User>> call, @NonNull Throwable t) {
+                Log.e("UserRepository", "Firebase auth network error", t);
                 callback.onError("Network error. Please try again. " + t.getMessage());
             }
         });

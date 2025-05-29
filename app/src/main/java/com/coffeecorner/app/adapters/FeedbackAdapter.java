@@ -52,7 +52,7 @@ public class FeedbackAdapter extends RecyclerView.Adapter<FeedbackAdapter.Feedba
     @NonNull
     @Override
     public FeedbackViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(context).inflate(R.layout.item_feedback, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_feedback, parent, false);
         return new FeedbackViewHolder(view);
     }
 
@@ -75,9 +75,7 @@ public class FeedbackAdapter extends RecyclerView.Adapter<FeedbackAdapter.Feedba
         } else {
             // Set default user photo
             holder.ivUserPhoto.setImageResource(R.drawable.ic_default_user);
-        }
-
-        // Set up interaction listeners
+        }        // Set up interaction listeners
         holder.tvHelpful.setOnClickListener(v -> {
             if (listener != null) {
                 listener.onHelpfulClicked(item, holder.getAdapterPosition());

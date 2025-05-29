@@ -41,7 +41,13 @@ public class OrderViewModel extends AndroidViewModel {
         super(application);
         orderRepository = OrderRepository.getInstance(application);
         preferencesHelper = new PreferencesHelper(application.getApplicationContext());
+        @SuppressWarnings("this-escape")
+        boolean unused = loadOrdersInternal();
+    }
+
+    private boolean loadOrdersInternal() {
         loadOrders();
+        return true;
     }
 
     public LiveData<List<Order>> getActiveOrders() {

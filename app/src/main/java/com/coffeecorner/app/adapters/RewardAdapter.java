@@ -34,19 +34,19 @@ public class RewardAdapter extends RecyclerView.Adapter<RewardAdapter.RewardView
     @NonNull
     @Override
     public RewardViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(context).inflate(R.layout.item_reward, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_reward, parent, false);
         return new RewardViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull RewardViewHolder holder, int position) {
         Reward reward = rewards.get(position);
-        
+
         holder.tvRewardTitle.setText(reward.getTitle());
         holder.tvRewardDescription.setText(reward.getDescription());
         holder.tvPointsRequired.setText(reward.getPointsRequired() + " points");
         holder.ivRewardIcon.setImageResource(reward.getIconResourceId());
-        
+
         holder.btnRedeem.setOnClickListener(v -> {
             if (listener != null) {
                 listener.onRedeemClicked(reward, position);
@@ -58,7 +58,7 @@ public class RewardAdapter extends RecyclerView.Adapter<RewardAdapter.RewardView
     public int getItemCount() {
         return rewards.size();
     }
-    
+
     public interface OnRewardActionListener {
         void onRedeemClicked(Reward reward, int position);
     }
@@ -72,7 +72,7 @@ public class RewardAdapter extends RecyclerView.Adapter<RewardAdapter.RewardView
 
         public RewardViewHolder(@NonNull View itemView) {
             super(itemView);
-            
+
             ivRewardIcon = itemView.findViewById(R.id.ivRewardIcon);
             tvRewardTitle = itemView.findViewById(R.id.tvRewardTitle);
             tvRewardDescription = itemView.findViewById(R.id.tvRewardDescription);

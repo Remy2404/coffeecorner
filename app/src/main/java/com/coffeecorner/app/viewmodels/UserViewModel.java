@@ -66,9 +66,9 @@ public class UserViewModel extends AndroidViewModel {
     /**
      * Register a new user
      *
-     * @param name     User name
-     * @param email    User email
-     * @param password User password
+     * @param name           User name
+     * @param email          User email
+     * @param password       User password
      * @param recaptchaToken The reCAPTCHA token
      */
     public void register(String name, String email, String password, String recaptchaToken) {
@@ -78,6 +78,32 @@ public class UserViewModel extends AndroidViewModel {
             public void onSuccess(User user) {
                 // Automatically log in the user by saving their ID
                 preferencesHelper.saveUserId(user.getId());
+                currentUser.setValue(user);
+                isLoading.setValue(false);
+                errorMessage.setValue(null); // Clear previous errors
+            }
+
+            @Override
+            public void onError(String errorMsg) {
+                errorMessage.setValue(errorMsg);
+                isLoading.setValue(false);
+            }
+        });
+    }
+
+    /**
+     * Authenticate with Firebase token
+     *
+     * @param firebaseToken Firebase ID token
+     */
+    public void authenticateWithFirebase(String firebaseToken) {
+        isLoading.setValue(true);
+        userRepository.authenticateWithFirebase(firebaseToken, new UserRepository.AuthCallback() {
+            @Override
+            public void onSuccess(User user) {
+                if (user != null) {
+                    preferencesHelper.saveUserId(user.getId());
+                }
                 currentUser.setValue(user);
                 isLoading.setValue(false);
                 errorMessage.setValue(null); // Clear previous errors

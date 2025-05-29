@@ -18,9 +18,12 @@ import com.coffeecorner.app.models.User;
 import com.coffeecorner.app.repositories.UserRepository;
 import com.coffeecorner.app.viewmodel.LoginViewModel;
 import com.coffeecorner.app.viewmodel.ViewModelFactory;
+import com.coffeecorner.app.utils.PreferencesHelper;
 
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputLayout;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 /**
  * LoginActivity - Handles user authentication
@@ -40,14 +43,21 @@ public class LoginActivity extends AppCompatActivity {
     private ImageButton btnPinterestLogin;
 
     private LoginViewModel loginViewModel;
+    private FirebaseAuth mAuth;
+    private PreferencesHelper preferencesHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_login);
-
-        // Initialize views
+        setContentView(R.layout.activity_login); // Initialize views
         initViews();
+
+        // Initialize Firebase Auth
+        mAuth = FirebaseAuth.getInstance();
+        preferencesHelper = new PreferencesHelper(this);
+
+        // Check if user is already logged in
+        checkCurrentUser();
 
         // Initialize ViewModel
         UserRepository userRepository = UserRepository.getInstance(this);
@@ -71,7 +81,6 @@ public class LoginActivity extends AppCompatActivity {
         btnLogin = findViewById(R.id.btnLogin);
         btnSignUp = findViewById(R.id.btnSignUp);
         tvForgotPassword = findViewById(R.id.tvForgotPassword);
-        // Finding the checkbox but not storing it as a field since it's not used yet
         findViewById(R.id.cbRememberPassword);
         btnGoogleLogin = findViewById(R.id.btnGoogleLogin);
         btnFacebookLogin = findViewById(R.id.btnFacebookLogin);
@@ -153,14 +162,58 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     /**
-     * Perform login authentication
+     * Perform login authentication using Firebase Auth
      */
     private void performLogin() {
         String email = etEmail.getText().toString().trim();
         String password = etPassword.getText().toString().trim();
 
-        // Call login method in ViewModel
-        loginViewModel.login(email, password);
+        btnLogin.setEnabled(false);
+        btnLogin.setText("Logging in...");
+
+        mAuth.signInWithEmailAndPassword(email, password)
+                .addOnCompleteListener(this, task -> {
+                    btnLogin.setEnabled(true);
+                    btnLogin.setText("Log In");
+
+                    if (task.isSuccessful()) {
+                        FirebaseUser user = mAuth.getCurrentUser();
+                        if (user != null) {
+                            // Get Firebase ID token and send to backend
+                            user.getIdToken(true)
+                                    .addOnCompleteListener(tokenTask -> {
+                                        if (tokenTask.isSuccessful()) {
+                                            String idToken = tokenTask.getResult().getToken();
+                                            authenticateWithBackend(idToken);
+                                        } else {
+                                            Toast.makeText(LoginActivity.this, "Failed to get authentication token",
+                                                    Toast.LENGTH_SHORT).show();
+                                        }
+                                    });
+                        }
+                    } else {
+                        String errorMessage = task.getException() != null ? task.getException().getMessage()
+                                : "Login failed";
+                        Toast.makeText(LoginActivity.this, errorMessage, Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
+    /**
+     * Authenticate with backend using Firebase ID token
+     */
+    private void authenticateWithBackend(String firebaseToken) {
+        loginViewModel.authenticateWithFirebase(firebaseToken);
+    }
+
+    /**
+     * Check if user is already logged in
+     */
+    private void checkCurrentUser() {
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if (currentUser != null && preferencesHelper.isLoggedIn()) {
+            navigateToMainActivity();
+        }
     }
 
     /**

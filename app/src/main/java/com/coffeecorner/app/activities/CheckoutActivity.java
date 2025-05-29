@@ -54,7 +54,7 @@ public class CheckoutActivity extends AppCompatActivity {
         }
         ImageButton btnBack = findViewById(R.id.btnBack);
         if (btnBack != null) {
-            btnBack.setOnClickListener(v -> onBackPressed());
+            btnBack.setOnClickListener(v -> getOnBackPressedDispatcher().onBackPressed());
         }
     }
 

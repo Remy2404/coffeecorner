@@ -8,21 +8,20 @@ import android.widget.ImageButton;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-// import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuth;
 import com.coffeecorner.app.R;
 
 public class ForgotPasswordActivity extends AppCompatActivity {
-
     private EditText etEmail;
     private Button btnResetPassword;
-    // private FirebaseAuth mAuth;
+    private FirebaseAuth mAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_forgot_password);
 
-        // mAuth = FirebaseAuth.getInstance(); // Initialize Firebase Auth
+        mAuth = FirebaseAuth.getInstance();
 
         setupToolbar();
         initializeViews();
@@ -37,7 +36,7 @@ public class ForgotPasswordActivity extends AppCompatActivity {
         }
         ImageButton btnBack = findViewById(R.id.btnBack);
         if (btnBack != null) {
-            btnBack.setOnClickListener(v -> onBackPressed());
+            btnBack.setOnClickListener(v -> getOnBackPressedDispatcher().onBackPressed());
         }
     }
 
@@ -70,18 +69,17 @@ public class ForgotPasswordActivity extends AppCompatActivity {
     }
 
     private void sendPasswordResetEmail(String email) {
-        // mAuth.sendPasswordResetEmail(email)
-        // .addOnCompleteListener(task -> {
-        // if (task.isSuccessful()) {
-        // Toast.makeText(ForgotPasswordActivity.this, "Password reset email sent.",
-        // Toast.LENGTH_LONG).show();
-        // // Optionally, navigate back to login or show a success message
-        // } else {
-        // Toast.makeText(ForgotPasswordActivity.this, "Failed to send reset email: " +
-        // task.getException().getMessage(), Toast.LENGTH_LONG).show();
-        // }
-        // });
-        Toast.makeText(this, "Sending password reset email (Firebase integration pending)...", Toast.LENGTH_SHORT)
-                .show();
+        mAuth.sendPasswordResetEmail(email)
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        Toast.makeText(ForgotPasswordActivity.this, "Password reset email sent successfully!",
+                                Toast.LENGTH_LONG).show();
+                        finish(); // Go back to login screen
+                    } else {
+                        String errorMessage = task.getException() != null ? task.getException().getMessage()
+                                : "Failed to send reset email";
+                        Toast.makeText(ForgotPasswordActivity.this, "Error: " + errorMessage, Toast.LENGTH_LONG).show();
+                    }
+                });
     }
 }

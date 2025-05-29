@@ -33,7 +33,7 @@ public class RewardsActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_rewards);
+        setContentView(R.layout.fragment_rewards);
 
         // Initialize views
         tvTotalPoints = findViewById(R.id.tvTotalPoints);
@@ -60,7 +60,7 @@ public class RewardsActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayShowTitleEnabled(false);
 
         ImageButton btnBack = findViewById(R.id.btnBack);
-        btnBack.setOnClickListener(v -> onBackPressed());
+        btnBack.setOnClickListener(v -> getOnBackPressedDispatcher().onBackPressed());
     }
 
     private void setupUserRewardsInfo() {

@@ -157,8 +157,8 @@
                     android:textSize="16sp" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- Remember me and forgot password row -->
-            <com.google.android.material.checkbox.MaterialCheckBox
+            <!-- Remember me and forgot password row -->  
+                      <com.google.android.material.checkbox.MaterialCheckBox
                 android:id="@+id/cbRememberPassword"
                 android:layout_width="wrap_content"
                 android:layout_height="48dp"
@@ -167,6 +167,20 @@
                 android:textColor="@color/color_01"
                 android:textSize="14sp"
                 app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/tilPassword" />
+
+            <TextView
+                android:id="@+id/tvForgotPassword"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:layout_marginTop="8dp"
+                android:text="@string/forgot_password_title"
+                android:textColor="@color/primary"
+                android:textSize="14sp"
+                android:gravity="center_vertical"
+                android:clickable="true"
+                android:focusable="true"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/tilPassword" />
 
 
@@ -215,11 +229,9 @@
                 android:layout_marginTop="24dp"
                 android:text="@string/or_connect_with"
                 android:fontFamily="sans-serif-black"
-<<<<<<< HEAD
-                android:textColor="@color/color_01"
-=======
+
                 android:textColor="@color/text_secondary"
->>>>>>> kai
+
                 android:textSize="14sp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"

@@ -1,6 +1,8 @@
 package com.coffeecorner.app.fragments;
 
+import android.app.ProgressDialog;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,6 +21,10 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.tabs.TabLayout;
+
+import com.coffeecorner.app.models.CartItem;
+import com.coffeecorner.app.repositories.CartRepository;
+import java.util.List;
 
 import com.coffeecorner.app.R;
 import com.coffeecorner.app.adapters.ProductAdapter;
@@ -130,11 +136,15 @@ public class HomeFragment extends Fragment {
             Navigation.findNavController(requireView()).navigate(R.id.action_homeFragment_to_productDetailsFragment,
                     args);
         });
-
         productAdapter.setOnAddToCartClickListener((product, position) -> {
             // Add to cart using CartViewModel
+            Log.d("HomeFragment", "Adding to cart: " + product.getName() + ", ID: " + product.getId() + ", Price: "
+                    + product.getPrice());
+
+            // Show a simple toast and add to cart
             cartViewModel.addToCart(product, 1);
             Toast.makeText(requireContext(), product.getName() + " added to cart", Toast.LENGTH_SHORT).show();
+
             // Navigate to cart after adding item
             Navigation.findNavController(requireView()).navigate(R.id.action_to_cart);
         });

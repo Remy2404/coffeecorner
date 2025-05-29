@@ -1,0 +1,9 @@
+Original code block:
+
+productAdapter.setOnAddToCartClickListener((product, position) -> {
+    // Add to cart using CartViewModel
+    cartViewModel.addToCart(product, 1);
+    Toast.makeText(requireContext(), product.getName() + " added to cart", Toast.LENGTH_SHORT).show();
+    // Navigate to cart after adding item
+    Navigation.findNavController(requireView()).navigate(R.id.action_to_cart);
+});

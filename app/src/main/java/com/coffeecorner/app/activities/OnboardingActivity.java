@@ -1,11 +1,13 @@
 package com.coffeecorner.app.activities;
 
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
+import android.view.Window;
+import android.view.WindowInsetsController;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -44,9 +46,7 @@ public class OnboardingActivity extends AppCompatActivity {
             "Browse our wide range of coffee, tea, and pastries. Customize your order just the way you like it.",
             "Order ahead and pick up at your convenience, or get it delivered right to your doorstep.",
             "Earn points with every purchase and redeem them for free drinks and special offers."
-    };
-
-    // Placeholder for actual drawable resources to be created
+    }; // Drawable resources for onboarding slides
     private final int[] images = {
             R.drawable.onboarding_welcome,
             R.drawable.onboarding_menu,
@@ -61,12 +61,26 @@ public class OnboardingActivity extends AppCompatActivity {
         // Initialize PreferencesHelper
         preferencesHelper = new PreferencesHelper(this);
 
-        // Make the activity fullscreen
-        getWindow().setFlags(
-                WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                WindowManager.LayoutParams.FLAG_FULLSCREEN);
-
+        // Set content view first
         setContentView(R.layout.activity_onboarding);
+
+        // Make the activity fullscreen using the latest recommended approach
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            Window window = getWindow();
+            window.setDecorFitsSystemWindows(false);
+
+            // Additionally, we can control system bar appearance
+            WindowInsetsController insetsController = window.getInsetsController();
+            if (insetsController != null) {
+                insetsController.setSystemBarsBehavior(
+                        WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+            }
+        } else {
+            // For older versions, use the older method
+            int flags = View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
+                    View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
+            getWindow().getDecorView().setSystemUiVisibility(flags);
+        }
 
         // Initialize views
         viewPager = findViewById(R.id.viewPagerOnboarding);

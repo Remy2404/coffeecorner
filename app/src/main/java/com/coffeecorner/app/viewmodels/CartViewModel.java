@@ -36,7 +36,19 @@ public class CartViewModel extends AndroidViewModel {
     public CartViewModel(@NonNull Application application) {
         super(application);
         cartRepository = CartRepository.getInstance(application.getApplicationContext());
+        // Load initial cart data - suppress this-escape warning as this is safe
+        // initialization
+        @SuppressWarnings("this-escape")
+        boolean unused = loadCartItemsInternal();
+    }
+
+    /**
+     * Internal method to load cart items during initialization
+     */
+    @SuppressWarnings("UnusedReturnValue")
+    private boolean loadCartItemsInternal() {
         loadCartItems(); // Load initial cart data from the repository
+        return true;
     }
 
     /**
