@@ -90,15 +90,33 @@ async def update_profile(
         # Create a dictionary with only the fields that are provided (not None)
         update_data = {k: v for k, v in user_update.dict().items() if v is not None}
         
+        # Handle field name conversion from Android app to backend
+        # If full_name is provided, use it for the database field
+        if 'full_name' in update_data:
+            update_data['full_name'] = update_data.get('full_name')
+            # Remove name if it exists to avoid conflicts
+            if 'name' in update_data:
+                logger.info("Both 'name' and 'full_name' provided, using 'full_name'")
+                update_data.pop('name')
+        # If only name is provided, map it to full_name for database
+        elif 'name' in update_data:
+            logger.info("Converting 'name' to 'full_name' for database compatibility")
+            update_data['full_name'] = update_data.pop('name')
+                
         if not update_data:
             return ApiResponse(
                 success=True, message="No profile data to update", data=current_user
             )
+          # Log the data being sent to the database
+        logger.info(f"Updating profile for user ID: {current_user.id}")
+        logger.info(f"Update data after field name processing: {update_data}")
         
         # Update the user profile in Supabase
         result = supabase.table("profiles").update(update_data).eq("id", current_user.id).execute()
+        logger.info(f"Update result: {result.data if hasattr(result, 'data') else 'No result data'}")
         
         if not result.data:
+            logger.error(f"Profile update failed: No data returned for user {current_user.id}")
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, 
                 detail="User profile not found"

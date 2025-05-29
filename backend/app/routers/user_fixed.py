@@ -28,6 +28,7 @@ async def get_user_profile(user_id: str):
                 status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
             )
         user_data = result.data[0]
+        # Map DB fields to UserResponse
         user = UserResponse(
             id=user_data.get("id"),
             name=user_data.get("full_name", ""),
@@ -50,19 +51,25 @@ async def get_user_profile(user_id: str):
 
 @router.put("/profile", response_model=ApiResponse)
 async def update_user_profile(
-    user_update: UserUpdate,
-    current_user: UserResponse = Depends(get_current_user),
-    credentials: HTTPAuthorizationCredentials = Depends(security),
+    user_update: UserUpdate, current_user: UserResponse = Depends(get_current_user)
 ):
-    """Update user profile - Android app compatibility endpoint"""
+    """Update user profile - mirrors the /auth/profile endpoint for Android app compatibility"""
     try:
+        logger.info(f"Received profile update request for user: {current_user.id}")
+        logger.info(f"Update data: {user_update}")
+
+        # Create a dictionary with only the fields that are provided (not None)
         update_data = {k: v for k, v in user_update.dict().items() if v is not None}
 
+        # Handle field name conversion from Android app to backend
+        # If full_name is provided, use it for the database field
         if "full_name" in update_data:
             update_data["full_name"] = update_data.get("full_name")
+            # Remove name if it exists to avoid conflicts
             if "name" in update_data:
                 logger.info("Both 'name' and 'full_name' provided, using 'full_name'")
                 update_data.pop("name")
+        # If only name is provided, map it to full_name for database
         elif "name" in update_data:
             logger.info("Converting 'name' to 'full_name' for database compatibility")
             update_data["full_name"] = update_data.pop("name")
@@ -72,14 +79,19 @@ async def update_user_profile(
                 success=True, message="No profile data to update", data=current_user
             )
 
+        # Log the data being sent to the database
         logger.info(f"Updating profile for user ID: {current_user.id}")
-        logger.info(f"Update data: {update_data}")
+        logger.info(f"Update data after field name processing: {update_data}")
 
+        # Update the user profile in Supabase
         result = (
             supabase.table("profiles")
             .update(update_data)
             .eq("id", current_user.id)
             .execute()
+        )
+        logger.info(
+            f"Update result: {result.data if hasattr(result, 'data') else 'No result data'}"
         )
 
         if not result.data:
@@ -91,21 +103,8 @@ async def update_user_profile(
             )
 
         updated_profile = result.data[0]
-
-        user_response = UserResponse(
-            id=updated_profile.get("id"),
-            name=updated_profile.get("full_name", ""),
-            email=updated_profile.get("email", ""),
-            phone=updated_profile.get("phone", ""),
-            gender=updated_profile.get("gender", ""),
-            profile_image_url=updated_profile.get("profile_image_url", ""),
-            date_of_birth=updated_profile.get("date_of_birth", ""),
-            created_at=updated_profile.get("created_at"),
-            updated_at=updated_profile.get("updated_at"),
-        )
-
         return ApiResponse(
-            success=True, message="Profile updated successfully", data=user_response
+            success=True, message="Profile updated successfully", data=updated_profile
         )
     except HTTPException:
         raise
@@ -114,31 +113,4 @@ async def update_user_profile(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to update profile: {str(e)}",
-        )
-
-
-@router.delete("/profile", response_model=ApiResponse)
-async def delete_user_profile(
-    current_user: UserResponse = Depends(get_current_user),
-    credentials: HTTPAuthorizationCredentials = Depends(security),
-):
-    """Delete user profile"""
-    try:
-        result = supabase.table("profiles").delete().eq("id", current_user.id).execute()
-
-        if not result.data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="User profile not found"
-            )
-
-        return ApiResponse(
-            success=True, message="Profile deleted successfully", data=None
-        )
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Error deleting profile: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to delete profile: {str(e)}",
         )

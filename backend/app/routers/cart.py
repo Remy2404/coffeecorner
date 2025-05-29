@@ -1,7 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from app.models.schemas import CartItemAdd, CartItemUpdate, ApiResponse
 from app.services.cart_service import CartService
-from app.routers.auth import get_current_user, UserResponse, security, HTTPAuthorizationCredentials
+from app.routers.auth import (
+    get_current_user,
+    UserResponse,
+    security,
+    HTTPAuthorizationCredentials,
+)
 
 router = APIRouter(prefix="/cart", tags=["Cart"])
 
@@ -9,13 +14,12 @@ router = APIRouter(prefix="/cart", tags=["Cart"])
 @router.get("", response_model=ApiResponse)
 async def get_cart(
     current_user: UserResponse = Depends(get_current_user),
-    credentials: HTTPAuthorizationCredentials = Depends(security)
+    credentials: HTTPAuthorizationCredentials = Depends(security),
 ):
     """Get user's cart items"""
     try:
         cart_items = await CartService.get_user_cart(
-            current_user.id, 
-            access_token=credentials.credentials
+            current_user.id, access_token=credentials.credentials
         )
         return ApiResponse(
             success=True, message="Cart retrieved successfully", data=cart_items
@@ -27,16 +31,14 @@ async def get_cart(
 
 @router.post("/add", response_model=ApiResponse)
 async def add_to_cart(
-    cart_item: CartItemAdd, 
+    cart_item: CartItemAdd,
     current_user: UserResponse = Depends(get_current_user),
-    credentials: HTTPAuthorizationCredentials = Depends(security)
+    credentials: HTTPAuthorizationCredentials = Depends(security),
 ):
     """Add item to cart"""
     # Pass the access token to the cart service
     item = await CartService.add_to_cart(
-        current_user.id, 
-        cart_item, 
-        access_token=credentials.credentials
+        current_user.id, cart_item, access_token=credentials.credentials
     )
     return ApiResponse(
         success=True, message="Item added to cart successfully", data=item
@@ -52,10 +54,7 @@ async def update_cart_item(
 ):
     """Update cart item quantity"""
     item = await CartService.update_cart_item(
-        current_user.id, 
-        item_id, 
-        update_data, 
-        access_token=credentials.credentials
+        current_user.id, item_id, update_data, access_token=credentials.credentials
     )
     return ApiResponse(
         success=True, message="Cart item updated successfully", data=item
@@ -64,15 +63,13 @@ async def update_cart_item(
 
 @router.delete("/{item_id}", response_model=ApiResponse)
 async def remove_from_cart(
-    item_id: str, 
+    item_id: str,
     current_user: UserResponse = Depends(get_current_user),
-    credentials: HTTPAuthorizationCredentials = Depends(security)
+    credentials: HTTPAuthorizationCredentials = Depends(security),
 ):
     """Remove item from cart"""
     success = await CartService.remove_from_cart(
-        current_user.id, 
-        item_id, 
-        access_token=credentials.credentials
+        current_user.id, item_id, access_token=credentials.credentials
     )
     if not success:
         raise HTTPException(
@@ -85,25 +82,21 @@ async def remove_from_cart(
 @router.delete("/clear", response_model=ApiResponse)
 async def clear_cart(
     current_user: UserResponse = Depends(get_current_user),
-    credentials: HTTPAuthorizationCredentials = Depends(security)
+    credentials: HTTPAuthorizationCredentials = Depends(security),
 ):
     """Clear all items from cart"""
-    await CartService.clear_cart(
-        current_user.id, 
-        access_token=credentials.credentials
-    )
+    await CartService.clear_cart(current_user.id, access_token=credentials.credentials)
     return ApiResponse(success=True, message="Cart cleared successfully")
 
 
 @router.get("/total", response_model=ApiResponse)
 async def get_cart_total(
     current_user: UserResponse = Depends(get_current_user),
-    credentials: HTTPAuthorizationCredentials = Depends(security)
+    credentials: HTTPAuthorizationCredentials = Depends(security),
 ):
     """Get cart total"""
     total = await CartService.get_cart_total(
-        current_user.id, 
-        access_token=credentials.credentials
+        current_user.id, access_token=credentials.credentials
     )
     return ApiResponse(
         success=True,
