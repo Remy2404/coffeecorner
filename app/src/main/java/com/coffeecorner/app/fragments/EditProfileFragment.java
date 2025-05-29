@@ -28,7 +28,8 @@ import com.bumptech.glide.Glide;
 import com.coffeecorner.app.R;
 import com.coffeecorner.app.models.User;
 import com.coffeecorner.app.utils.PreferencesHelper;
-import com.coffeecorner.app.utils.SupabaseClientManager;
+// Temporarily commented out due to dependency conflicts
+// import com.coffeecorner.app.utils.SupabaseClientManager;
 import com.coffeecorner.app.utils.Validator;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.textfield.TextInputEditText;
@@ -40,13 +41,15 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.UUID;
 
 import de.hdodenhof.circleimageview.CircleImageView;
-import io.github.jan.supabase.postgrest.Postgrest;
-import io.github.jan.supabase.storage.Storage;
-import io.github.jan.supabase.storage.StorageFile;
-import io.github.jan.supabase.storage.UploadData;
+// Temporarily commented out due to dependency conflicts
+// import io.github.jan.supabase.postgrest.Postgrest;
+// import io.github.jan.supabase.storage.Storage;
+// import io.github.jan.supabase.storage.StorageFile;
+// import io.github.jan.supabase.storage.UploadData;
 
 public class EditProfileFragment extends Fragment {
 
@@ -59,7 +62,6 @@ public class EditProfileFragment extends Fragment {
     private RadioButton radioMale, radioFemale, radioOther;
     private Button btnUpdate;
     private ProgressBar progressBar;
-    private ImageView btnBack;
     private TextView btnSave, btnChangePassword;
 
     private User currentUser;
@@ -93,7 +95,7 @@ public class EditProfileFragment extends Fragment {
         radioOther = view.findViewById(R.id.radioOther);
         btnUpdate = view.findViewById(R.id.btnUpdate);
         progressBar = view.findViewById(R.id.progressBar);
-        btnBack = view.findViewById(R.id.btnBack);
+        ImageView btnBack = view.findViewById(R.id.btnBack);
         btnSave = view.findViewById(R.id.btnSave);
         btnChangePassword = view.findViewById(R.id.btnChangePassword);
 
@@ -120,30 +122,38 @@ public class EditProfileFragment extends Fragment {
             Toast.makeText(requireContext(), "Unable to load user data", Toast.LENGTH_SHORT).show();
             navigateBack();
             return;
-        }
-        // Get Supabase client and fetch user data
-        SupabaseClientManager.getInstance().getClient()
-                .getSupabase()
-                .getPlugin(Postgrest.class)
-                .from("users")
-                .select()
-                .eq("id", userId)
-                .single()
-                .executeWithResponseHandlers(
-                        response -> {
-                            currentUser = response.getData(User.class);
-                            requireActivity().runOnUiThread(() -> {
-                                populateUserData();
-                                progressBar.setVisibility(View.GONE);
-                            });
-                        },
-                        throwable -> {
-                            requireActivity().runOnUiThread(() -> {
-                                progressBar.setVisibility(View.GONE);
-                                Toast.makeText(requireContext(), "Failed to load user data", Toast.LENGTH_SHORT).show();
-                                navigateBack();
-                            });
-                        });
+        } // Temporarily commented out due to dependency conflicts
+        /*
+         * // Get Supabase client and fetch user data
+         * SupabaseClientManager.getInstance().getClient()
+         * .getSupabase()
+         * .getPlugin(Postgrest.class)
+         * .from("users")
+         * .select()
+         * .eq("id", userId)
+         * .single()
+         * .executeWithResponseHandlers(
+         * response -> {
+         * currentUser = response.getData(User.class);
+         * requireActivity().runOnUiThread(() -> {
+         * populateUserData();
+         * progressBar.setVisibility(View.GONE);
+         * });
+         * },
+         * throwable -> {
+         * requireActivity().runOnUiThread(() -> {
+         * progressBar.setVisibility(View.GONE);
+         * Toast.makeText(requireContext(), "Failed to load user data",
+         * Toast.LENGTH_SHORT).show();
+         * navigateBack();
+         * });
+         * });
+         */
+
+        // TODO: Replace with actual data loading implementation
+        // For now, create a dummy user or load from shared preferences
+        progressBar.setVisibility(View.GONE);
+        Toast.makeText(requireContext(), "Profile loading temporarily disabled", Toast.LENGTH_SHORT).show();
     }
 
     private void populateUserData() {
@@ -275,10 +285,10 @@ public class EditProfileFragment extends Fragment {
 
     private void updateProfile() {
         // Validate input
-        String fullName = etFullName.getText().toString().trim();
-        String email = etEmail.getText().toString().trim();
-        String phone = etPhone.getText().toString().trim();
-        String dateOfBirth = etDateOfBirth.getText().toString().trim();
+        String fullName = Objects.requireNonNull(etFullName.getText()).toString().trim();
+        String email = Objects.requireNonNull(etEmail.getText()).toString().trim();
+        String phone = Objects.requireNonNull(etPhone.getText()).toString().trim();
+        String dateOfBirth = Objects.requireNonNull(etDateOfBirth.getText()).toString().trim();
 
         if (TextUtils.isEmpty(fullName)) {
             etFullName.setError("Name is required");
@@ -330,30 +340,38 @@ public class EditProfileFragment extends Fragment {
             bitmap.compress(Bitmap.CompressFormat.JPEG, 90, outputStream);
             byte[] imageData = outputStream.toByteArray();
 
-            // Upload to Supabase storage
-            SupabaseClientManager.getInstance().getClient()
-                    .getSupabase()
-                    .getPlugin(Storage.class)
-                    .from("profile-images")
-                    .upload(new StorageFile(fileName), UploadData.from(imageData))
-                    .executeWithResponseHandlers(
-                            response -> {
-                                // Get public URL
-                                String imageUrl = SupabaseClientManager.getInstance().getClient()
-                                        .getSupabase()
-                                        .getPlugin(Storage.class)
-                                        .from("profile-images")
-                                        .getPublicUrl(fileName);
-                                // Update user data with new image URL
-                                updateUserData(fullName, email, phone, dateOfBirth, gender, imageUrl);
-                            },
-                            throwable -> {
-                                requireActivity().runOnUiThread(() -> {
-                                    progressBar.setVisibility(View.GONE);
-                                    Toast.makeText(requireContext(), "Failed to upload image", Toast.LENGTH_SHORT)
-                                            .show();
-                                });
-                            });
+            // Temporarily commented out due to dependency conflicts
+            /*
+             * // Upload to Supabase storage
+             * SupabaseClientManager.getInstance().getClient()
+             * .getSupabase()
+             * .getPlugin(Storage.class)
+             * .from("profile-images")
+             * .upload(new StorageFile(fileName), UploadData.from(imageData))
+             * .executeWithResponseHandlers(
+             * response -> {
+             * // Get public URL
+             * String imageUrl = SupabaseClientManager.getInstance().getClient()
+             * .getSupabase()
+             * .getPlugin(Storage.class)
+             * .from("profile-images")
+             * .getPublicUrl(fileName);
+             * // Update user data with new image URL
+             * updateUserData(fullName, email, phone, dateOfBirth, gender, imageUrl);
+             * },
+             * throwable -> {
+             * requireActivity().runOnUiThread(() -> {
+             * progressBar.setVisibility(View.GONE);
+             * Toast.makeText(requireContext(), "Failed to upload image",
+             * Toast.LENGTH_SHORT)
+             * .show();
+             * });
+             * });
+             */
+
+            // TODO: Replace with actual image upload implementation
+            progressBar.setVisibility(View.GONE);
+            Toast.makeText(requireContext(), "Image upload temporarily disabled", Toast.LENGTH_SHORT).show();
         } catch (IOException e) {
             progressBar.setVisibility(View.GONE);
             Toast.makeText(requireContext(), "Error processing image", Toast.LENGTH_SHORT).show();
@@ -372,28 +390,37 @@ public class EditProfileFragment extends Fragment {
                 profileImageUrl,
                 dateOfBirth);
 
-        // Save to Supabase
-        SupabaseClientManager.getInstance().getClient()
-                .getSupabase()
-                .getPlugin(Postgrest.class)
-                .from("users")
-                .update(updatedUser)
-                .eq("id", currentUser.getId())
-                .executeWithResponseHandlers(
-                        response -> {
-                            requireActivity().runOnUiThread(() -> {
-                                progressBar.setVisibility(View.GONE);
-                                Toast.makeText(requireContext(), "Profile updated successfully", Toast.LENGTH_SHORT)
-                                        .show();
-                                navigateBack();
-                            });
-                        },
-                        throwable -> {
-                            requireActivity().runOnUiThread(() -> {
-                                progressBar.setVisibility(View.GONE);
-                                Toast.makeText(requireContext(), "Failed to update profile", Toast.LENGTH_SHORT).show();
-                            });
-                        });
+        // Temporarily commented out due to dependency conflicts
+        /*
+         * // Save to Supabase
+         * SupabaseClientManager.getInstance().getClient()
+         * .getSupabase()
+         * .getPlugin(Postgrest.class)
+         * .from("users")
+         * .update(updatedUser)
+         * .eq("id", currentUser.getId())
+         * .executeWithResponseHandlers(
+         * response -> {
+         * requireActivity().runOnUiThread(() -> {
+         * progressBar.setVisibility(View.GONE);
+         * Toast.makeText(requireContext(), "Profile updated successfully",
+         * Toast.LENGTH_SHORT)
+         * .show();
+         * navigateBack();
+         * });
+         * },
+         * throwable -> {
+         * requireActivity().runOnUiThread(() -> {
+         * progressBar.setVisibility(View.GONE);
+         * Toast.makeText(requireContext(), "Failed to update profile",
+         * Toast.LENGTH_SHORT).show();
+         * });
+         * });
+         */
+
+        // TODO: Replace with actual user data update implementation
+        progressBar.setVisibility(View.GONE);
+        Toast.makeText(requireContext(), "Profile update temporarily disabled", Toast.LENGTH_SHORT).show();
     }
 
     private void showChangePasswordDialog() {

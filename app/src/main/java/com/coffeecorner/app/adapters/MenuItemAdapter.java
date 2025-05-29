@@ -32,7 +32,7 @@ public class MenuItemAdapter extends ListAdapter<Product, MenuItemAdapter.MenuIt
         super(DIFF_CALLBACK);
     }
 
-    private static final DiffUtil.ItemCallback<Product> DIFF_CALLBACK = new DiffUtil.ItemCallback<Product>() {
+    private static final DiffUtil.ItemCallback<Product> DIFF_CALLBACK = new DiffUtil.ItemCallback<>() {
         @Override
         public boolean areItemsTheSame(@NonNull Product oldItem, @NonNull Product newItem) {
             return oldItem.getId().equals(newItem.getId());
@@ -40,7 +40,10 @@ public class MenuItemAdapter extends ListAdapter<Product, MenuItemAdapter.MenuIt
 
         @Override
         public boolean areContentsTheSame(@NonNull Product oldItem, @NonNull Product newItem) {
-            return oldItem.equals(newItem);
+            return oldItem.getName().equals(newItem.getName()) &&
+                    oldItem.getDescription().equals(newItem.getDescription()) &&
+                    oldItem.getPrice() == newItem.getPrice() &&
+                    (oldItem.getImageUrl() == null ? newItem.getImageUrl() == null : oldItem.getImageUrl().equals(newItem.getImageUrl()));
         }
     };
 
@@ -70,11 +73,17 @@ public class MenuItemAdapter extends ListAdapter<Product, MenuItemAdapter.MenuIt
             holder.ivMenuItemImage.setImageResource(R.drawable.default_profile);
         }
 
-        holder.btnAdd2Cart.setOnClickListener(v -> {
-            if (listener != null) {
-                listener.onAddToCartClick(product);
-            }
-        });
+        if (holder.btnAdd2Cart != null) {
+            holder.btnAdd2Cart.setOnClickListener(v -> {
+                if (listener != null) {
+                    listener.onAddToCartClick(product);
+                }
+            });
+        } else {
+            // Optionally, log an error or handle the case where the button is not found
+            // For example: android.util.Log.e("MenuItemAdapter", "btnAdd2Cart is null for
+            // product: " + product.getName());
+        }
     }
 
     static class MenuItemViewHolder extends RecyclerView.ViewHolder {
@@ -90,7 +99,7 @@ public class MenuItemAdapter extends ListAdapter<Product, MenuItemAdapter.MenuIt
             ivMenuItemImage = itemView.findViewById(R.id.product_image);
             tvMenuItemDescription = itemView.findViewById(R.id.product_description);
             tvMenuItemPrice = itemView.findViewById(R.id.product_price);
-            btnAdd2Cart = itemView.findViewById(R.id.btnAddToCart);
+            btnAdd2Cart = itemView.findViewById(R.id.add_to_cart_button);
         }
     }
 }

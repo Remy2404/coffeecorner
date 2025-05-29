@@ -40,7 +40,7 @@ public class NotificationActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayShowTitleEnabled(false);
 
         ImageButton btnBack = findViewById(R.id.btnBack);
-        btnBack.setOnClickListener(v -> onBackPressed());
+        btnBack.setOnClickListener(v -> getOnBackPressedDispatcher().onBackPressed());
 
         ImageButton btnClearAll = findViewById(R.id.btnClearAll);
         btnClearAll.setOnClickListener(v -> clearAllNotifications());

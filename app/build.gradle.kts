@@ -1,6 +1,19 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     id("com.google.gms.google-services")
+}
+
+configurations.all {
+    resolutionStrategy {
+        force("io.github.jan-tennert.supabase:storage-kt:2.1.2")
+        eachDependency {
+            if (requested.group == "io.github.jan-tennert.supabase" && requested.name == "storage-kt") {
+                useVersion("2.1.2")
+            }
+        }
+    }
 }
 
 android {
@@ -15,6 +28,18 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        
+        // Read from local.properties file
+        val localProperties = Properties()
+        val localPropertiesFile = rootProject.file("local.properties")
+        if (localPropertiesFile.exists()) {
+            localProperties.load(localPropertiesFile.inputStream())
+        }
+        
+        buildConfigField("String", "SUPABASE_URL", "\"${localProperties.getProperty("SUPABASE_URL", "")}\"")
+        buildConfigField("String", "SUPABASE_ANON_KEY", "\"${localProperties.getProperty("SUPABASE_ANON_KEY", "")}\"")
+        
+        multiDexEnabled = true
     }
 
     buildTypes {
@@ -30,6 +55,24 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+    buildFeatures {
+        viewBinding = true
+        buildConfig = true
+    }
+    packaging {
+        resources {
+            excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            excludes += "/META-INF/DEPENDENCIES"
+            excludes += "/META-INF/LICENSE"
+            excludes += "/META-INF/LICENSE.txt"
+            excludes += "/META-INF/NOTICE"
+            excludes += "/META-INF/NOTICE.txt"
+            pickFirsts += "**/UploadData.class"
+        }
+        jniLibs {
+            pickFirsts += "**/libc++_shared.so"
+        }
+    }
 }
 
 dependencies {
@@ -41,6 +84,9 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
+    
+    // MultiDex support
+    implementation("androidx.multidex:multidex:2.0.1")
     
     // Firebase
     implementation(platform("com.google.firebase:firebase-bom:33.13.0"))
@@ -57,17 +103,15 @@ dependencies {
     implementation("com.github.bumptech.glide:glide:4.16.0")
     annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
     
-    // Supabase
-    implementation("io.github.jan-tennert.supabase:postgrest-kt:2.1.2")
-    implementation("io.github.jan-tennert.supabase:realtime-kt:2.1.2")
-    implementation("io.github.jan-tennert.supabase:storage-kt:2.1.2")
-    implementation("io.github.jan-tennert.supabase:gotrue-kt:2.1.2")
-    implementation("io.github.jan-tennert.supabase:supabase-kt:2.1.2")
+    // Supabase - Temporarily disabled due to dependency conflicts
+    // implementation("io.github.jan-tennert.supabase:postgrest-kt:2.1.2")
+    // implementation("io.github.jan-tennert.supabase:storage-kt:2.1.2")
+    // implementation("io.github.jan-tennert.supabase:gotrue-kt:2.1.2")
     
-    // Ktor (required for Supabase)
-    implementation("io.ktor:ktor-client-android:2.3.11")
-    implementation("io.ktor:ktor-client-content-negotiation:2.3.11")
-    implementation("io.ktor:ktor-serialization-kotlinx-json:2.3.11")
+    // Ktor (required for Supabase) - Temporarily disabled
+    // implementation("io.ktor:ktor-client-android:2.3.11")
+    // implementation("io.ktor:ktor-client-content-negotiation:2.3.11")
+    // implementation("io.ktor:ktor-serialization-kotlinx-json:2.3.11")
     
     // Navigation Component
     implementation("androidx.navigation:navigation-fragment:2.9.0")

@@ -21,7 +21,8 @@ import com.bumptech.glide.Glide;
 import com.coffeecorner.app.R;
 import com.coffeecorner.app.models.Product;
 import com.coffeecorner.app.utils.CartManager;
-import com.coffeecorner.app.utils.SupabaseClientManager;
+// Temporarily commented out due to dependency conflicts
+// import com.coffeecorner.app.utils.SupabaseClientManager;
 import com.google.android.material.appbar.CollapsingToolbarLayout;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
@@ -29,7 +30,8 @@ import com.google.android.material.chip.ChipGroup;
 import java.text.NumberFormat;
 import java.util.Locale;
 
-import io.github.jan.supabase.postgrest.Postgrest;
+// Temporarily commented out due to dependency conflicts
+// import io.github.jan.supabase.postgrest.Postgrest;
 
 public class ProductDetailsFragment extends Fragment {
 
@@ -148,29 +150,44 @@ public class ProductDetailsFragment extends Fragment {
     }
 
     private void loadProduct(String productId) {
-        SupabaseClientManager.getInstance().getClient()
-                .getSupabase()
-                .getPlugin(Postgrest.class)
-                .from("products")
-                .select()
-                .eq("id", productId)
-                .single()
-                .executeWithResponseHandlers(
-                    response -> {
-                        product = response.getData(Product.class);
-                        requireActivity().runOnUiThread(() -> {
-                            displayProduct();
-                        });
-                        checkFavoriteStatus(productId);
-                    },
-                    throwable -> {
-                        requireActivity().runOnUiThread(() -> {
-                            Toast.makeText(requireContext(), "Failed to load product", Toast.LENGTH_SHORT).show();
-                            Navigation.findNavController(requireView()).popBackStack();
-                        });
-                    }
-                );
-
+        // Temporarily commented out due to dependency conflicts
+        /*
+         * SupabaseClientManager.getInstance().getClient()
+         * .getSupabase()
+         * .getPlugin(Postgrest.class)
+         * .from("products")
+         * .select()
+         * .eq("id", productId)
+         * .single()
+         * .executeWithResponseHandlers(
+         * response -> {
+         * product = response.getData(Product.class);
+         * requireActivity().runOnUiThread(() -> {
+         * displayProduct();
+         * });
+         * checkFavoriteStatus(productId);
+         * },
+         * throwable -> {
+         * requireActivity().runOnUiThread(() -> {
+         * Toast.makeText(requireContext(), "Failed to load product",
+         * Toast.LENGTH_SHORT).show();
+         * Navigation.findNavController(requireView()).popBackStack();
+         * });
+         * }
+         * );
+         */
+        // TODO: Replace with actual product loading implementation
+        // For now, create a dummy product for testing
+        product = new Product(
+                productId,
+                "Sample Coffee",
+                "A delicious sample coffee for testing",
+                4.99,
+                "Coffee",
+                "coffee_placeholder");
+        product.setCalories(150);
+        displayProduct();
+        checkFavoriteStatus(productId);
     }
 
     private void displayProduct() {

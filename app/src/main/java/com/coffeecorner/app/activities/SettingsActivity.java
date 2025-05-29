@@ -29,7 +29,7 @@ public class SettingsActivity extends AppCompatActivity {
 
         ImageButton btnBack = findViewById(R.id.btnBack); // Assuming you have a back button with id 'btnBack'
         if (btnBack != null) {
-            btnBack.setOnClickListener(v -> onBackPressed());
+            btnBack.setOnClickListener(v -> getOnBackPressedDispatcher().onBackPressed());
         }
     }
 }

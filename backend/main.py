@@ -2,77 +2,153 @@ from fastapi import FastAPI, Form, Body, Path, Query, HTTPException, status
 from typing import List, Dict, Any
 from pydantic import BaseModel
 
-# Placeholder models for request bodies where needed
-# In a real app, these would match your backend's expected models
+# Mock data for development
+MOCK_PRODUCTS = [
+    {
+        "id": "prod1",
+        "name": "Caffe Mocha",
+        "price": 374.00,
+        "description": "A cappuccino is approximately 150 ml (5 oz) beverage, with 25 ml of espresso coffee and 85ml steamed milk topped with milk foam.",
+        "imageUrl": "https://images.unsplash.com/photo-1517701550928-30aac5df30c8?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8Y2FmZSUyMG1vY2hhfGVufDB8fDB8fHww&auto=format&fit=crop&w=500&q=60",
+        "category": "Coffee",
+        "rating": 4.8,
+        "reviewCount": 230,
+    },
+    {
+        "id": "prod2",
+        "name": "Caffe Latte",
+        "price": 332.00,
+        "description": "Smooth and creamy latte with rich espresso and steamed milk.",
+        "imageUrl": "https://images.unsplash.com/photo-1517701550928-30aac5df30c8?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8Y2FmZSUyMG1vY2hhfGVufDB8fDB8fHww&auto=format&fit=crop&w=500&q=60",
+        "category": "Coffee",
+        "rating": 4.6,
+        "reviewCount": 180,
+    },
+    {
+        "id": "prod3",
+        "name": "Cappuccino",
+        "price": 311.25,
+        "description": "Classic cappuccino with perfect balance of espresso, steamed milk and foam.",
+        "imageUrl": "https://images.unsplash.com/photo-1551033406-611cf9a28f67?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8Y2FwcHVjY2lub3xlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=500&q=60",
+        "category": "Coffee",
+        "rating": 4.7,
+        "reviewCount": 156,
+    },
+    {
+        "id": "prod4",
+        "name": "Green Tea",
+        "price": 207.50,
+        "description": "Fresh and refreshing green tea with natural antioxidants.",
+        "imageUrl": "https://images.unsplash.com/photo-1547981609-4b6bfe67ca0b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8Z3JlZW4lMjB0ZWF8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=500&q=60",
+        "category": "Tea",
+        "rating": 4.3,
+        "reviewCount": 95,
+    },
+    {
+        "id": "prod5",
+        "name": "Earl Grey",
+        "price": 228.25,
+        "description": "Classic Earl Grey tea with bergamot oil flavor.",
+        "imageUrl": "https://images.unsplash.com/photo-1534171472159-edb6d1a81ec6?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8ZWFybCUyMGdyZXl8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=500&q=60",
+        "category": "Tea",
+        "rating": 4.5,
+        "reviewCount": 120,
+    },
+    {
+        "id": "prod6",
+        "name": "Chocolate Croissant",
+        "price": 269.75,
+        "description": "Buttery, flaky croissant filled with rich chocolate.",
+        "imageUrl": "https://images.unsplash.com/photo-1563805042-7684c019e1cb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8Y2hvY29sYXRlJTIwY3JvaXNzYW50fGVufDB8fDB8fHww&auto=format&fit=crop&w=500&q=60",
+        "category": "Pastries",
+        "rating": 4.4,
+        "reviewCount": 78,
+    },
+]
 
+MOCK_CATEGORIES = ["Coffee", "Tea", "Pastries", "Sandwiches", "Desserts"]
+
+MOCK_USERS = {}
+MOCK_ORDERS = {}
+MOCK_CART = {}
+
+
+# Placeholder models for request bodies where needed
 class UserUpdate(BaseModel):
-    # Define fields based on what your backend expects for user updates
-    # Assuming it's a JSON body with user fields
     full_name: str | None = None
     email: str | None = None
     phone: str | None = None
     gender: str | None = None
     profile_image_url: str | None = None
     date_of_birth: str | None = None
-    # Add other fields as per your User model if they can be updated
 
-# Assuming Order creation expects a JSON body which is a Map
-# No specific Pydantic model needed for a generic Map, but we'll expect a dict
 
 class CartItemAdd(BaseModel):
     productId: str
     quantity: int
 
+
 class CartItemUpdate(BaseModel):
-    # Assuming itemId is in the path, quantity is in the body
     quantity: int
 
-# Placeholder response models (optional, but good practice)
+
+# Response models
 class UserResponse(BaseModel):
     id: str | None = None
     name: str | None = None
     email: str | None = None
-    # Add other user fields that might be returned
+
 
 class ProductResponse(BaseModel):
     id: str | None = None
     name: str | None = None
     price: float | None = None
-    # Add other product fields
+    description: str | None = None
+    imageUrl: str | None = None
+    category: str | None = None
+    rating: float | None = None
+    reviewCount: int | None = None
+
 
 class OrderResponse(BaseModel):
     id: str | None = None
     user_id: str | None = None
     total: float | None = None
     status: str | None = None
-    # Add other order fields
+
 
 class ApiResponse(BaseModel):
     success: bool = True
     message: str | None = None
     data: Any | None = None
 
+
 app = FastAPI()
 
 # --- User Endpoints ---
+
 
 @app.post("/users/register")
 async def register_user(
     name: str = Form(...),
     email: str = Form(...),
     password: str = Form(...),
-    recaptcha_token: str = Form("")
+    recaptcha_token: str = Form(""),
 ) -> ApiResponse:
     print(f"Received registration data:")
     print(f"Name: {name}")
     print(f"Email: {email}")
-    print(f"Password: {password}") # DO NOT log passwords in production
+    print(f"Password: {password}")  # DO NOT log passwords in production
     print(f"reCAPTCHA Token: {recaptcha_token}")
 
     # TODO: Implement reCAPTCHA verification, password hashing, and database save
 
     # Placeholder response
-    return ApiResponse(message="User registered (placeholder)", data=UserResponse(id="placeholder_id", name=name, email=email))
+    return ApiResponse(
+        message="User registered (placeholder)",
+        data=UserResponse(id="placeholder_id", name=name, email=email),
+    )
+
 
 @app.post("/users/login")
 async def login_user(
@@ -81,12 +157,16 @@ async def login_user(
 ) -> ApiResponse:
     print(f"Received login data:")
     print(f"Email: {email}")
-    print(f"Password: {password}") # DO NOT log passwords in production
+    print(f"Password: {password}")  # DO NOT log passwords in production
 
     # TODO: Implement user authentication and JWT generation
 
     # Placeholder response (assuming success returns user data)
-    return ApiResponse(message="Login successful (placeholder)", data=UserResponse(id="placeholder_id", name="Placeholder User", email=email))
+    return ApiResponse(
+        message="Login successful (placeholder)",
+        data=UserResponse(id="placeholder_id", name="Placeholder User", email=email),
+    )
+
 
 @app.get("/users/{userId}")
 async def get_user_by_id(userId: str = Path(...)) -> ApiResponse:
@@ -97,17 +177,30 @@ async def get_user_by_id(userId: str = Path(...)) -> ApiResponse:
     # raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
     # Placeholder response
-    return ApiResponse(message="User data (placeholder)", data=UserResponse(id=userId, name="Placeholder User", email="placeholder@example.com"))
+    return ApiResponse(
+        message="User data (placeholder)",
+        data=UserResponse(
+            id=userId, name="Placeholder User", email="placeholder@example.com"
+        ),
+    )
+
 
 @app.put("/users/{userId}")
-async def update_user_profile(userId: str = Path(...), user_update: UserUpdate = Body(...)) -> ApiResponse:
-    print(f"Received update request for user ID: {userId} with data: {user_update.model_dump_json()}")
+async def update_user_profile(
+    userId: str = Path(...), user_update: UserUpdate = Body(...)
+) -> ApiResponse:
+    print(
+        f"Received update request for user ID: {userId} with data: {user_update.model_dump_json()}"
+    )
 
     # TODO: Implement updating user in database
 
     # Placeholder response (assuming the updated user is returned)
-    updated_user = UserResponse(id=userId, name=user_update.full_name, email=user_update.email)
+    updated_user = UserResponse(
+        id=userId, name=user_update.full_name, email=user_update.email
+    )
     return ApiResponse(message="Profile updated (placeholder)", data=updated_user)
+
 
 @app.post("/users/reset-password")
 async def request_password_reset(email: str = Form(...)) -> ApiResponse:
@@ -116,7 +209,10 @@ async def request_password_reset(email: str = Form(...)) -> ApiResponse:
     # TODO: Implement password reset request logic (e.g., sending email)
 
     # Placeholder response
-    return ApiResponse(message="Password reset request received (placeholder)", data=None)
+    return ApiResponse(
+        message="Password reset request received (placeholder)", data=None
+    )
+
 
 @app.put("/users/{userId}/change-password")
 async def change_password(
@@ -125,66 +221,83 @@ async def change_password(
     new_password: str = Form(...),
 ) -> ApiResponse:
     print(f"Received change password request for user ID: {userId}")
-    print(f"Old Password: {old_password}") # DO NOT log passwords
-    print(f"New Password: {new_password}") # DO NOT log passwords
+    print(f"Old Password: {old_password}")  # DO NOT log passwords
+    print(f"New Password: {new_password}")  # DO NOT log passwords
 
     # TODO: Implement password change logic
 
     # Placeholder response
     return ApiResponse(message="Password changed (placeholder)", data=None)
 
+
 # --- Product Endpoints ---
 
+
 @app.get("/products")
-async def get_products(category: str | None = Query(None, description="Filter by category")) -> ApiResponse:
+async def get_products(
+    category: str | None = Query(None, description="Filter by category")
+) -> ApiResponse:
     print(f"Received get products request. Category filter: {category}")
 
-    # TODO: Implement fetching products from database, optionally filtered by category
-
-    # Placeholder response
-    placeholder_products = [
-        {"id": "prod1", "name": "Coffee A", "price": 3.5},
-        {"id": "prod2", "name": "Tea B", "price": 2.0},
-    ]
+    # Use MOCK_PRODUCTS instead of placeholder data
+    products = MOCK_PRODUCTS
     if category:
-         placeholder_products = [p for p in placeholder_products if category.lower() in p['name'].lower()] # Basic filtering simulation
+        products = [
+            p for p in MOCK_PRODUCTS if p["category"].lower() == category.lower()
+        ]
 
-    return ApiResponse(message="Product list (placeholder)", data=placeholder_products)
+    return ApiResponse(message="Product list retrieved successfully", data=products)
 
-@app.get("/products/search")
-async def search_products(q: str = Query(..., description="Search query")) -> ApiResponse:
-    print(f"Received search products request. Query: {q}")
-
-    # TODO: Implement searching products in database
-
-    # Placeholder response
-    placeholder_results = [
-        {"id": "prod1", "name": "Coffee A", "price": 3.5},
-    ]
-    return ApiResponse(message="Search results (placeholder)", data=placeholder_results)
-
-@app.get("/products/{productId}")
-async def get_product_by_id(productId: str = Path(...)) -> ApiResponse:
-    print(f"Received get product by ID request. Product ID: {productId}")
-
-    # TODO: Implement fetching product from database by ID
-    # If not found: raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found")
-
-    # Placeholder response
-    return ApiResponse(message="Product details (placeholder)", data=ProductResponse(id=productId, name="Sample Product", price=9.99))
 
 @app.get("/products/categories")
 async def get_categories() -> ApiResponse:
     print("Received get categories request.")
 
-    # TODO: Implement fetching product categories from database
+    # Use MOCK_CATEGORIES instead of placeholder
+    return ApiResponse(
+        message="Product categories fetched successfully",
+        data=MOCK_CATEGORIES,
+    )
 
-    # Placeholder response
-    # Ensure the response for categories is a list of strings
-    placeholder_categories_list = ["Coffee", "Tea", "Pastries", "Snacks"]
-    return ApiResponse(message="Product categories fetched successfully (placeholder)", data=placeholder_categories_list)
+
+@app.get("/products/search")
+async def search_products(
+    q: str = Query(..., description="Search query")
+) -> ApiResponse:
+    print(f"Received search products request. Query: {q}")
+
+    # Search in MOCK_PRODUCTS
+    results = [
+        product
+        for product in MOCK_PRODUCTS
+        if q.lower() in product["name"].lower()
+        or q.lower() in product["description"].lower()
+        or q.lower() in product["category"].lower()
+    ]
+
+    return ApiResponse(message="Search results retrieved successfully", data=results)
+
+
+@app.get("/products/{productId}")
+async def get_product_by_id(productId: str = Path(...)) -> ApiResponse:
+    print(f"Received get product by ID request. Product ID: {productId}")
+
+    # Find product in MOCK_PRODUCTS
+    product = next((p for p in MOCK_PRODUCTS if p["id"] == productId), None)
+
+    if not product:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Product not found"
+        )
+
+    return ApiResponse(
+        message="Product details retrieved successfully",
+        data=product,
+    )
+
 
 # --- Order Endpoints ---
+
 
 @app.post("/orders")
 async def create_order(order_data: Dict[str, Any] = Body(...)) -> ApiResponse:
@@ -193,10 +306,20 @@ async def create_order(order_data: Dict[str, Any] = Body(...)) -> ApiResponse:
     # TODO: Implement order creation in database
 
     # Placeholder response
-    return ApiResponse(message="Order created (placeholder)", data=OrderResponse(id="order_placeholder_id", user_id=order_data.get("userId"), total=order_data.get("total")))
+    return ApiResponse(
+        message="Order created (placeholder)",
+        data=OrderResponse(
+            id="order_placeholder_id",
+            user_id=order_data.get("userId"),
+            total=order_data.get("total"),
+        ),
+    )
+
 
 @app.get("/orders")
-async def get_user_orders(userId: str = Query(..., description="User ID")) -> ApiResponse:
+async def get_user_orders(
+    userId: str = Query(..., description="User ID")
+) -> ApiResponse:
     print(f"Received get user orders request for user ID: {userId}")
 
     # TODO: Implement fetching orders for a user from database
@@ -208,6 +331,7 @@ async def get_user_orders(userId: str = Query(..., description="User ID")) -> Ap
     ]
     return ApiResponse(message="User orders (placeholder)", data=placeholder_orders)
 
+
 @app.get("/orders/{orderId}")
 async def get_order_by_id(orderId: str = Path(...)) -> ApiResponse:
     print(f"Received get order by ID request. Order ID: {orderId}")
@@ -216,7 +340,13 @@ async def get_order_by_id(orderId: str = Path(...)) -> ApiResponse:
     # If not found: raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Order not found")
 
     # Placeholder response
-    return ApiResponse(message="Order details (placeholder)", data=OrderResponse(id=orderId, user_id="placeholder_user_id", total=30.0, status="confirmed"))
+    return ApiResponse(
+        message="Order details (placeholder)",
+        data=OrderResponse(
+            id=orderId, user_id="placeholder_user_id", total=30.0, status="confirmed"
+        ),
+    )
+
 
 @app.put("/orders/{orderId}/cancel")
 async def cancel_order(orderId: str = Path(...)) -> ApiResponse:
@@ -227,7 +357,9 @@ async def cancel_order(orderId: str = Path(...)) -> ApiResponse:
     # Placeholder response (assuming Void response on success, but APIResponse<Void> wrapper)
     return ApiResponse(message="Order cancelled (placeholder)", data=None)
 
+
 # --- Cart Endpoints ---
+
 
 @app.get("/cart/{userId}")
 async def get_user_cart(userId: str = Path(...)) -> ApiResponse:
@@ -241,8 +373,13 @@ async def get_user_cart(userId: str = Path(...)) -> ApiResponse:
     ]
     return ApiResponse(message="User cart (placeholder)", data=placeholder_cart_items)
 
+
 @app.post("/cart/{userId}/items")
-async def add_to_cart(userId: str = Path(...), product_id: str = Form(..., alias="productId"), quantity: int = Form(...)) -> ApiResponse:
+async def add_to_cart(
+    userId: str = Path(...),
+    product_id: str = Form(..., alias="productId"),
+    quantity: int = Form(...),
+) -> ApiResponse:
     print(f"Received add to cart request for User ID: {userId}")
     print(f"Product ID: {product_id}, Quantity: {quantity}")
 
@@ -252,7 +389,10 @@ async def add_to_cart(userId: str = Path(...), product_id: str = Form(..., alias
     placeholder_cart_items = [
         {"productId": product_id, "quantity": quantity, "name": "Added Item"},
     ]
-    return ApiResponse(message="Item added to cart (placeholder)", data=placeholder_cart_items)
+    return ApiResponse(
+        message="Item added to cart (placeholder)", data=placeholder_cart_items
+    )
+
 
 @app.put("/cart/{userId}/items/{itemId}")
 async def update_cart_item(
@@ -269,17 +409,27 @@ async def update_cart_item(
     placeholder_cart_items = [
         {"productId": "some_prod_id", "quantity": quantity, "name": "Updated Item"},
     ]
-    return ApiResponse(message="Cart item updated (placeholder)", data=placeholder_cart_items)
+    return ApiResponse(
+        message="Cart item updated (placeholder)", data=placeholder_cart_items
+    )
+
 
 @app.delete("/cart/{userId}/items/{itemId}")
-async def remove_from_cart(userId: str = Path(...), itemId: str = Path(...)) -> ApiResponse:
+async def remove_from_cart(
+    userId: str = Path(...), itemId: str = Path(...)
+) -> ApiResponse:
     print(f"Received remove from cart request for User ID: {userId}, Item ID: {itemId}")
 
     # TODO: Implement removing item from user's cart in database
 
     # Placeholder response (assuming updated cart is returned)
-    placeholder_cart_items: List[Dict[str, Any]] = [] # Assuming removing leaves an empty cart for this example
-    return ApiResponse(message="Item removed from cart (placeholder)", data=placeholder_cart_items)
+    placeholder_cart_items: List[Dict[str, Any]] = (
+        []
+    )  # Assuming removing leaves an empty cart for this example
+    return ApiResponse(
+        message="Item removed from cart (placeholder)", data=placeholder_cart_items
+    )
+
 
 @app.delete("/cart/{userId}")
 async def clear_cart(userId: str = Path(...)) -> ApiResponse:
@@ -289,4 +439,6 @@ async def clear_cart(userId: str = Path(...)) -> ApiResponse:
 
     # Placeholder response (assuming empty cart is returned)
     placeholder_cart_items: List[Dict[str, Any]] = []
-    return ApiResponse(message="Cart cleared (placeholder)", data=placeholder_cart_items) 
+    return ApiResponse(
+        message="Cart cleared (placeholder)", data=placeholder_cart_items
+    )

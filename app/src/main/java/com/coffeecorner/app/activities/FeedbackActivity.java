@@ -87,7 +87,7 @@ public class FeedbackActivity extends AppCompatActivity implements FeedbackAdapt
         getSupportActionBar().setDisplayShowTitleEnabled(false);
 
         ImageButton btnBack = findViewById(R.id.btnBack);
-        btnBack.setOnClickListener(v -> onBackPressed());
+        btnBack.setOnClickListener(v -> getOnBackPressedDispatcher().onBackPressed());
     }
 
     private void initViews() {
