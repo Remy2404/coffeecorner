@@ -17,21 +17,13 @@ import com.coffeecorner.app.services.GuestAuthService;
 import com.coffeecorner.app.utils.PreferencesHelper;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends BaseActivity {
 
     private static final String TAG = "MainActivity";
     private BottomNavigationView bottomNavigationView;
     private NavController navController;
     private GuestAuthService guestAuthService;    @Override
     protected void onCreate(Bundle savedInstanceState) {
-        // Set theme to follow user preference (light/dark)
-        PreferencesHelper preferencesHelper = new PreferencesHelper(this);
-        if (preferencesHelper.isDarkModeEnabled()) {
-            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
-        } else {
-            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
-        }
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
