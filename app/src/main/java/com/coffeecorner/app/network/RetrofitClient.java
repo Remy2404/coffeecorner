@@ -2,7 +2,6 @@ package com.coffeecorner.app.network;
 
 import android.content.Context;
 import com.coffeecorner.app.utils.Constants;
-import com.coffeecorner.app.utils.CustomFieldNamingStrategy;
 import com.coffeecorner.app.utils.PreferencesHelper;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -46,17 +45,44 @@ public class RetrofitClient {
      * Create and configure Retrofit instance
      * 
      * @return Configured Retrofit instance
-     */
-    private Retrofit createRetrofit() {
+     */    private Retrofit createRetrofit() {
+        // Get application context for TokenAuthenticator
+        final Context appContext;
+        try {
+            appContext = com.coffeecorner.app.CoffeeCornerApplication.getInstance()
+                    .getApplicationContext();
+        } catch (Exception e) {
+            android.util.Log.e("RetrofitClient", "Failed to get application context: " + e.getMessage());
+            // Fallback: create Retrofit without TokenAuthenticator if application context
+            // fails
+            return createBasicRetrofit();
+        }
+
         // Create logging interceptor for debugging
         HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
-        loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY); // Create OkHttpClient with timeout settings and
-                                                                        // logging
-        OkHttpClient client = new OkHttpClient.Builder()
+        loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+
+        // Create TokenAuthenticator for automatic JWT refresh
+        TokenAuthenticator tokenAuthenticator = null;
+        try {
+            tokenAuthenticator = new TokenAuthenticator(appContext, Constants.API_BASE_URL);
+        } catch (Exception e) {
+            android.util.Log.e("RetrofitClient", "Failed to create TokenAuthenticator: " + e.getMessage());
+            // Continue without authenticator if creation fails
+        } // Create OkHttpClient with timeout settings, logging, and authentication
+        OkHttpClient.Builder clientBuilder = new OkHttpClient.Builder()
                 .connectTimeout(60, TimeUnit.SECONDS)
                 .readTimeout(60, TimeUnit.SECONDS)
                 .writeTimeout(60, TimeUnit.SECONDS)
-                .addInterceptor(loggingInterceptor).addInterceptor(chain -> {
+                .addInterceptor(loggingInterceptor);
+
+        // Add authenticator only if it was created successfully
+        if (tokenAuthenticator != null) {
+            clientBuilder.authenticator(tokenAuthenticator);
+        }
+
+        OkHttpClient client = clientBuilder
+                .addInterceptor(chain -> {
                     okhttp3.Request original = chain.request();
 
                     // Build new request with authorization header
@@ -64,19 +90,20 @@ public class RetrofitClient {
                             .method(original.method(), original.body());
 
                     // Add Accept header for JSON
-                    builder.header("Accept", "application/json");                    // Get auth token from preferences if available
-                    Context appContext = com.coffeecorner.app.CoffeeCornerApplication.getInstance()
-                            .getApplicationContext();
+                    builder.header("Accept", "application/json");
+
+                    // Get auth token from preferences if available
                     PreferencesHelper preferencesHelper = new PreferencesHelper(appContext);
                     String token = preferencesHelper.getAuthToken();
 
                     // Add Authorization header if token exists
                     if (token != null && !token.isEmpty()) {
                         builder.header("Authorization", "Bearer " + token);
-                        android.util.Log.d("RetrofitClient", "Adding Authorization header with token: " + 
-                            (token.length() > 10 ? token.substring(0, 10) + "..." : token));
+                        android.util.Log.d("RetrofitClient", "Adding Authorization header with token: " +
+                                (token.length() > 10 ? token.substring(0, 10) + "..." : token));
                     } else {
-                        android.util.Log.w("RetrofitClient", "No auth token found - request will be made without authentication");
+                        android.util.Log.w("RetrofitClient",
+                                "No auth token found - request will be made without authentication");
                     }
 
                     return chain.proceed(builder.build());
@@ -89,6 +116,44 @@ public class RetrofitClient {
                 .create();
 
         // Create Retrofit instance with custom Gson
+        return new Retrofit.Builder()
+                .baseUrl(Constants.API_BASE_URL)
+                .client(client)
+                .addConverterFactory(GsonConverterFactory.create(gson))
+                .build();
+    }
+
+    /**
+     * Create a basic Retrofit instance without TokenAuthenticator as fallback
+     * 
+     * @return Basic Retrofit instance
+     */
+    private Retrofit createBasicRetrofit() {
+        // Create logging interceptor for debugging
+        HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
+        loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+
+        // Create OkHttpClient with basic configuration
+        OkHttpClient client = new OkHttpClient.Builder()
+                .connectTimeout(60, TimeUnit.SECONDS)
+                .readTimeout(60, TimeUnit.SECONDS)
+                .writeTimeout(60, TimeUnit.SECONDS)
+                .addInterceptor(loggingInterceptor)
+                .addInterceptor(chain -> {
+                    okhttp3.Request original = chain.request();
+                    okhttp3.Request.Builder builder = original.newBuilder()
+                            .method(original.method(), original.body())
+                            .header("Accept", "application/json");
+                    return chain.proceed(builder.build());
+                })
+                .build();
+
+        // Create Gson instance
+        Gson gson = new GsonBuilder()
+                .setFieldNamingPolicy(com.google.gson.FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
+                .create();
+
+        // Create basic Retrofit instance
         return new Retrofit.Builder()
                 .baseUrl(Constants.API_BASE_URL)
                 .client(client)

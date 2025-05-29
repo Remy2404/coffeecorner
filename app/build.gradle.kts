@@ -11,6 +11,8 @@ configurations.all {
         force("androidx.appcompat:appcompat:1.6.1")
         force("com.google.android.material:material:1.12.0")
         force("androidx.activity:activity:1.10.1")
+        force("androidx.recyclerview:recyclerview:1.3.2") 
+        force("androidx.fragment:fragment:1.6.2") 
     }
 }
 
@@ -49,14 +51,20 @@ android {
             )
         }
     }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
-    }
-    buildFeatures {
-        viewBinding = true
-        buildConfig = true
-    }
+compileOptions {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+    // isWarningsAsErrors = true
+}
+
+// tasks.withType<JavaCompile> {
+//     options.compilerArgs.add("-Xlint:all")
+// }
+
+buildFeatures {
+    viewBinding = true
+    buildConfig = true
+}
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
@@ -82,6 +90,7 @@ dependencies {
     implementation(libs.activity)
     implementation(libs.constraintlayout)
     implementation(libs.navigation.runtime.android)
+    implementation("androidx.recyclerview:recyclerview:1.3.2")
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
@@ -119,7 +128,7 @@ dependencies {
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
     
     // ViewModel and LiveData
-    implementation("androidx.lifecycle:lifecycle-viewmodel:2.8.7")
-    implementation("androidx.lifecycle:lifecycle-livedata:2.8.7")
-    implementation("androidx.fragment:fragment:1.8.5")
+    implementation("androidx.lifecycle:lifecycle-viewmodel:2.6.2")
+    implementation("androidx.lifecycle:lifecycle-livedata:2.6.2")
+    implementation("androidx.fragment:fragment:1.6.2")
 }

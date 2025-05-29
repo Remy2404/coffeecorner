@@ -60,9 +60,7 @@ public class CartRepository {
             List<CartItem> localItems = localCartManager.getCartItems();
             callback.onCartItemsLoaded(localItems);
             return;
-        }
-
-        Log.d(TAG, "getCartItems: Fetching cart with JWT authentication");
+        }        Log.d(TAG, "getCartItems: Fetching cart with JWT authentication");
         apiService.getCart().enqueue(new Callback<>() {
             @Override
             public void onResponse(@NonNull Call<ApiResponse<List<CartItem>>> call,
@@ -82,6 +80,14 @@ public class CartRepository {
                             Log.e(TAG, "Error parsing error body", e);
                         }
                     }
+                    
+                    // Handle specific authentication errors
+                    if (response.code() == 401) {
+                        errorMsg = "Authentication expired. Please sign in again.";
+                    } else if (response.code() == 404 && errorMsg.contains("User not found")) {
+                        errorMsg = "User profile not found. Please sign in again.";
+                    }
+                    
                     Log.e(TAG, "getCartItems failed: " + errorMsg + " Code: " + response.code());
                     callback.onError(errorMsg);
                 }
@@ -159,9 +165,7 @@ public class CartRepository {
 
         // Create CartAddRequest for the JWT-authenticated JSON endpoint
         com.coffeecorner.app.models.CartAddRequest cartAddRequest = new com.coffeecorner.app.models.CartAddRequest(
-                product.getId(), quantity);
-
-        // Use the JWT-authenticated addToCart endpoint with JSON body
+                product.getId(), quantity);        // Use the JWT-authenticated addToCart endpoint with JSON body
         apiService.addToCart(cartAddRequest).enqueue(new Callback<>() {
             @Override
             public void onResponse(@NonNull Call<ApiResponse<List<CartItem>>> call,
@@ -181,6 +185,14 @@ public class CartRepository {
                             Log.e(TAG, "Error parsing error body", e);
                         }
                     }
+                    
+                    // Handle specific authentication errors
+                    if (response.code() == 401) {
+                        errorMsg = "Authentication expired. Please sign in again.";
+                    } else if (response.code() == 404 && errorMsg.contains("User not found")) {
+                        errorMsg = "User profile not found. Please sign in again.";
+                    }
+                    
                     Log.e(TAG, "addToCart failed: " + errorMsg + " Code: " + response.code());
                     callback.onError(errorMsg);
                 }
@@ -224,7 +236,7 @@ public class CartRepository {
         }
 
         Log.d(TAG, "removeFromCart: Removing itemId: " + itemId + " with JWT authentication");
-        apiService.removeFromCart(itemId).enqueue(new Callback<ApiResponse<List<CartItem>>>() {
+        apiService.removeFromCart(itemId).enqueue(new Callback<>() {
             @Override
             public void onResponse(@NonNull Call<ApiResponse<List<CartItem>>> call,
                     @NonNull Response<ApiResponse<List<CartItem>>> response) {
@@ -302,10 +314,9 @@ public class CartRepository {
         CartItem cartItem = new CartItem();
         cartItem.setId(itemId);
         cartItem.setQuantity(quantity);
-
         Log.d(TAG, "updateQuantity: Updating itemId: " + itemId + " to quantity: " + quantity
                 + " with JWT authentication");
-        apiService.updateCartItem(cartItem).enqueue(new Callback<ApiResponse<List<CartItem>>>() {
+        apiService.updateCartItem(cartItem).enqueue(new Callback<>() {
             @Override
             public void onResponse(@NonNull Call<ApiResponse<List<CartItem>>> call,
                     @NonNull Response<ApiResponse<List<CartItem>>> response) {
@@ -361,10 +372,9 @@ public class CartRepository {
         CartItem cartItem = new CartItem();
         cartItem.setId(itemId);
         cartItem.setQuantity(quantity);
-
         Log.d(TAG, "updateCartItemQuantity: Updating itemId: " + itemId + " quantity: " + quantity
                 + " with JWT authentication");
-        apiService.updateCartItem(cartItem).enqueue(new Callback<ApiResponse<List<CartItem>>>() {
+        apiService.updateCartItem(cartItem).enqueue(new Callback<>() {
             @Override
             public void onResponse(@NonNull Call<ApiResponse<List<CartItem>>> call,
                     @NonNull Response<ApiResponse<List<CartItem>>> response) {
@@ -410,7 +420,7 @@ public class CartRepository {
         }
 
         Log.d(TAG, "clearCart: Clearing cart with JWT authentication");
-        apiService.clearCart().enqueue(new Callback<ApiResponse<Void>>() {
+        apiService.clearCart().enqueue(new Callback<>() {
             @Override
             public void onResponse(@NonNull Call<ApiResponse<Void>> call,
                     @NonNull Response<ApiResponse<Void>> response) {
@@ -445,6 +455,7 @@ public class CartRepository {
      * 
      * @param callback Callback to handle result
      */
+    @SuppressWarnings("unused")
     public void syncLocalCartWithServer(@NonNull CartItemsCallback callback) {
         String authToken = preferencesHelper.getAuthToken();
         if (authToken == null || authToken.isEmpty()) {
@@ -469,7 +480,7 @@ public class CartRepository {
                     product.getId(), quantity);
 
             apiService.addToCart(cartAddRequest)
-                    .enqueue(new Callback<ApiResponse<List<CartItem>>>() {
+                    .enqueue(new Callback<>() {
                         @Override
                         public void onResponse(@NonNull Call<ApiResponse<List<CartItem>>> call,
                                 @NonNull Response<ApiResponse<List<CartItem>>> response) {
@@ -496,6 +507,7 @@ public class CartRepository {
      * 
      * @return Number of items in cart
      */
+    @SuppressWarnings("unused")
     public int getCartItemCount() {
         String authToken = preferencesHelper.getAuthToken();
         if (authToken == null || authToken.isEmpty()) {
@@ -510,6 +522,7 @@ public class CartRepository {
      * 
      * @return Total cart value
      */
+    @SuppressWarnings("unused")
     public double getCartTotal() {
         String authToken = preferencesHelper.getAuthToken();
         if (authToken == null || authToken.isEmpty()) {
@@ -532,6 +545,7 @@ public class CartRepository {
      * Callback interface for cart modification operations (like clear) that might
      * not return a list.
      */
+    @SuppressWarnings("unused")
     public interface CartModificationCallback {
         void onSuccess(String message);
 

@@ -137,15 +137,8 @@ public class HomeFragment extends Fragment {
                     args);
         });
         productAdapter.setOnAddToCartClickListener((product, position) -> {
-            // Add to cart using CartViewModel
-            Log.d("HomeFragment", "Adding to cart: " + product.getName() + ", ID: " + product.getId() + ", Price: "
-                    + product.getPrice());
-
-            // Show a simple toast and add to cart
             cartViewModel.addToCart(product, 1);
             Toast.makeText(requireContext(), product.getName() + " added to cart", Toast.LENGTH_SHORT).show();
-
-            // Navigate to cart after adding item
             Navigation.findNavController(requireView()).navigate(R.id.action_to_cart);
         });
 

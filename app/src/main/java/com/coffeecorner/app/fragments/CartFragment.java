@@ -28,6 +28,7 @@ import com.coffeecorner.app.activities.MainActivity;
 import com.coffeecorner.app.adapters.CartAdapter;
 import com.coffeecorner.app.models.CartItem;
 import com.coffeecorner.app.utils.PreferencesHelper;
+import com.coffeecorner.app.utils.AuthDiagnosticHelper;
 import com.coffeecorner.app.viewmodels.CartViewModel;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
@@ -46,6 +47,7 @@ public class CartFragment extends Fragment implements CartAdapter.CartItemListen
     private List<CartItem> cartItems = new ArrayList<>();
     private NumberFormat currencyFormatter = NumberFormat.getCurrencyInstance(Locale.US);
     private CartViewModel cartViewModel;
+    private AuthDiagnosticHelper authDiagnosticHelper;
 
     private static final double TAX_RATE = 0.09; // 9%
     private static final double DELIVERY_FEE = 2.00;
@@ -89,6 +91,9 @@ public class CartFragment extends Fragment implements CartAdapter.CartItemListen
         recyclerCartItems.setLayoutManager(new LinearLayoutManager(requireContext())); // Initialize ViewModel
         cartViewModel = new ViewModelProvider(requireActivity()).get(CartViewModel.class);
 
+        // Initialize auth diagnostic helper
+        authDiagnosticHelper = new AuthDiagnosticHelper(requireContext());
+
         // Observe ViewModel
         observeViewModel();
 
@@ -98,7 +103,9 @@ public class CartFragment extends Fragment implements CartAdapter.CartItemListen
         // Set up listeners
         btnCheckout.setOnClickListener(v -> {
             if (cartItems.isEmpty()) {
-                Toast.makeText(requireContext(), "Your cart is empty", Toast.LENGTH_SHORT).show();
+                if (isAdded()) {
+                    Toast.makeText(requireContext(), "Your cart is empty", Toast.LENGTH_SHORT).show();
+                }
                 return;
             }
 
@@ -117,7 +124,9 @@ public class CartFragment extends Fragment implements CartAdapter.CartItemListen
                 Navigation.findNavController(view).navigate(R.id.action_to_menu);
             } catch (Exception e) {
                 Log.e("CartFragment", "Navigation error: " + e.getMessage());
-                Toast.makeText(requireContext(), "Navigation error", Toast.LENGTH_SHORT).show();
+                if (isAdded()) {
+                    Toast.makeText(requireContext(), "Navigation error", Toast.LENGTH_SHORT).show();
+                }
             }
         });
 
@@ -135,9 +144,39 @@ public class CartFragment extends Fragment implements CartAdapter.CartItemListen
 
     }
 
-    private void loadCartItems() {
+    private void loadCartItems() { // Test authentication before loading cart
+        authDiagnosticHelper.testCurrentAuthentication(new AuthDiagnosticHelper.AuthTestCallback() {
+            @Override
+            public void onResult(boolean success, String message, com.coffeecorner.app.models.User user) {
+                // Check if fragment is still attached before proceeding
+                if (!isAdded() || getContext() == null) {
+                    Log.w("CartFragment", "Fragment not attached, skipping auth result handling");
+                    return;
+                }
+
+                if (!success) {
+                    Log.e("CartFragment", "Authentication test failed: " + message);
+                    Toast.makeText(getContext(), "Authentication issue: " + message, Toast.LENGTH_LONG).show();
+
+                    // If auth fails, show empty cart and suggest re-login
+                    if (message.contains("User not found") || message.contains("401") || message.contains("404")) {
+                        showAuthErrorDialog();
+                        return;
+                    }
+                } else {
+                    Log.d("CartFragment", "Authentication test successful for user: " + user.getName());
+                }
+            }
+        });
+
         // In a real app, get cart items from a CartManager or repository
         cartViewModel.getCartItems().observe(getViewLifecycleOwner(), items -> {
+            // Check if fragment is still attached before updating UI
+            if (!isAdded() || getContext() == null) {
+                Log.w("CartFragment", "Fragment not attached, skipping cart items update");
+                return;
+            }
+
             if (items == null) { // Add null check for items
                 items = new ArrayList<>();
             }
@@ -242,6 +281,12 @@ public class CartFragment extends Fragment implements CartAdapter.CartItemListen
     }
 
     private void showClearCartConfirmation() {
+        // Check if fragment is still attached before showing dialog
+        if (!isAdded() || getContext() == null) {
+            Log.w("CartFragment", "Fragment not attached, skipping clear cart confirmation");
+            return;
+        }
+
         new MaterialAlertDialogBuilder(requireContext())
                 .setTitle("Clear Cart")
                 .setMessage("Are you sure you want to remove all items from your cart?")
@@ -263,23 +308,39 @@ public class CartFragment extends Fragment implements CartAdapter.CartItemListen
 
     @Override
     public void onItemRemoved(CartItem cartItem) {
+        // Check if fragment is still attached before proceeding
+        if (!isAdded() || getContext() == null) {
+            Log.w("CartFragment", "Fragment not attached, skipping item removal");
+            return;
+        }
+
         // Remove from cart
         if (cartItem != null && cartItem.getProductId() != null) {
             cartViewModel.removeFromCart(cartItem);
             // The LiveData observer in loadCartItems should handle UI updates
         } else {
-            Toast.makeText(getContext(), "Error: Could not remove item", Toast.LENGTH_SHORT).show();
+            if (isAdded()) {
+                Toast.makeText(getContext(), "Error: Could not remove item", Toast.LENGTH_SHORT).show();
+            }
         }
     }
 
     @Override
     public void onQuantityChanged(CartItem cartItem, int newQuantity) {
+        // Check if fragment is still attached before proceeding
+        if (!isAdded() || getContext() == null) {
+            Log.w("CartFragment", "Fragment not attached, skipping quantity change");
+            return;
+        }
+
         // Update cart
         if (cartItem != null && cartItem.getProductId() != null) {
             cartViewModel.updateCartItemQuantity(cartItem, newQuantity);
             // The LiveData observer in updatePriceSummary should handle UI updates
         } else {
-            Toast.makeText(getContext(), "Error: Could not update quantity", Toast.LENGTH_SHORT).show();
+            if (isAdded()) {
+                Toast.makeText(getContext(), "Error: Could not update quantity", Toast.LENGTH_SHORT).show();
+            }
         }
     } // These methods are part of the CartAdapter.CartItemListener interface
       // implemented by the fragment and are already properly implemented above
@@ -287,11 +348,22 @@ public class CartFragment extends Fragment implements CartAdapter.CartItemListen
     private void observeViewModel() {
         // Observe loading state
         cartViewModel.getIsLoading().observe(getViewLifecycleOwner(), isLoading -> {
+            // Check if fragment is still attached before handling loading state
+            if (!isAdded() || getContext() == null) {
+                Log.w("CartFragment", "Fragment not attached, skipping loading state update");
+                return;
+            }
             // Loading indicator logic removed - we'll use a different approach
         });
 
         // Observe error messages
         cartViewModel.getErrorMessage().observe(getViewLifecycleOwner(), errorMessage -> {
+            // Check if fragment is still attached before showing error message
+            if (!isAdded() || getContext() == null) {
+                Log.w("CartFragment", "Fragment not attached, skipping error message");
+                return;
+            }
+
             if (errorMessage != null && !errorMessage.isEmpty()) {
                 Toast.makeText(getContext(), errorMessage, Toast.LENGTH_LONG).show();
             }
@@ -299,6 +371,12 @@ public class CartFragment extends Fragment implements CartAdapter.CartItemListen
 
         // Observe success messages
         cartViewModel.getSuccessMessage().observe(getViewLifecycleOwner(), successMessage -> {
+            // Check if fragment is still attached before showing success message
+            if (!isAdded() || getContext() == null) {
+                Log.w("CartFragment", "Fragment not attached, skipping success message");
+                return;
+            }
+
             if (successMessage != null && !successMessage.isEmpty()) {
                 Toast.makeText(getContext(), successMessage, Toast.LENGTH_SHORT).show();
             }
@@ -306,6 +384,12 @@ public class CartFragment extends Fragment implements CartAdapter.CartItemListen
 
         // Observe cart item count for badge updates
         cartViewModel.getCartItemCount().observe(getViewLifecycleOwner(), itemCount -> {
+            // Check if fragment is still attached before updating badge
+            if (!isAdded() || getContext() == null) {
+                Log.w("CartFragment", "Fragment not attached, skipping cart badge update");
+                return;
+            }
+
             if (itemCount != null) {
                 // Update cart badge in bottom navigation if needed
                 updateCartBadge(itemCount);
@@ -325,5 +409,51 @@ public class CartFragment extends Fragment implements CartAdapter.CartItemListen
         super.onResume();
         // Refresh cart when returning to this fragment
         loadCartItems();
+    }
+
+    /**
+     * Show dialog when authentication fails
+     */
+    private void showAuthErrorDialog() {
+        // Check if fragment is still attached before showing dialog
+        if (!isAdded() || getContext() == null) {
+            Log.w("CartFragment", "Fragment not attached, skipping auth error dialog");
+            return;
+        }
+
+        new MaterialAlertDialogBuilder(requireContext())
+                .setTitle("Authentication Error")
+                .setMessage("There was a problem with your authentication. Would you like to sign in again?")
+                .setPositiveButton("Sign In", (dialog, which) -> {
+                    // Check if fragment is still attached before proceeding
+                    if (!isAdded() || getContext() == null) {
+                        Log.w("CartFragment", "Fragment not attached, skipping login navigation");
+                        return;
+                    }
+
+                    // Clear current auth and navigate to login
+                    authDiagnosticHelper.clearAuthAndForceRelogin();
+                    // Navigate to login activity
+                    try {
+                        Intent loginIntent = new Intent(requireContext(),
+                                com.coffeecorner.app.activities.LoginActivity.class);
+                        loginIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                        startActivity(loginIntent);
+                        requireActivity().finish();
+                    } catch (Exception e) {
+                        Log.e("CartFragment", "Navigation to login failed: " + e.getMessage());
+                        if (isAdded() && getContext() != null) {
+                            Toast.makeText(requireContext(), "Please restart the app and sign in again",
+                                    Toast.LENGTH_LONG).show();
+                        }
+                    }
+                })
+                .setNegativeButton("Cancel", (dialog, which) -> {
+                    if (isAdded()) {
+                        showEmptyCartView();
+                    }
+                })
+                .setCancelable(false)
+                .show();
     }
 }
