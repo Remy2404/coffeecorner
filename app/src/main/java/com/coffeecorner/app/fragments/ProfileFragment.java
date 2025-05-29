@@ -3,6 +3,8 @@ package com.coffeecorner.app.fragments;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,6 +27,7 @@ import com.bumptech.glide.request.RequestOptions;
 import com.coffeecorner.app.R;
 import com.coffeecorner.app.activities.LoginActivity;
 import com.coffeecorner.app.models.User;
+import com.coffeecorner.app.utils.PreferencesHelper;
 import com.coffeecorner.app.viewmodel.UserViewModel;
 import com.coffeecorner.app.viewmodel.UserViewModelFactory;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -37,9 +40,11 @@ public class ProfileFragment extends Fragment {
     private View btnSettings;
     private UserViewModel userViewModel;
     private Switch switchTheme;
-    private static final String PREFS_NAME = "app_prefs";
-    private static final String KEY_DARK_MODE = "dark_mode";
+    private PreferencesHelper preferencesHelper;
+
+    // Theme switching state management
     private boolean isThemeSwitching = false;
+    private Handler themeHandler = new Handler(Looper.getMainLooper());
 
     public ProfileFragment() {
         // Required empty public constructor
@@ -48,10 +53,13 @@ public class ProfileFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_profile, container, false);
+        View view = inflater.inflate(R.layout.fragment_profile, container, false); // Initialize ViewModel with custom
+                                                                                   // factory
+        userViewModel = new ViewModelProvider(requireActivity(), new UserViewModelFactory(requireContext()))
+                .get(UserViewModel.class);
 
-        // Initialize ViewModel with custom factory
-        userViewModel = new ViewModelProvider(requireActivity(), new UserViewModelFactory(requireContext())).get(UserViewModel.class);
+        // Initialize PreferencesHelper
+        preferencesHelper = new PreferencesHelper(requireContext());
 
         return view;
     }
@@ -67,19 +75,40 @@ public class ProfileFragment extends Fragment {
         setupObservers();
 
         // Setup click listeners
-        setupClickListeners(view);
-
-        // Set initial switch state based on saved preference
+        setupClickListeners(view); // Set initial switch state from PreferencesHelper (centralized source of truth)
         isThemeSwitching = true;
-        switchTheme.setChecked(getDarkModePref());
+        switchTheme.setChecked(preferencesHelper.isDarkModeEnabled());
         isThemeSwitching = false;
+
+        // Set up the dark mode switch with proper debouncing and state management
         switchTheme.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            if (isThemeSwitching) return;
-            saveDarkModePref(isChecked);
-            int newMode = isChecked ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO;
-            if (AppCompatDelegate.getDefaultNightMode() != newMode) {
-                AppCompatDelegate.setDefaultNightMode(newMode);
+            // Prevent recursive calls during theme switching
+            if (isThemeSwitching) {
+                return;
             }
+
+            // Set switching flag to prevent multiple rapid changes
+            isThemeSwitching = true;
+
+            // Save preference immediately to PreferencesHelper (single source of truth)
+            preferencesHelper.setDarkModeEnabled(isChecked);
+
+            // Remove any pending theme changes to prevent conflicts
+            themeHandler.removeCallbacksAndMessages(null);
+
+            // Apply theme change with debouncing for smooth transition
+            themeHandler.postDelayed(() -> {
+                try {
+                    int targetMode = isChecked ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO;
+                    // Only apply if different from current mode to prevent unnecessary recreation
+                    if (AppCompatDelegate.getDefaultNightMode() != targetMode) {
+                        AppCompatDelegate.setDefaultNightMode(targetMode);
+                    }
+                } finally {
+                    // Reset switching flag after completion
+                    isThemeSwitching = false;
+                }
+            }, 200); // 200ms delay for smooth transition
         });
     }
 
@@ -111,14 +140,46 @@ public class ProfileFragment extends Fragment {
             // Navigate to edit profile screen
             Navigation.findNavController(v).navigate(R.id.action_profileFragment_to_editProfileFragment);
         });
-
         btnSettings.setOnClickListener(v -> {
-            Toast.makeText(requireContext(), "Settings clicked", Toast.LENGTH_SHORT).show();
+            try {
+                Navigation.findNavController(v).navigate(R.id.action_profileFragment_to_settingsFragment);
+            } catch (Exception e) {
+                Toast.makeText(requireContext(), "Settings screen is under development", Toast.LENGTH_SHORT).show();
+            }
         });
 
         // Setup click listeners for action items
         view.findViewById(R.id.layoutMyOrders).setOnClickListener(v -> {
             Navigation.findNavController(v).navigate(R.id.action_profileFragment_to_orderHistoryFragment);
+        }); // Add click listener for Payment Methods
+        view.findViewById(R.id.layoutPaymentMethods).setOnClickListener(v -> {
+            try {
+                Navigation.findNavController(v).navigate(R.id.action_profileFragment_to_paymentMethodsFragment);
+            } catch (Exception e) {
+                Toast.makeText(requireContext(), "Payment Methods screen is under development", Toast.LENGTH_SHORT)
+                        .show();
+            }
+        }); // Add click listener for My Rewards
+        view.findViewById(R.id.layoutMyRewards).setOnClickListener(v -> {
+            try {
+                Navigation.findNavController(v).navigate(R.id.action_profileFragment_to_myRewardsFragment);
+            } catch (Exception e) {
+                Toast.makeText(requireContext(), "My Rewards screen is under development", Toast.LENGTH_SHORT).show();
+            }
+        }); // Add click listener for About Us
+        view.findViewById(R.id.layoutAboutUs).setOnClickListener(v -> {
+            try {
+                Navigation.findNavController(v).navigate(R.id.action_profileFragment_to_aboutUsFragment);
+            } catch (Exception e) {
+                Toast.makeText(requireContext(), "About Us screen is under development", Toast.LENGTH_SHORT).show();
+            }
+        }); // Add click listener for My Addresses
+        view.findViewById(R.id.layoutMyAddresses).setOnClickListener(v -> {
+            try {
+                Navigation.findNavController(v).navigate(R.id.action_profileFragment_to_myAddressesFragment);
+            } catch (Exception e) {
+                Toast.makeText(requireContext(), "My Addresses screen is under development", Toast.LENGTH_SHORT).show();
+            }
         });
 
         view.findViewById(R.id.layoutLogout).setOnClickListener(v -> {
@@ -170,15 +231,12 @@ public class ProfileFragment extends Fragment {
         requireActivity().finish();
     }
 
-    private void saveDarkModePref(boolean isDark) {
-        requireContext().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-            .edit()
-            .putBoolean(KEY_DARK_MODE, isDark)
-            .apply();
-    }
-
-    private boolean getDarkModePref() {
-        return requireContext().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-            .getBoolean(KEY_DARK_MODE, false);
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        // Clean up handler to prevent memory leaks
+        if (themeHandler != null) {
+            themeHandler.removeCallbacksAndMessages(null);
+        }
     }
 }

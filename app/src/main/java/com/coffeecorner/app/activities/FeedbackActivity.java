@@ -172,19 +172,23 @@ public class FeedbackActivity extends AppCompatActivity implements FeedbackAdapt
     }
 
     private void setupFilterChips() {
-        chipGroupRatingFilter.setOnCheckedChangeListener((group, checkedId) -> {
+        // Use the new listener for ChipGroup (API 29+)
+        chipGroupRatingFilter.setOnCheckedStateChangeListener((group, checkedIds) -> {
             int ratingFilter = 0;
 
-            if (checkedId == R.id.chip5) {
-                ratingFilter = 5;
-            } else if (checkedId == R.id.chip4) {
-                ratingFilter = 4;
-            } else if (checkedId == R.id.chip3) {
-                ratingFilter = 3;
-            } else if (checkedId == R.id.chip2) {
-                ratingFilter = 2;
-            } else if (checkedId == R.id.chip1) {
-                ratingFilter = 1;
+            if (!checkedIds.isEmpty()) {
+                int checkedId = checkedIds.get(0);
+                if (checkedId == R.id.chip5) {
+                    ratingFilter = 5;
+                } else if (checkedId == R.id.chip4) {
+                    ratingFilter = 4;
+                } else if (checkedId == R.id.chip3) {
+                    ratingFilter = 3;
+                } else if (checkedId == R.id.chip2) {
+                    ratingFilter = 2;
+                } else if (checkedId == R.id.chip1) {
+                    ratingFilter = 1;
+                }
             }
 
             currentRatingFilter = ratingFilter;

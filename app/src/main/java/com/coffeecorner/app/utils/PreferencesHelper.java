@@ -8,9 +8,7 @@ import android.content.SharedPreferences;
  */
 public class PreferencesHelper {
     // Shared Preferences file name
-    private static final String PREF_NAME = "CoffeeCornerPrefs";
-
-    // Preference keys
+    private static final String PREF_NAME = "CoffeeCornerPrefs"; // Preference keys
     private static final String KEY_USER_ID = "user_id";
     private static final String KEY_USER_NAME = "user_name";
     private static final String KEY_USER_EMAIL = "user_email";
@@ -19,6 +17,9 @@ public class PreferencesHelper {
     private static final String KEY_USER_POINTS = "user_points";
     private static final String KEY_USER_TIER = "user_tier";
     private static final String KEY_IS_LOGGED_IN = "is_logged_in";
+
+    // Default values
+    private static final String DEFAULT_USER_ID = "user1"; // Default user ID for API calls
     private static final String KEY_AUTH_TOKEN = "auth_token";
     private static final String KEY_DARK_MODE = "dark_mode";
     private static final String KEY_NOTIFICATIONS_ENABLED = "notifications_enabled";
@@ -94,12 +95,30 @@ public class PreferencesHelper {
     }
 
     /**
+     * Save authentication token
+     * 
+     * @param token Authentication token
+     */
+    public void saveAuthToken(String token) {
+        sharedPreferences.edit().putString(KEY_AUTH_TOKEN, token).apply();
+    }
+
+    /**
      * Get user ID
      * 
-     * @return User ID
+     * @return User ID or default user ID if not set
      */
     public String getUserId() {
-        return sharedPreferences.getString(KEY_USER_ID, null);
+        return sharedPreferences.getString(KEY_USER_ID, DEFAULT_USER_ID);
+    }
+
+    /**
+     * Save user ID
+     * 
+     * @param userId User ID to save
+     */
+    public void saveUserId(String userId) {
+        sharedPreferences.edit().putString(KEY_USER_ID, userId).apply();
     }
 
     /**
@@ -229,6 +248,15 @@ public class PreferencesHelper {
     }
 
     /**
+     * Check if notifications are enabled (alias method)
+     * 
+     * @return True if notifications are enabled
+     */
+    public boolean isNotificationsEnabled() {
+        return areNotificationsEnabled();
+    }
+
+    /**
      * Set notifications setting
      * 
      * @param enabled True to enable notifications
@@ -334,10 +362,11 @@ public class PreferencesHelper {
         sharedPreferences.edit().clear().apply();
     }
 
-    public void saveUserId(String id) {
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString(KEY_USER_ID, id);
-        editor.apply();
+    /**
+     * Clear all preferences (alias method)
+     */
+    public void clear() {
+        clearAll();
     }
 
     public void clearUserData() {
@@ -396,7 +425,7 @@ public class PreferencesHelper {
      * @return Promo code
      */
     public String getPromoCode() {
-        return sharedPreferences.getString(KEY_PROMO_CODE, "");
+        return sharedPreferences.getString(KEY_PROMO_CODE, null);
     }
 
     /**

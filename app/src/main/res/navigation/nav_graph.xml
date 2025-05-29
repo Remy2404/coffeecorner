@@ -38,9 +38,7 @@
         <action
             android:id="@+id/action_to_cart"
             app:destination="@id/cartFragment" />
-    </fragment>
-
-    <fragment
+    </fragment>    <fragment
         android:id="@+id/profileFragment"
         android:name="com.coffeecorner.app.fragments.ProfileFragment"
         android:label="fragment_profile"
@@ -57,6 +55,21 @@
         <action
             android:id="@+id/action_profileFragment_to_loyaltyFragment"
             app:destination="@id/loyaltyFragment" />
+        <action
+            android:id="@+id/action_profileFragment_to_settingsFragment"
+            app:destination="@id/settingsFragment" />
+        <action
+            android:id="@+id/action_profileFragment_to_paymentMethodsFragment"
+            app:destination="@id/paymentMethodsFragment" />
+        <action
+            android:id="@+id/action_profileFragment_to_myRewardsFragment"
+            app:destination="@id/myRewardsFragment" />
+        <action
+            android:id="@+id/action_profileFragment_to_aboutUsFragment"
+            app:destination="@id/aboutUsFragment" />
+        <action
+            android:id="@+id/action_profileFragment_to_myAddressesFragment"
+            app:destination="@id/myAddressesFragment" />
     </fragment>
 
     <fragment
@@ -92,10 +105,15 @@
     <fragment
         android:id="@+id/myRewardsFragment"
         android:name="com.coffeecorner.app.fragments.MyRewardsFragment" />
-
     <fragment
         android:id="@+id/aboutUsFragment"
-        android:name="com.coffeecorner.app.fragments.AboutUsFragment" />
+        android:name="com.coffeecorner.app.fragments.AboutUsFragment" />    <fragment
+        android:id="@+id/settingsFragment"
+        android:name="com.coffeecorner.app.fragments.SettingsFragment" >
+        <action
+            android:id="@+id/action_settingsFragment_to_editProfileFragment"
+            app:destination="@id/editProfileFragment" />
+    </fragment>
 
     <fragment
         android:id="@+id/productDetailsFragment"

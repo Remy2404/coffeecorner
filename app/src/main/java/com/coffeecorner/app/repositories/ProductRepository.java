@@ -51,7 +51,27 @@ public class ProductRepository {
             public void onResponse(@NonNull Call<ApiResponse<List<Product>>> call,
                     @NonNull Response<ApiResponse<List<Product>>> response) {
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                    callback.onProductsLoaded(response.body().getData());
+                    List<Product> products = response.body().getData();
+                    Log.d("ProductRepository", "Successfully loaded " + products.size() + " products");
+
+                    // Enhanced debug logging to verify image URLs
+                    int nonNullImageCount = 0;
+                    for (Product product : products) {
+                        if (product.getImageUrl() != null) {
+                            nonNullImageCount++;
+                        }
+                    }
+                    Log.d("ProductRepository",
+                            "Products with non-null imageUrl: " + nonNullImageCount + " out of " + products.size());
+
+                    // Debug first few products to check image URLs
+                    for (int i = 0; i < Math.min(products.size(), 5); i++) {
+                        Product product = products.get(i);
+                        Log.d("ProductRepository", "Product[" + i + "]: " + product.getName() +
+                                ", ImageURL: " + product.getImageUrl());
+                    }
+
+                    callback.onProductsLoaded(products);
                 } else {
                     String errorMsg = "Failed to load products.";
                     if (response.body() != null && response.body().getMessage() != null) {

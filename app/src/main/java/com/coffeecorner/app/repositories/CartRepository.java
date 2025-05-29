@@ -11,6 +11,7 @@ import com.coffeecorner.app.network.ApiService;
 import com.coffeecorner.app.network.ApiResponse;
 import com.coffeecorner.app.network.RetrofitClient;
 import com.coffeecorner.app.utils.PreferencesHelper;
+import com.coffeecorner.app.utils.LocalCartManager;
 
 import java.util.List;
 
@@ -24,15 +25,16 @@ import retrofit2.Response;
  * with the backend API.
  */
 public class CartRepository {
-
     private static final String TAG = "CartRepository";
     private static volatile CartRepository instance;
     private final ApiService apiService;
     private final PreferencesHelper preferencesHelper;
+    private final LocalCartManager localCartManager;
 
     private CartRepository(Context context) {
         apiService = RetrofitClient.getApiService();
         preferencesHelper = new PreferencesHelper(context.getApplicationContext());
+        localCartManager = new LocalCartManager(context.getApplicationContext());
     }
 
     public static CartRepository getInstance(Context context) {
@@ -54,13 +56,14 @@ public class CartRepository {
     public void getCartItems(@NonNull CartItemsCallback callback) {
         String userId = preferencesHelper.getUserId();
         if (userId == null || userId.isEmpty()) {
-            Log.w(TAG, "getCartItems: User not logged in.");
-            callback.onError("User not logged in. Please login to view your cart.");
+            Log.d(TAG, "getCartItems: User not logged in, using local cart");
+            List<CartItem> localItems = localCartManager.getCartItems();
+            callback.onCartItemsLoaded(localItems);
             return;
         }
 
         Log.d(TAG, "getCartItems: Fetching cart for userId: " + userId);
-        apiService.getCart(userId).enqueue(new Callback<ApiResponse<List<CartItem>>>() {
+        apiService.getCart(userId).enqueue(new Callback<>() {
             @Override
             public void onResponse(@NonNull Call<ApiResponse<List<CartItem>>> call,
                     @NonNull Response<ApiResponse<List<CartItem>>> response) {
@@ -103,19 +106,59 @@ public class CartRepository {
     public void addToCart(Product product, int quantity, @NonNull CartItemsCallback callback) {
         String userId = preferencesHelper.getUserId();
         if (userId == null || userId.isEmpty()) {
-            Log.w(TAG, "addToCart: User not logged in.");
-            callback.onError("User not logged in. Cannot add to cart.");
+            Log.d(TAG, "addToCart: User not logged in, using local cart");
+            if (product == null || product.getId() == null || quantity <= 0) {
+                Log.w(TAG, "addToCart: Invalid product or quantity.");
+                callback.onError("Invalid product or quantity.");
+                return;
+            }
+
+            try {
+                // Log product details before adding to cart
+                Log.d(TAG, "Product details before adding to cart: " +
+                        "ID=" + product.getId() + ", " +
+                        "Name=" + product.getName() + ", " +
+                        "Price=" + product.getPrice());
+
+                // Add to local cart
+                localCartManager.addToCart(product, quantity);
+
+                // Get updated cart and verify the item was added
+                List<CartItem> updatedCart = localCartManager.getCartItems();
+                boolean found = false;
+                for (CartItem item : updatedCart) {
+                    if (item != null && item.getProduct() != null &&
+                            product.getId().equals(item.getProduct().getId())) {
+                        found = true;
+                        Log.d(TAG, "Product verified in cart: " + item.getProduct().getName() +
+                                " with quantity " + item.getQuantity());
+                        break;
+                    }
+                }
+
+                if (!found) {
+                    Log.e(TAG, "Failed to find product in cart after adding it!");
+                }
+
+                // Return updated cart
+                callback.onCartItemsLoaded(updatedCart);
+            } catch (Exception e) {
+                Log.e(TAG, "Exception while adding to local cart", e);
+                callback.onError("Failed to add item to cart: " + e.getMessage());
+            }
             return;
         }
+
         if (product == null || product.getId() == null || quantity <= 0) {
             Log.w(TAG, "addToCart: Invalid product or quantity.");
             callback.onError("Invalid product or quantity.");
             return;
         }
-
         Log.d(TAG, "addToCart: Adding productId: " + product.getId() + " quantity: " + quantity + " for userId: "
                 + userId);
-        apiService.addToCart(userId, product.getId(), quantity).enqueue(new Callback<ApiResponse<List<CartItem>>>() {
+
+        // Use the user-specific addToCart endpoint
+        apiService.addToCart(userId, product.getId(), quantity).enqueue(new Callback<>() {
             @Override
             public void onResponse(@NonNull Call<ApiResponse<List<CartItem>>> call,
                     @NonNull Response<ApiResponse<List<CartItem>>> response) {
@@ -157,10 +200,19 @@ public class CartRepository {
     public void removeFromCart(String itemId, @NonNull CartItemsCallback callback) {
         String userId = preferencesHelper.getUserId();
         if (userId == null || userId.isEmpty()) {
-            Log.w(TAG, "removeFromCart: User not logged in.");
-            callback.onError("User not logged in. Cannot remove from cart.");
+            Log.d(TAG, "removeFromCart: User not logged in, using local cart");
+            if (itemId == null || itemId.isEmpty()) {
+                Log.w(TAG, "removeFromCart: Invalid item ID.");
+                callback.onError("Invalid item ID.");
+                return;
+            }
+
+            localCartManager.removeFromCart(itemId);
+            List<CartItem> updatedCart = localCartManager.getCartItems();
+            callback.onCartItemsLoaded(updatedCart);
             return;
         }
+
         if (itemId == null || itemId.isEmpty()) {
             Log.w(TAG, "removeFromCart: Invalid item ID.");
             callback.onError("Invalid item ID.");
@@ -211,10 +263,25 @@ public class CartRepository {
     public void updateQuantity(String itemId, int quantity, @NonNull CartItemsCallback callback) {
         String userId = preferencesHelper.getUserId();
         if (userId == null || userId.isEmpty()) {
-            Log.w(TAG, "updateQuantity: User not logged in.");
-            callback.onError("User not logged in. Cannot update cart quantity.");
+            Log.d(TAG, "updateQuantity: User not logged in, using local cart");
+            if (itemId == null || itemId.isEmpty()) {
+                Log.w(TAG, "updateQuantity: Invalid item ID.");
+                callback.onError("Invalid item ID.");
+                return;
+            }
+
+            if (quantity <= 0) {
+                Log.d(TAG, "updateQuantity: Quantity is 0 or less, removing item: " + itemId);
+                removeFromCart(itemId, callback);
+                return;
+            }
+
+            localCartManager.updateQuantity(itemId, quantity);
+            List<CartItem> updatedCart = localCartManager.getCartItems();
+            callback.onCartItemsLoaded(updatedCart);
             return;
         }
+
         if (itemId == null || itemId.isEmpty()) {
             Log.w(TAG, "updateQuantity: Invalid item ID.");
             callback.onError("Invalid item ID.");
@@ -223,7 +290,7 @@ public class CartRepository {
 
         if (quantity <= 0) {
             Log.d(TAG, "updateQuantity: Quantity is 0 or less, removing item: " + itemId);
-            removeFromCart(itemId, callback); // If quantity is 0, remove the item
+            removeFromCart(itemId, callback);
             return;
         }
 
@@ -319,16 +386,17 @@ public class CartRepository {
      *
      * @param callback Callback to handle success or error.
      */
-    public void clearCart(@NonNull CartOperationCallback callback) { // Changed to CartOperationCallback
+    public void clearCart(@NonNull CartOperationCallback callback) {
         String userId = preferencesHelper.getUserId();
         if (userId == null || userId.isEmpty()) {
-            Log.w(TAG, "clearCart: User not logged in.");
-            callback.onError("User not logged in. Cannot clear cart.");
+            Log.d(TAG, "clearCart: User not logged in, clearing local cart");
+            localCartManager.clearCart();
+            callback.onSuccess("Cart cleared successfully.");
             return;
         }
 
         Log.d(TAG, "clearCart: Clearing cart for userId: " + userId);
-        apiService.clearCart(userId).enqueue(new Callback<ApiResponse<Void>>() { // Change to ApiResponse<Void>
+        apiService.clearCart(userId).enqueue(new Callback<ApiResponse<Void>>() {
             @Override
             public void onResponse(@NonNull Call<ApiResponse<Void>> call,
                     @NonNull Response<ApiResponse<Void>> response) {
@@ -356,6 +424,82 @@ public class CartRepository {
                 callback.onError("Network error while clearing cart: " + t.getMessage());
             }
         });
+    }
+
+    /**
+     * Sync local cart with server when user logs in
+     * 
+     * @param callback Callback to handle result
+     */
+    public void syncLocalCartWithServer(@NonNull CartItemsCallback callback) {
+        String userId = preferencesHelper.getUserId();
+        if (userId == null || userId.isEmpty()) {
+            Log.w(TAG, "syncLocalCartWithServer: User not logged in.");
+            callback.onError("User not logged in. Cannot sync cart.");
+            return;
+        }
+
+        List<CartItem> localItems = localCartManager.getCartItems();
+        if (localItems.isEmpty()) {
+            Log.d(TAG, "syncLocalCartWithServer: No local items to sync");
+            getCartItems(callback);
+            return;
+        }
+
+        Log.d(TAG, "syncLocalCartWithServer: Syncing " + localItems.size() + " local items");
+        for (CartItem item : localItems) {
+            Product product = item.getProduct();
+            int quantity = item.getQuantity();
+
+            apiService.addToCart(userId, product.getId(), quantity)
+                    .enqueue(new Callback<ApiResponse<List<CartItem>>>() {
+                        @Override
+                        public void onResponse(@NonNull Call<ApiResponse<List<CartItem>>> call,
+                                @NonNull Response<ApiResponse<List<CartItem>>> response) {
+                            if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                                Log.d(TAG, "syncLocalCartWithServer: Item synced successfully");
+                            } else {
+                                Log.w(TAG, "syncLocalCartWithServer: Failed to sync item: " + product.getName());
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(@NonNull Call<ApiResponse<List<CartItem>>> call, @NonNull Throwable t) {
+                            Log.e(TAG, "syncLocalCartWithServer: Network error syncing item", t);
+                        }
+                    });
+        }
+        localCartManager.clearCart();
+
+        new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> getCartItems(callback), 2000);
+    }
+
+    /**
+     * Get cart item count for badge display
+     * 
+     * @return Number of items in cart
+     */
+    public int getCartItemCount() {
+        String userId = preferencesHelper.getUserId();
+        if (userId == null || userId.isEmpty()) {
+            return localCartManager.getCartItemCount();
+        }
+
+        return 0;
+    }
+
+    /**
+     * Get cart total for quick display
+     * 
+     * @return Total cart value
+     */
+    public double getCartTotal() {
+        String userId = preferencesHelper.getUserId();
+        if (userId == null || userId.isEmpty()) {
+            return localCartManager.getCartTotal();
+        }
+
+        return 0.0;
     }
 
     /**

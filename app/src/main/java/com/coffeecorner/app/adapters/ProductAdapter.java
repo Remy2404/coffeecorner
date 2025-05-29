@@ -1,6 +1,7 @@
 package com.coffeecorner.app.adapters;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,9 +12,9 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.bumptech.glide.Glide;
 import com.coffeecorner.app.R;
 import com.coffeecorner.app.models.Product;
+import com.coffeecorner.app.utils.ImageLoader;
 import com.google.android.material.card.MaterialCardView;
 
 import java.text.NumberFormat;
@@ -56,7 +57,7 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
     @NonNull
     @Override
     public ProductViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(context).inflate(R.layout.item_product_home, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_product_home, parent, false);
         return new ProductViewHolder(view);
     }
 
@@ -81,19 +82,30 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
         String formattedPrice = currencyFormatter.format(product.getPrice());
         holder.tvPrice.setText(formattedPrice);
 
-        // Load image using Glide
-        if (product.getImageUrl() != null && !product.getImageUrl().isEmpty()) {
-            Glide.with(context)
-                    .load(product.getImageUrl())
-                    .placeholder(R.drawable.coffee_coco)
-                    .error(R.drawable.coffee_coco)
-                    .centerCrop()
-                    .into(holder.ivProductImage);
-        } else {
-            holder.ivProductImage.setImageResource(R.drawable.coffee_coco);
-        }
+        // Log detailed product information for debugging
+        Log.d("ProductAdapter", "Product at position " + position + ": " + product.getName());
+        Log.d("ProductAdapter", "Image URL: " + product.getImageUrl());
 
-        // Set click listeners
+        // Load image using ImageLoader utility
+        ImageLoader.loadImage(
+                context,
+                product.getImageUrl(),
+                holder.ivProductImage,
+                R.drawable.coffee_coco,
+                R.drawable.coffee_coco,
+                new ImageLoader.ImageLoadListener() {
+                    @Override
+                    public void onSuccess() {
+                        Log.d("ProductAdapter", "Successfully loaded image for product: " + product.getName());
+                    }
+
+                    @Override
+                    public void onError() {
+                        // Log error but UI already shows fallback image
+                        Log.e("ProductAdapter", "Failed to load image for product: " + product.getName() + ", URL: "
+                                + product.getImageUrl());
+                    }
+                });// Set click listeners
         holder.cardView.setOnClickListener(v -> {
             if (listener != null) {
                 listener.onProductClick(product, holder.getAdapterPosition());

@@ -216,4 +216,11 @@
     <string name="ic_favorite_outline">Favorite outline</string>
     <string name="theme_switch">Theme Switch</string>
     <string name="switch_theme">Switch Theme</string>
+    
+    <!-- Address Types Array -->
+    <string-array name="address_types">
+        <item>Home</item>
+        <item>Work</item>
+        <item>Other</item>
+    </string-array>
 </resources>

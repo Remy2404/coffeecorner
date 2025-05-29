@@ -20,6 +20,7 @@ import com.coffeecorner.app.models.User;
 import com.coffeecorner.app.repositories.UserRepository;
 import com.coffeecorner.app.viewmodel.UserViewModel;
 import com.coffeecorner.app.viewmodel.ViewModelFactory;
+import com.coffeecorner.app.activities.MainActivity;
 
 public class RegisterActivity extends AppCompatActivity {
     private EditText etFullName, etEmail, etPassword, etConfirmPassword;
@@ -146,13 +147,34 @@ public class RegisterActivity extends AppCompatActivity {
             return;
         }
 
+        progressBar.setVisibility(View.VISIBLE);
+        btnRegister.setEnabled(false);
+
         mAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, task -> {
                     if (task.isSuccessful()) {
                         FirebaseUser firebaseUser = mAuth.getCurrentUser();
                         if (firebaseUser != null) {
-                            String uid = firebaseUser.getUid();
-                            userViewModel.register(fullName, email, password, "");
+                            // Update Firebase user profile with display name
+                            com.google.firebase.auth.UserProfileChangeRequest profileUpdates = new com.google.firebase.auth.UserProfileChangeRequest.Builder()
+                                    .setDisplayName(fullName)
+                                    .build();
+
+                            firebaseUser.updateProfile(profileUpdates);
+
+                            // Get Firebase ID token and register with backend
+                            firebaseUser.getIdToken(true)
+                                    .addOnCompleteListener(tokenTask -> {
+                                        if (tokenTask.isSuccessful()) {
+                                            String idToken = tokenTask.getResult().getToken();
+                                            registerWithBackend(idToken, fullName, email);
+                                        } else {
+                                            progressBar.setVisibility(View.GONE);
+                                            btnRegister.setEnabled(true);
+                                            Toast.makeText(RegisterActivity.this, "Failed to get authentication token",
+                                                    Toast.LENGTH_SHORT).show();
+                                        }
+                                    });
                         }
                     } else {
                         progressBar.setVisibility(View.GONE);
@@ -164,5 +186,40 @@ public class RegisterActivity extends AppCompatActivity {
                                 Toast.LENGTH_LONG).show();
                     }
                 });
+    }
+
+    private void registerWithBackend(String firebaseToken, String fullName, String email) {
+        userViewModel.authenticateWithFirebase(firebaseToken);
+    }
+
+    private void observeAuthenticationViewModel() {
+        // Observe authentication results
+        userViewModel.getAuthResult().observe(this, apiResponse -> {
+            progressBar.setVisibility(View.GONE);
+            btnRegister.setEnabled(true);
+
+            if (apiResponse != null) {
+                if (apiResponse.isSuccess()) {
+                    Toast.makeText(this, "Registration successful!", Toast.LENGTH_SHORT).show();
+                    // Navigate to main activity
+                    Intent intent = new Intent(RegisterActivity.this, MainActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(intent);
+                    finish();
+                } else {
+                    String errorMessage = apiResponse.getMessage() != null ? apiResponse.getMessage()
+                            : "Registration failed";
+                    Toast.makeText(this, errorMessage, Toast.LENGTH_LONG).show();
+                }
+            }
+        });
+
+        // Observe loading state
+        userViewModel.getIsLoading().observe(this, isLoading -> {
+            if (isLoading != null) {
+                progressBar.setVisibility(isLoading ? View.VISIBLE : View.GONE);
+                btnRegister.setEnabled(!isLoading);
+            }
+        });
     }
 }

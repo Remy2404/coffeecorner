@@ -9,6 +9,10 @@
         android:icon="@drawable/ic_rewards_selector" 
         android:title="Menu" />
     <item
+        android:id="@+id/cartFragment"
+        android:icon="@drawable/ic_cart_selector"
+        android:title="Cart" />
+    <item
         android:id="@+id/orderHistoryFragment"
         android:icon="@drawable/ic_orders_selector"
         android:title="Orders" />

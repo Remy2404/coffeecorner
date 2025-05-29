@@ -29,15 +29,22 @@ public class UserViewModel extends ViewModel {
      */
     public LiveData<User> getUserProfile() {
         return userRepository.getUserProfile();
-    }
-
-    /**
+    }    /**
      * Check if user is authenticated
      * 
      * @return true if user is authenticated
      */
     public boolean isAuthenticated() {
         return userRepository.isUserAuthenticated();
+    }
+
+    /**
+     * Get loading state
+     * 
+     * @return LiveData containing loading state
+     */
+    public LiveData<Boolean> getIsLoading() {
+        return isLoading;
     }
 
     /**
@@ -60,22 +67,11 @@ public class UserViewModel extends ViewModel {
                 profileUpdateResult.postValue(new ApiResponse<>(false, message, null));
             }
         });
-    }
-
-    /**
+    }    /**
      * Logout the current user
      */
     public void logout() {
         userRepository.logout();
-    }
-
-    /**
-     * Get the loading state
-     * 
-     * @return LiveData indicating if an operation is in progress
-     */
-    public LiveData<Boolean> getIsLoading() {
-        return isLoading;
     }
 
     /**
@@ -144,14 +140,44 @@ public class UserViewModel extends ViewModel {
      */
     public LiveData<String> getErrorMessage() {
         return errorMessageLiveData;
-    }
-
-    /**
+    }    /**
      * Get current user information
      * 
      * @return LiveData containing user details
      */
     public LiveData<User> getCurrentUser() {
         return userRepository.getCurrentUser();
+    }
+
+    /**
+     * Authenticate with Firebase token
+     *
+     * @param firebaseToken Firebase ID token
+     */
+    public void authenticateWithFirebase(String firebaseToken) {
+        isLoading.setValue(true);
+        userRepository.authenticateWithFirebase(firebaseToken, new UserRepository.AuthCallback() {
+            @Override
+            public void onSuccess(User user) {
+                isLoading.setValue(false);
+                // Optionally emit success via profileUpdateResult or create separate LiveData
+                profileUpdateResult.setValue(new ApiResponse<>(true, "Authentication successful", user));
+            }
+
+            @Override
+            public void onError(String errorMessage) {
+                isLoading.setValue(false);
+                profileUpdateResult.setValue(new ApiResponse<>(false, errorMessage, null));
+            }
+        });
+    }
+
+    /**
+     * Get registration/authentication result
+     * 
+     * @return LiveData containing operation result
+     */
+    public LiveData<ApiResponse<User>> getAuthResult() {
+        return profileUpdateResult;
     }
 }

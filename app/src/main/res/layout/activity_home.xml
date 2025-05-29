@@ -23,16 +23,5 @@
         app:menu="@menu/bottom_nav_menu"
         app:labelVisibilityMode="labeled"/>
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fabCart"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|center"
-        android:layout_marginBottom="40dp"
-        android:contentDescription="@string/Coffee_Coco"
-        android:src="@drawable/ic_shopping_cart"
-        app:fabSize="normal"
-        app:layout_anchor="@id/bottomNavigation"
-        app:layout_anchorGravity="top|center" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

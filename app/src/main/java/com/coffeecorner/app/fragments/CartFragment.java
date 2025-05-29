@@ -7,10 +7,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import android.widget.Toast;
+
+import com.airbnb.lottie.LottieAnimationView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -35,12 +37,11 @@ import java.util.List;
 import java.util.Locale;
 
 public class CartFragment extends Fragment implements CartAdapter.CartItemListener {
-
     private RecyclerView recyclerCartItems;
     private TextView tvSubtotal, tvTax, tvDeliveryFee, tvDiscount, tvTotal;
     private Button btnCheckout, btnBrowseMenu;
-    private LinearLayout emptyCartView;
-    private ProgressBar progressBar;
+    private ConstraintLayout emptyCartView;
+    private LottieAnimationView menuIconAnimation;
     private CartAdapter cartAdapter;
     private List<CartItem> cartItems = new ArrayList<>();
     private NumberFormat currencyFormatter = NumberFormat.getCurrencyInstance(Locale.US);
@@ -70,9 +71,19 @@ public class CartFragment extends Fragment implements CartAdapter.CartItemListen
         tvDiscount = view.findViewById(R.id.tvDiscount);
         tvTotal = view.findViewById(R.id.tvTotal);
         btnCheckout = view.findViewById(R.id.btnCheckout);
-        btnBrowseMenu = view.findViewById(R.id.btnBrowseMenu);
+
+        // Find correct views in the nested layout structure
+        ConstraintLayout btnBrowseMenuContainer = view.findViewById(R.id.btnBrowseMenuContainer);
+        if (btnBrowseMenuContainer != null) {
+            btnBrowseMenu = btnBrowseMenuContainer.findViewById(R.id.btnBrowseMenu);
+            menuIconAnimation = btnBrowseMenuContainer.findViewById(R.id.menuIconAnimation);
+        } else {
+            // Fallback to direct lookup if container not found
+            btnBrowseMenu = view.findViewById(R.id.btnBrowseMenu);
+            menuIconAnimation = view.findViewById(R.id.menuIconAnimation);
+        }
+
         emptyCartView = view.findViewById(R.id.emptyCartView);
-        progressBar = view.findViewById(R.id.progressBar);
 
         // Set up RecyclerView
         recyclerCartItems.setLayoutManager(new LinearLayoutManager(requireContext())); // Initialize ViewModel
@@ -114,7 +125,14 @@ public class CartFragment extends Fragment implements CartAdapter.CartItemListen
             if (!cartItems.isEmpty()) {
                 showClearCartConfirmation();
             }
+        }); // Add click listener for back button
+        view.findViewById(R.id.btnBackCart).setOnClickListener(v -> {
+            // Go back to previous screen
+            if (isAdded()) {
+                requireActivity().getSupportFragmentManager().popBackStack();
+            }
         });
+
     }
 
     private void loadCartItems() {
@@ -216,6 +234,11 @@ public class CartFragment extends Fragment implements CartAdapter.CartItemListen
         tvDeliveryFee.setText(currencyFormatter.format(0));
         tvDiscount.setText(currencyFormatter.format(0));
         tvTotal.setText(currencyFormatter.format(0));
+
+        // Make sure animation is playing
+        if (menuIconAnimation != null) {
+            menuIconAnimation.playAnimation();
+        }
     }
 
     private void showClearCartConfirmation() {
@@ -259,22 +282,12 @@ public class CartFragment extends Fragment implements CartAdapter.CartItemListen
             Toast.makeText(getContext(), "Error: Could not update quantity", Toast.LENGTH_SHORT).show();
         }
     } // These methods are part of the CartAdapter.CartItemListener interface
-    // implemented by the fragment and are already properly implemented above
+      // implemented by the fragment and are already properly implemented above
 
     private void observeViewModel() {
         // Observe loading state
         cartViewModel.getIsLoading().observe(getViewLifecycleOwner(), isLoading -> {
-            if (isLoading != null && isLoading) {
-                // Show loading indicator
-                if (progressBar != null) {
-                    progressBar.setVisibility(View.VISIBLE);
-                }
-            } else {
-                // Hide loading indicator
-                if (progressBar != null) {
-                    progressBar.setVisibility(View.GONE);
-                }
-            }
+            // Loading indicator logic removed - we'll use a different approach
         });
 
         // Observe error messages

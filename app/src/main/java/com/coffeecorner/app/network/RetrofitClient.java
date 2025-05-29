@@ -1,6 +1,11 @@
 package com.coffeecorner.app.network;
 
+import android.content.Context;
 import com.coffeecorner.app.utils.Constants;
+import com.coffeecorner.app.utils.CustomFieldNamingStrategy;
+import com.coffeecorner.app.utils.PreferencesHelper;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
@@ -45,21 +50,46 @@ public class RetrofitClient {
     private Retrofit createRetrofit() {
         // Create logging interceptor for debugging
         HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
-        loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
-
-        // Create OkHttpClient with timeout settings and logging
+        loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY); // Create OkHttpClient with timeout settings and
+                                                                        // logging
         OkHttpClient client = new OkHttpClient.Builder()
                 .connectTimeout(60, TimeUnit.SECONDS)
                 .readTimeout(60, TimeUnit.SECONDS)
                 .writeTimeout(60, TimeUnit.SECONDS)
-                .addInterceptor(loggingInterceptor)
-                .build();
+                .addInterceptor(loggingInterceptor).addInterceptor(chain -> {
+                    okhttp3.Request original = chain.request();
 
-        // Create Retrofit instance
+                    // Build new request with authorization header
+                    okhttp3.Request.Builder builder = original.newBuilder()
+                            .method(original.method(), original.body());
+
+                    // Add Accept header for JSON
+                    builder.header("Accept", "application/json");
+                    // Get auth token from preferences if available
+                    Context appContext = com.coffeecorner.app.CoffeeCornerApplication.getInstance()
+                            .getApplicationContext();
+                    PreferencesHelper preferencesHelper = new PreferencesHelper(appContext);
+                    String token = preferencesHelper.getAuthToken();
+
+                    // Add Authorization header if token exists
+                    if (token != null && !token.isEmpty()) {
+                        builder.header("Authorization", "Bearer " + token);
+                    }
+
+                    return chain.proceed(builder.build());
+                })
+                .build(); // Create a custom Gson instance with proper field naming strategy
+        // We'll use LOWER_CASE_WITH_UNDERSCORES directly instead of our custom strategy
+        // since we now have SerializedName annotations in model classes
+        Gson gson = new GsonBuilder()
+                .setFieldNamingPolicy(com.google.gson.FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
+                .create();
+
+        // Create Retrofit instance with custom Gson
         return new Retrofit.Builder()
                 .baseUrl(Constants.API_BASE_URL)
                 .client(client)
-                .addConverterFactory(GsonConverterFactory.create())
+                .addConverterFactory(GsonConverterFactory.create(gson))
                 .build();
     }
 
@@ -73,5 +103,14 @@ public class RetrofitClient {
             getInstance(); // Initialize if needed
         }
         return retrofit.create(ApiService.class);
+    }
+
+    /**
+     * Get API service interface (alias method)
+     * 
+     * @return ApiService instance
+     */
+    public static ApiService getApi() {
+        return getApiService();
     }
 }
