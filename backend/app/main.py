@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
-from app.routers import auth, products, cart, orders, favorites, debug
+from app.routers import auth, products, cart, orders, favorites, debug, user
 from app.services.product_service import ProductService
 import logging
 import uvicorn
@@ -32,6 +32,7 @@ app.include_router(cart.router)
 app.include_router(orders.router)
 app.include_router(favorites.router)
 app.include_router(debug.router)
+app.include_router(user.router)
 
 
 @app.on_event("startup")

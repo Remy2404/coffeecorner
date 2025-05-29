@@ -18,7 +18,41 @@
 
 - `backend/app/database/supabase.py`
 
-### 2. ✅ Port Binding Issue
+### 2. ✅ Profile Update Not Being Saved
+
+**Problem**: Profile updates in the app weren't being saved to the database
+
+**Root Cause**: The `/profile` endpoint in `auth.py` returned success but didn't actually update the data in Supabase
+
+**Solution**:
+
+- Implemented proper profile update logic in the `/profile` endpoint
+- Added error handling for database operations
+- Created data validation to only update non-null fields
+
+**Files Changed**:
+
+- `backend/app/routers/auth.py`
+
+### 3. ✅ Cart Functionality - 500 Internal Server Error
+
+**Problem**: Adding items to cart resulted in 500 Internal Server Error with message "Failed to add item to cart"
+
+**Root Cause**: Backend was using the default Supabase client without the user's JWT token, causing Row Level Security (RLS) policy checks to fail
+
+**Solution**:
+
+- Added a new `get_authenticated_client` method to `CartService` that properly uses the user's JWT token
+- Updated all cart operations (add, update, remove, clear) to use the authenticated client
+- Modified cart router endpoints to pass the JWT token to service methods
+- Confirmed RLS policies are correctly configured for the `cart_items` table
+
+**Files Changed**:
+
+- `backend/app/services/cart_service.py`
+- `backend/app/routers/cart.py`
+
+### 4. ✅ Port Binding Issue
 
 **Problem**: Server running on `127.0.0.1:8000` instead of `0.0.0.0:8000`
 

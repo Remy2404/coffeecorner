@@ -1,3 +1,8 @@
+"""
+This is a fixed version of the cart service that properly handles authentication.
+Replace the existing cart_service.py with this file to resolve the cart issues.
+"""
+
 from typing import List
 from fastapi import HTTPException, status
 from app.database.supabase import supabase, create_client
@@ -20,10 +25,8 @@ class CartService:
         try:
             if access_token:
                 # Create a new client with the user's JWT token
-                client = create_client(
-                    settings.supabase_url, settings.supabase_anon_key
-                )
-
+                client = create_client(settings.supabase_url, settings.supabase_anon_key)
+                
                 # Set the auth token for the client
                 client.auth.set_auth(access_token)
                 logger.info("Created authenticated Supabase client with user token")
@@ -34,14 +37,15 @@ class CartService:
                 return supabase
         except Exception as e:
             logger.error(f"Error creating authenticated client: {e}")
-            return supabase @ staticmethod
+            return supabase
 
+    @staticmethod
     async def get_user_cart(user_id: str, access_token=None) -> List[CartItemResponse]:
         """Get all items in user's cart"""
         try:
             # Get authenticated client
             client = await CartService.get_authenticated_client(access_token)
-
+            
             # Get cart items with product details
             result = (
                 client.table("cart_items")
@@ -66,16 +70,15 @@ class CartService:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to fetch cart",
-            ) @ staticmethod
+            )
 
-    async def add_to_cart(
-        user_id: str, cart_item: CartItemAdd, access_token=None
-    ) -> CartItemResponse:
+    @staticmethod
+    async def add_to_cart(user_id: str, cart_item: CartItemAdd, access_token=None) -> CartItemResponse:
         """Add item to cart or update quantity if exists"""
         try:
             # Get authenticated client - THIS IS THE KEY FIX
             client = await CartService.get_authenticated_client(access_token)
-
+            
             # Check if item already exists in cart
             existing = (
                 client.table("cart_items")
@@ -85,7 +88,8 @@ class CartService:
                 .execute()
             )
 
-            if existing.data:  # Update existing item quantity
+            if existing.data:
+                # Update existing item quantity
                 new_quantity = existing.data[0]["quantity"] + cart_item.quantity
                 result = (
                     client.table("cart_items")
@@ -129,8 +133,9 @@ class CartService:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to add item to cart",
-            ) @ staticmethod
+            )
 
+    @staticmethod
     async def update_cart_item(
         user_id: str, item_id: str, update_data: CartItemUpdate, access_token=None
     ) -> CartItemResponse:
@@ -138,7 +143,7 @@ class CartService:
         try:
             # Get authenticated client
             client = await CartService.get_authenticated_client(access_token)
-
+            
             # Verify item belongs to user
             existing = (
                 client.table("cart_items")
@@ -151,7 +156,9 @@ class CartService:
             if not existing.data:
                 raise HTTPException(
                     status_code=status.HTTP_404_NOT_FOUND, detail="Cart item not found"
-                )  # Update quantity
+                )
+
+            # Update quantity
             result = (
                 client.table("cart_items")
                 .update({"quantity": update_data.quantity})
@@ -184,14 +191,15 @@ class CartService:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to update cart item",
-            ) @ staticmethod
+            )
 
+    @staticmethod
     async def remove_from_cart(user_id: str, item_id: str, access_token=None) -> bool:
         """Remove item from cart"""
         try:
             # Get authenticated client
             client = await CartService.get_authenticated_client(access_token)
-
+            
             # Verify item belongs to user and delete
             result = (
                 client.table("cart_items")
@@ -208,14 +216,15 @@ class CartService:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to remove item from cart",
-            ) @ staticmethod
+            )
 
+    @staticmethod
     async def clear_cart(user_id: str, access_token=None) -> bool:
         """Clear all items from user's cart"""
         try:
             # Get authenticated client
             client = await CartService.get_authenticated_client(access_token)
-
+            
             client.table("cart_items").delete().eq("user_id", user_id).execute()
             return True
 
@@ -224,8 +233,9 @@ class CartService:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to clear cart",
-            ) @ staticmethod
+            )
 
+    @staticmethod
     async def get_cart_total(user_id: str, access_token=None) -> float:
         """Calculate total price of items in cart"""
         try:

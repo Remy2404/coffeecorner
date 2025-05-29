@@ -15,7 +15,7 @@ class SupabaseClient:
                 raise ValueError("Supabase URL and ANON KEY must be provided")
 
             try:
-                # Initialize with basic configuration - no proxy parameter
+                # Initialize with only supported arguments (no proxy)
                 cls._instance = create_client(
                     settings.supabase_url, settings.supabase_anon_key
                 )
@@ -67,7 +67,7 @@ try:
     logger.info(f"SUPABASE_ANON_KEY length: {len(anon_key) if anon_key else 0}")
 
     if url and anon_key:
-        # Create client with anon key - simplified approach
+        # Create client with anon key - no proxy argument
         supabase = create_client(url, anon_key)
         logger.info("Successfully created Supabase client with anon key")
     else:

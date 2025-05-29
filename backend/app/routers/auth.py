@@ -11,6 +11,8 @@ from app.models.schemas import (
 from app.services.auth_service import AuthService
 import logging
 
+from app.database.supabase import supabase
+
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
@@ -30,7 +32,17 @@ async def register(
 ):
     """Register a new user"""
     user_data = UserCreate(name=name, email=email, password=password)
-    return await AuthService.register_user(user_data)
+    auth_response = await AuthService.register_user(user_data)
+    # Automatically create user profile in Supabase after registration
+    if auth_response and auth_response.user:
+        supabase.table("profiles").insert(
+            {
+                "id": auth_response.user.id,
+                "email": auth_response.user.email,
+                "full_name": name,
+            }
+        ).execute()
+    return auth_response
 
 
 @router.post("/login", response_model=AuthResponse)
@@ -74,7 +86,37 @@ async def update_profile(
     user_update: UserUpdate, current_user: UserResponse = Depends(get_current_user)
 ):
     """Update user profile"""
-    # Implementation would go here - update user in Supabase
-    return ApiResponse(
-        success=True, message="Profile updated successfully", data=current_user
-    )
+    try:
+        # Create a dictionary with only the fields that are provided (not None)
+        update_data = {k: v for k, v in user_update.dict().items() if v is not None}
+        
+        if not update_data:
+            return ApiResponse(
+                success=True, message="No profile data to update", data=current_user
+            )
+        
+        # Update the user profile in Supabase
+        result = supabase.table("profiles").update(update_data).eq("id", current_user.id).execute()
+        
+        if not result.data:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, 
+                detail="User profile not found"
+            )
+            
+        updated_profile = result.data[0]
+        return ApiResponse(
+            success=True, message="Profile updated successfully", data=updated_profile
+        )
+    except Exception as e:
+        logger.error(f"Error updating profile: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to update profile: {str(e)}"
+        )
+
+
+def create_user_profile(user_id: str, email: str, full_name: str):
+    supabase.table("profiles").insert(
+        {"id": user_id, "email": email, "full_name": full_name}
+    ).execute()

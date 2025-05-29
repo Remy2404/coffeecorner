@@ -1,9 +1,3 @@
-#!/usr/bin/env python3
-"""
-Production startup script for Coffee Shop API
-This script is optimized for deployment platforms like Render, Heroku, etc.
-"""
-
 import os
 import uvicorn
 import logging
