@@ -32,8 +32,6 @@ public class PreferencesHelper {
     private static final String KEY_SELECTED_LOCATION = "selected_location";
     private static final String KEY_LOYALTY_POINTS = "loyalty_points";
     private static final String KEY_PROMO_CODE = "promo_code";
-    private static final String KEY_USER_GENDER = "user_gender";
-    private static final String KEY_USER_DATE_OF_BIRTH = "user_date_of_birth";
 
     private final SharedPreferences sharedPreferences;
 
@@ -240,48 +238,21 @@ public class PreferencesHelper {
     }
 
     /**
-     * Get user gender
+     * Get user tier level
      * 
-     * @return User gender
+     * @return Tier level (1: Bronze, 2: Silver, 3: Gold, 4: Platinum)
      */
-    public String getUserGender() {
-        return sharedPreferences.getString(KEY_USER_GENDER, null);
+    public int getUserTier() {
+        return sharedPreferences.getInt(KEY_USER_TIER, 1);
     }
 
     /**
-     * Save user gender
+     * Save user tier level
      * 
-     * @param gender User gender
+     * @param tier Tier level
      */
-    public void saveUserGender(String gender) {
-        sharedPreferences.edit().putString(KEY_USER_GENDER, gender).apply();
-    }
-
-    /**
-     * Get user date of birth
-     * 
-     * @return User date of birth
-     */
-    public String getUserDateOfBirth() {
-        return sharedPreferences.getString(KEY_USER_DATE_OF_BIRTH, null);
-    }
-
-    /**
-     * Save user date of birth
-     * 
-     * @param dateOfBirth User date of birth
-     */
-    public void saveUserDateOfBirth(String dateOfBirth) {
-        sharedPreferences.edit().putString(KEY_USER_DATE_OF_BIRTH, dateOfBirth).apply();
-    }
-
-    /**
-     * Save user photo (alias for saveUserProfilePic)
-     * 
-     * @param photoUrl User photo URL
-     */
-    public void saveUserPhoto(String photoUrl) {
-        saveUserProfilePic(photoUrl);
+    public void saveUserTier(int tier) {
+        sharedPreferences.edit().putInt(KEY_USER_TIER, tier).apply();
     }
 
     /**
@@ -417,9 +388,7 @@ public class PreferencesHelper {
      */
     public void setOnboardingCompleted(boolean completed) {
         sharedPreferences.edit().putBoolean(KEY_ONBOARDING_COMPLETED, completed).apply();
-    }
-
-    /**
+    }    /**
      * Clear all preferences
      */
     public void clearAll() {
@@ -431,7 +400,9 @@ public class PreferencesHelper {
      */
     public void clear() {
         clearAll();
-    }    public void clearUserData() {
+    }
+
+    public void clearUserData() {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.remove(KEY_USER_ID);
         editor.remove(KEY_USER_NAME);
@@ -442,8 +413,6 @@ public class PreferencesHelper {
         editor.remove(KEY_USER_TIER);
         editor.remove(KEY_IS_LOGGED_IN);
         editor.remove(KEY_AUTH_TOKEN);
-        editor.remove(KEY_USER_GENDER);
-        editor.remove(KEY_USER_DATE_OF_BIRTH);
         editor.apply();
     }
 

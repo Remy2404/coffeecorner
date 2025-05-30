@@ -10,7 +10,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -59,16 +58,14 @@ public class EditProfileFragment extends Fragment {
     private CircleImageView imgProfile;
     private TextInputEditText etFullName, etEmail, etPhone, etDateOfBirth;
     private RadioGroup radioGroupGender;
-    private ProgressBar progressBar; // State
-    private User currentUser;
+    private ProgressBar progressBar; // State    private User currentUser;
     private PreferencesHelper preferencesHelper;
     private UserRepository userRepository;
-    private UserProfileManager userProfileManager;
     private Uri selectedImageUri;
-    private boolean isImageChanged = false;
+    private boolean isImageChanged = false; // Activity result launchers - initialized in onViewCreated to avoid
+                                            // this-escape warnings
     private ActivityResultLauncher<Intent> galleryLauncher;
     private ActivityResultLauncher<Intent> cameraLauncher;
-    private UserProfileManager userProfileManager;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -82,7 +79,6 @@ public class EditProfileFragment extends Fragment {
         // Initialize dependencies
         preferencesHelper = new PreferencesHelper(requireContext());
         userRepository = UserRepository.getInstance(requireContext());
-        userProfileManager = new UserProfileManager(requireContext());
 
         if (userProfileManager == null) {
             userProfileManager = new UserProfileManager(requireContext());
@@ -124,31 +120,21 @@ public class EditProfileFragment extends Fragment {
     private void loadUserData() {
         progressBar.setVisibility(View.VISIBLE);
 
-        // Use UserProfileManager to fetch data with server-first strategy and local
-        // fallback
-        userProfileManager.fetchWithFallback(new UserProfileManager.ProfileDataCallback() {
-            @Override
-            public void onSuccess(User user) {
-                requireActivity().runOnUiThread(() -> {
-                    currentUser = user;
-                    populateUserData();
-                    progressBar.setVisibility(View.GONE);
-                    Log.d("EditProfileFragment", "Profile loaded successfully");
-                });
-            }
+        // Load user data from preferences using UserRepository
+        currentUser = userRepository.loadUserFromPreferences();
 
-            @Override
-            public void onError(String errorMessage) {
-                requireActivity().runOnUiThread(() -> {
-                    Log.w("EditProfileFragment", "Profile fetch failed: " + errorMessage);
-                    // Create default user as last resort
-                    currentUser = createDefaultUser();
-                    populateUserData();
-                    progressBar.setVisibility(View.GONE);
-                });
-            }
-        });
-    }    private User createDefaultUser() {
+        if (currentUser != null && currentUser.getId() != null && !currentUser.getId().isEmpty()) {
+            populateUserData();
+        } else {
+            // Create default user if no data exists
+            currentUser = createDefaultUser();
+            populateUserData();
+        }
+
+        progressBar.setVisibility(View.GONE);
+    }
+
+    private User createDefaultUser() {
         String userId = preferencesHelper.getUserId();
         if (userId == null || userId.isEmpty()) {
             userId = "temp_user_" + System.currentTimeMillis();
@@ -159,10 +145,9 @@ public class EditProfileFragment extends Fragment {
         user.setFullName(preferencesHelper.getUserName() != null ? preferencesHelper.getUserName() : "");
         user.setEmail(preferencesHelper.getUserEmail() != null ? preferencesHelper.getUserEmail() : "");
         user.setPhone(preferencesHelper.getUserPhone() != null ? preferencesHelper.getUserPhone() : "");
-        user.setGender(preferencesHelper.getUserGender() != null ? preferencesHelper.getUserGender() : "other");
-        user.setPhotoUrl(preferencesHelper.getUserProfilePic() != null ? preferencesHelper.getUserProfilePic() : "");
-        user.setDateOfBirth(
-                preferencesHelper.getUserDateOfBirth() != null ? preferencesHelper.getUserDateOfBirth() : "");
+        user.setGender("other");
+        user.setPhotoUrl("");
+        user.setDateOfBirth("");
 
         return user;
     }
@@ -410,9 +395,14 @@ public class EditProfileFragment extends Fragment {
             ByteArrayOutputStream stream = new ByteArrayOutputStream();
             bitmap.compress(Bitmap.CompressFormat.JPEG, 90, stream);
             byte[] imageData = stream.toByteArray();
+
             String fileName = "profile_" + UUID.randomUUID() + ".jpg";
 
-            String imageUrl = uploadImageToStorage(imageData, fileName);
+            // TODO: Implement actual image upload to Supabase storage
+            // For now, use a placeholder URL
+            String imageUrl = "temp_image_url_" + System.currentTimeMillis();
+
+            // Update user data with temporary image URL
             updateUserData(fullName, email, phone, dateOfBirth, gender, imageUrl);
 
         } catch (IOException e) {
@@ -464,31 +454,8 @@ public class EditProfileFragment extends Fragment {
     }
 
     private void showChangePasswordDialog() {
-        BottomSheetDialog dialog = new BottomSheetDialog(requireContext());
-        View view = LayoutInflater.from(requireContext())
-                .inflate(R.layout.dialog_change_password, (ViewGroup) requireView(), false);
-
-        TextInputEditText etCurrentPassword = view.findViewById(R.id.etCurrentPassword);
-        TextInputEditText etNewPassword = view.findViewById(R.id.etNewPassword);
-        TextInputEditText etConfirmPassword = view.findViewById(R.id.etConfirmPassword);
-        Button btnChangePassword = view.findViewById(R.id.btnChangePassword);
-        Button btnCancel = view.findViewById(R.id.btnCancel);
-
-        btnCancel.setOnClickListener(v -> dialog.dismiss());
-
-        btnChangePassword.setOnClickListener(v -> {
-            String currentPassword = Objects.requireNonNull(etCurrentPassword.getText()).toString().trim();
-            String newPassword = Objects.requireNonNull(etNewPassword.getText()).toString().trim();
-            String confirmPassword = Objects.requireNonNull(etConfirmPassword.getText()).toString().trim();
-
-            if (validatePasswordChange(currentPassword, newPassword, confirmPassword)) {
-                changePassword(currentPassword, newPassword);
-                dialog.dismiss();
-            }
-        });
-
-        dialog.setContentView(view);
-        dialog.show();
+        // Implement password change logic
+        Toast.makeText(requireContext(), "Password change feature coming soon", Toast.LENGTH_SHORT).show();
     }
 
     private void navigateBack() {
@@ -501,64 +468,6 @@ public class EditProfileFragment extends Fragment {
 
     private void showSuccess(String message) {
         Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
-    }
-
-    private String uploadImageToStorage(byte[] imageData, String fileName) {
-        try {
-            String baseUrl = "https://dqjyxspgrcvfcevevtjh.supabase.co/storage/v1/object/public/profile-images/";
-            String imageUrl = baseUrl + fileName;
-
-            return imageUrl;
-        } catch (Exception e) {
-            Log.e("EditProfileFragment", "Error uploading image", e);
-            return "temp_image_url_" + System.currentTimeMillis();
-        }
-    }
-
-    private boolean validatePasswordChange(String currentPassword, String newPassword, String confirmPassword) {
-        if (TextUtils.isEmpty(currentPassword)) {
-            showError("Current password is required");
-            return false;
-        }
-
-        if (TextUtils.isEmpty(newPassword)) {
-            showError("New password is required");
-            return false;
-        }
-
-        if (newPassword.length() < 6) {
-            showError("Password must be at least 6 characters");
-            return false;
-        }
-
-        if (!newPassword.equals(confirmPassword)) {
-            showError("Passwords do not match");
-            return false;
-        }
-
-        return true;
-    }
-
-    private void changePassword(String currentPassword, String newPassword) {
-        progressBar.setVisibility(View.VISIBLE);
-
-        userRepository.changePassword(currentPassword, newPassword, new UserRepository.PasswordChangeCallback() {
-            @Override
-            public void onSuccess() {
-                requireActivity().runOnUiThread(() -> {
-                    progressBar.setVisibility(View.GONE);
-                    showSuccess("Password changed successfully");
-                });
-            }
-
-            @Override
-            public void onError(String errorMessage) {
-                requireActivity().runOnUiThread(() -> {
-                    progressBar.setVisibility(View.GONE);
-                    showError("Password change failed: " + errorMessage);
-                });
-            }
-        });
     }
 
     /**
