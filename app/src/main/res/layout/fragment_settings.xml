@@ -42,50 +42,63 @@
                 android:textStyle="bold" />
 
         </androidx.appcompat.widget.Toolbar>
-    </com.google.android.material.appbar.AppBarLayout>
-
-    <androidx.core.widget.NestedScrollView
+    </com.google.android.material.appbar.AppBarLayout>    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior">
-
-        <LinearLayout
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingTop="8dp"
-            android:paddingBottom="16dp">
-
-            <!-- Account Section -->
+            android:paddingTop="24dp"
+            android:paddingBottom="32dp"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"><!-- Account Section -->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:paddingStart="16dp"
-                android:paddingEnd="16dp"
-                android:paddingTop="16dp"
-                android:paddingBottom="8dp"
+                android:paddingTop="8dp"
+                android:paddingBottom="12dp"
+                android:paddingStart="4dp"
+                android:paddingEnd="4dp"
                 android:text="Account"
                 android:textColor="?attr/colorPrimary"
-                android:textSize="14sp"
-                android:textStyle="bold" />
-
-            <RelativeLayout
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.05" />            <RelativeLayout
                 android:id="@+id/layoutEditProfile"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="?attr/colorSurface"
                 android:clickable="true"
                 android:focusable="true"
-                android:padding="16dp"
-                android:minHeight="64dp">
+                android:foreground="?attr/selectableItemBackground"
+                android:padding="20dp"
+                android:minHeight="64dp"
+                android:layout_marginBottom="2dp"
+                android:elevation="1dp">
 
-                <TextView
+                <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
-                    android:text="Edit Profile"
-                    android:textColor="?attr/colorOnSurface"
-                    android:textSize="16sp" />
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Edit Profile"
+                        android:textColor="?attr/colorOnSurface"
+                        android:textSize="16sp"
+                        android:textStyle="normal" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Update your personal information"
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        android:textSize="13sp"
+                        android:layout_marginTop="2dp" />
+                </LinearLayout>
 
                 <ImageView
                     android:layout_width="24dp"
@@ -93,42 +106,53 @@
                     android:layout_alignParentEnd="true"
                     android:layout_centerVertical="true"
                     android:src="@drawable/ic_chevron_right"
-                    app:tint="?attr/colorOnSurface" />
-            </RelativeLayout>
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:background="@color/color_divider" />
-
-            <!-- App Settings Section -->
+                    app:tint="?attr/colorOnSurfaceVariant" />
+            </RelativeLayout><!-- App Settings Section -->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:paddingStart="16dp"
-                android:paddingEnd="16dp"
-                android:paddingTop="16dp"
-                android:paddingBottom="8dp"
+                android:paddingTop="24dp"
+                android:paddingBottom="12dp"
+                android:paddingStart="4dp"
+                android:paddingEnd="4dp"
                 android:text="App Settings"
                 android:textColor="?attr/colorPrimary"
-                android:textSize="14sp"
-                android:textStyle="bold" />
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.05" />
 
             <RelativeLayout
                 android:id="@+id/layoutNotifications"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="?attr/colorSurface"
-                android:padding="16dp"
-                android:minHeight="64dp">
+                android:padding="20dp"
+                android:minHeight="64dp"
+                android:layout_marginBottom="2dp"
+                android:elevation="1dp">
 
-                <TextView
+                <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
-                    android:text="Notifications"
-                    android:textColor="?attr/colorOnSurface"
-                    android:textSize="16sp" />
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Notifications"
+                        android:textColor="?attr/colorOnSurface"
+                        android:textSize="16sp"
+                        android:textStyle="normal" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Receive push notifications"
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        android:textSize="13sp"
+                        android:layout_marginTop="2dp" />
+                </LinearLayout>
 
                 <com.google.android.material.switchmaterial.SwitchMaterial
                     android:id="@+id/switchNotifications"
@@ -138,26 +162,38 @@
                     android:layout_centerVertical="true" />
             </RelativeLayout>
 
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:background="@color/color_divider" />
-
             <RelativeLayout
                 android:id="@+id/layoutDarkMode"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="?attr/colorSurface"
-                android:padding="16dp"
-                android:minHeight="64dp">
+                android:padding="20dp"
+                android:minHeight="64dp"
+                android:layout_marginBottom="2dp"
+                android:elevation="1dp">
 
-                <TextView
+                <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
-                    android:text="Dark Mode"
-                    android:textColor="?attr/colorOnSurface"
-                    android:textSize="16sp" />
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Dark Mode"
+                        android:textColor="?attr/colorOnSurface"
+                        android:textSize="16sp"
+                        android:textStyle="normal" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Enable dark theme"
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        android:textSize="13sp"
+                        android:layout_marginTop="2dp" />
+                </LinearLayout>
 
                 <com.google.android.material.switchmaterial.SwitchMaterial
                     android:id="@+id/switchDarkMode"
@@ -166,10 +202,6 @@
                     android:layout_alignParentEnd="true"
                     android:layout_centerVertical="true" />
             </RelativeLayout>
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:background="@color/color_divider" />
 
             <RelativeLayout
                 android:id="@+id/layoutPaymentMethods"
@@ -178,16 +210,34 @@
                 android:background="?attr/colorSurface"
                 android:clickable="true"
                 android:focusable="true"
-                android:padding="16dp"
-                android:minHeight="64dp">
+                android:foreground="?attr/selectableItemBackground"
+                android:padding="20dp"
+                android:minHeight="64dp"
+                android:layout_marginBottom="2dp"
+                android:elevation="1dp">
 
-                <TextView
+                <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
-                    android:text="Payment Methods"
-                    android:textColor="?attr/colorOnSurface"
-                    android:textSize="16sp" />
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Payment Methods"
+                        android:textColor="?attr/colorOnSurface"
+                        android:textSize="16sp"
+                        android:textStyle="normal" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Manage your payment options"
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        android:textSize="13sp"
+                        android:layout_marginTop="2dp" />
+                </LinearLayout>
 
                 <ImageView
                     android:layout_width="24dp"
@@ -195,89 +245,19 @@
                     android:layout_alignParentEnd="true"
                     android:layout_centerVertical="true"
                     android:src="@drawable/ic_chevron_right"
-                    app:tint="?attr/colorOnSurface" />
-            </RelativeLayout>
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:background="@color/color_divider" />
-
-            <!-- Legal Section -->
+                    app:tint="?attr/colorOnSurfaceVariant" />
+            </RelativeLayout>            <!-- Legal & Support Section -->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:paddingStart="16dp"
-                android:paddingEnd="16dp"
-                android:paddingTop="16dp"
-                android:paddingBottom="8dp"
-                android:text="Other"
+                android:paddingTop="24dp"
+                android:paddingBottom="12dp"                android:paddingStart="4dp"
+                android:paddingEnd="4dp"
+                android:text="Support &amp; Legal"
                 android:textColor="?attr/colorPrimary"
-                android:textSize="14sp"
-                android:textStyle="bold" />
-
-            <RelativeLayout
-                android:id="@+id/layoutPrivacyPolicy"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="?attr/colorSurface"
-                android:clickable="true"
-                android:focusable="true"
-                android:padding="16dp"
-                android:minHeight="64dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_centerVertical="true"
-                    android:text="Privacy Policy"
-                    android:textColor="?attr/colorOnSurface"
-                    android:textSize="16sp" />
-
-                <ImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:layout_alignParentEnd="true"
-                    android:layout_centerVertical="true"
-                    android:src="@drawable/ic_chevron_right"
-                    app:tint="?attr/colorOnSurface" />
-            </RelativeLayout>
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:background="@color/color_divider" />
-
-            <RelativeLayout
-                android:id="@+id/layoutTermsConditions"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="?attr/colorSurface"
-                android:clickable="true"
-                android:focusable="true"
-                android:padding="16dp"
-                android:minHeight="64dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_centerVertical="true"
-                    android:text="Terms &amp; Conditions"
-                    android:textColor="?attr/colorOnSurface"
-                    android:textSize="16sp" />
-
-                <ImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:layout_alignParentEnd="true"
-                    android:layout_centerVertical="true"
-                    android:src="@drawable/ic_chevron_right"
-                    app:tint="?attr/colorOnSurface" />
-            </RelativeLayout>
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:background="@color/color_divider" />
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.05" />
 
             <RelativeLayout
                 android:id="@+id/layoutAboutUs"
@@ -286,16 +266,34 @@
                 android:background="?attr/colorSurface"
                 android:clickable="true"
                 android:focusable="true"
-                android:padding="16dp"
-                android:minHeight="64dp">
+                android:foreground="?attr/selectableItemBackground"
+                android:padding="20dp"
+                android:minHeight="64dp"
+                android:layout_marginBottom="2dp"
+                android:elevation="1dp">
 
-                <TextView
+                <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
-                    android:text="About Us"
-                    android:textColor="?attr/colorOnSurface"
-                    android:textSize="16sp" />
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="About Us"
+                        android:textColor="?attr/colorOnSurface"
+                        android:textSize="16sp"
+                        android:textStyle="normal" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Learn more about Coffee Corner"
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        android:textSize="13sp"
+                        android:layout_marginTop="2dp" />
+                </LinearLayout>
 
                 <ImageView
                     android:layout_width="24dp"
@@ -303,34 +301,126 @@
                     android:layout_alignParentEnd="true"
                     android:layout_centerVertical="true"
                     android:src="@drawable/ic_chevron_right"
-                    app:tint="?attr/colorOnSurface" />
+                    app:tint="?attr/colorOnSurfaceVariant" />
             </RelativeLayout>
 
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:background="@color/color_divider" />
-
-            <!-- Logout Button -->
-            <Button
-                android:id="@+id/btnLogout"
-                style="@style/Widget.MaterialComponents.Button.TextButton"
+            <RelativeLayout
+                android:id="@+id/layoutPrivacyPolicy"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
+                android:background="?attr/colorSurface"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
+                android:padding="20dp"
+                android:minHeight="64dp"
+                android:layout_marginBottom="2dp"
+                android:elevation="1dp">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Privacy Policy"
+                        android:textColor="?attr/colorOnSurface"
+                        android:textSize="16sp"
+                        android:textStyle="normal" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="How we protect your data"
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        android:textSize="13sp"
+                        android:layout_marginTop="2dp" />
+                </LinearLayout>
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:src="@drawable/ic_chevron_right"
+                    app:tint="?attr/colorOnSurfaceVariant" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/layoutTermsConditions"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="?attr/colorSurface"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
+                android:padding="20dp"
+                android:minHeight="64dp"
+                android:layout_marginBottom="2dp"
+                android:elevation="1dp">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Terms &amp; Conditions"
+                        android:textColor="?attr/colorOnSurface"
+                        android:textSize="16sp"
+                        android:textStyle="normal" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="App usage terms and conditions"
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        android:textSize="13sp"
+                        android:layout_marginTop="2dp" />
+                </LinearLayout>
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:src="@drawable/ic_chevron_right"
+                    app:tint="?attr/colorOnSurfaceVariant" />
+            </RelativeLayout>            <!-- Logout Button -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
                 android:layout_marginTop="32dp"
-                android:layout_marginEnd="16dp"
                 android:layout_marginBottom="16dp"
-                android:padding="12dp"
-                android:text="Logout"
-                android:textColor="?attr/colorError"
-                android:textSize="16sp"
-                app:backgroundTint="?attr/colorSurface"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="0dp"
                 app:strokeColor="?attr/colorError"
                 app:strokeWidth="1dp"
-                app:icon="@drawable/ic_logout"
-                app:iconTint="?attr/colorError"
-                app:iconGravity="textStart"/>
+                app:cardBackgroundColor="@android:color/transparent">
+
+                <Button
+                    android:id="@+id/btnLogout"
+                    style="@style/Widget.MaterialComponents.Button.TextButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="16dp"
+                    android:text="Logout"
+                    android:textColor="?attr/colorError"
+                    android:textSize="16sp"
+                    android:textStyle="normal"
+                    app:backgroundTint="@android:color/transparent"
+                    app:icon="@drawable/ic_logout"
+                    app:iconTint="?attr/colorError"
+                    app:iconGravity="textStart"
+                    app:iconPadding="8dp"
+                    android:letterSpacing="0.02" />
+            </com.google.android.material.card.MaterialCardView>
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>

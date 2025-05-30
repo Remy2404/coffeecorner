@@ -11,9 +11,10 @@ public class PreferencesHelper {
     private static final String PREF_NAME = "CoffeeCornerPrefs"; // Preference keys
     private static final String KEY_USER_ID = "user_id";
     private static final String KEY_USER_NAME = "user_name";
-    private static final String KEY_USER_EMAIL = "user_email";
-    private static final String KEY_USER_PHONE = "user_phone";
+    private static final String KEY_USER_EMAIL = "user_email";    private static final String KEY_USER_PHONE = "user_phone";
     private static final String KEY_USER_PROFILE_PIC = "user_profile_pic";
+    private static final String KEY_USER_GENDER = "user_gender";
+    private static final String KEY_USER_DATE_OF_BIRTH = "user_date_of_birth";
     private static final String KEY_USER_POINTS = "user_points";
     private static final String KEY_USER_TIER = "user_tier";
     private static final String KEY_IS_LOGGED_IN = "is_logged_in";
@@ -155,15 +156,49 @@ public class PreferencesHelper {
      */
     public String getUserPhone() {
         return sharedPreferences.getString(KEY_USER_PHONE, null);
-    }
-
-    /**
+    }    /**
      * Save user phone
      * 
      * @param phone User phone number
      */
     public void saveUserPhone(String phone) {
         sharedPreferences.edit().putString(KEY_USER_PHONE, phone).apply();
+    }
+
+    /**
+     * Get user gender
+     * 
+     * @return User gender
+     */
+    public String getUserGender() {
+        return sharedPreferences.getString(KEY_USER_GENDER, null);
+    }
+
+    /**
+     * Save user gender
+     * 
+     * @param gender User gender
+     */
+    public void saveUserGender(String gender) {
+        sharedPreferences.edit().putString(KEY_USER_GENDER, gender).apply();
+    }
+
+    /**
+     * Get user date of birth
+     * 
+     * @return User date of birth
+     */
+    public String getUserDateOfBirth() {
+        return sharedPreferences.getString(KEY_USER_DATE_OF_BIRTH, null);
+    }
+
+    /**
+     * Save user date of birth
+     * 
+     * @param dateOfBirth User date of birth
+     */
+    public void saveUserDateOfBirth(String dateOfBirth) {
+        sharedPreferences.edit().putString(KEY_USER_DATE_OF_BIRTH, dateOfBirth).apply();
     }
 
     /**

@@ -32,6 +32,7 @@ import com.coffeecorner.app.R;
 import com.coffeecorner.app.models.User;
 import com.coffeecorner.app.repositories.UserRepository;
 import com.coffeecorner.app.utils.PreferencesHelper;
+import com.coffeecorner.app.utils.UserProfileManager;
 import com.coffeecorner.app.utils.Validator;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.textfield.TextInputEditText;
@@ -66,6 +67,7 @@ public class EditProfileFragment extends Fragment {
                                             // this-escape warnings
     private ActivityResultLauncher<Intent> galleryLauncher;
     private ActivityResultLauncher<Intent> cameraLauncher;
+    private UserProfileManager userProfileManager;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -79,6 +81,10 @@ public class EditProfileFragment extends Fragment {
         // Initialize dependencies
         preferencesHelper = new PreferencesHelper(requireContext());
         userRepository = UserRepository.getInstance(requireContext());
+
+        if (userProfileManager == null) {
+            userProfileManager = new UserProfileManager(requireContext());
+        }
 
         // Initialize activity result launchers after fragment is fully created
         initializeActivityResultLaunchers();
@@ -432,6 +438,9 @@ public class EditProfileFragment extends Fragment {
                     currentUser = user;
                     progressBar.setVisibility(View.GONE);
                     showSuccess("Profile updated successfully");
+                    // Sync user data to ensure all screens get the latest info
+                    userProfileManager.syncUserData();
+                    // Optionally, notify ProfileFragment to refresh (if using shared ViewModel or event bus)
                     navigateBack();
                 });
             }

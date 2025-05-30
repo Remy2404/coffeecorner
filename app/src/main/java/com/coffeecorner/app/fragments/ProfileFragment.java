@@ -172,4 +172,17 @@ public class ProfileFragment extends Fragment {    private ImageView ivProfilePi
         startActivity(intent);
         requireActivity().finish();
     }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        // Force reload of user data to reflect any changes (e.g., profile image)
+        if (userViewModel != null) {
+            userViewModel.getCurrentUser().observe(getViewLifecycleOwner(), user -> {
+                if (user != null) {
+                    updateUI(user);
+                }
+            });
+        }
+    }
 }
