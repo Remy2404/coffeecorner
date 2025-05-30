@@ -14,22 +14,26 @@ import androidx.navigation.ui.NavigationUI;
 
 import com.coffeecorner.app.R;
 import com.coffeecorner.app.utils.AuthDiagnostic;
-
 import com.coffeecorner.app.utils.PreferencesHelper;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
-public class MainActivity extends BaseActivity {
+public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
     private BottomNavigationView bottomNavigationView;
     private NavController navController;
-
     private AuthDiagnostic authDiagnostic;
     private PreferencesHelper preferencesHelper;
     private int debugClickCount = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // Set theme to follow user preference (light/dark)
+        android.content.SharedPreferences prefs = getSharedPreferences("app_prefs", MODE_PRIVATE);
+        boolean isDark = prefs.getBoolean("dark_mode", false);
+        AppCompatDelegate
+                .setDefaultNightMode(isDark ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO);
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -42,10 +46,10 @@ public class MainActivity extends BaseActivity {
         // Initialize debug utilities
         authDiagnostic = new AuthDiagnostic(this);
         preferencesHelper = new PreferencesHelper(this);
-        
+
         // Set up debug functionality
         setupDebugFeatures();
-        
+
         // Log successful initialization
         Log.d(TAG, "MainActivity initialized successfully");
     }
@@ -104,7 +108,7 @@ public class MainActivity extends BaseActivity {
 
     /**
      * Update cart badge in the bottom navigation
-     * 
+     *
      * @param itemCount Number of items in cart
      */
     public void updateCartBadge(int itemCount) {
@@ -121,7 +125,7 @@ public class MainActivity extends BaseActivity {
         }
         Log.d(TAG, "Cart badge updated: " + itemCount + " items");
     }
-    
+
     /**
      * Set up debug features for authentication testing
      * Tap the app title 7 times to trigger debug menu
@@ -130,7 +134,7 @@ public class MainActivity extends BaseActivity {
         // Set up debug click listener on the action bar (if needed)
         // For now, we'll add a method that can be called programmatically
     }
-    
+
     /**
      * Run authentication diagnostic (for debugging)
      * Call this method when you need to debug auth issues
@@ -138,36 +142,36 @@ public class MainActivity extends BaseActivity {
     public void runAuthDiagnostic() {
         Log.d(TAG, "Running authentication diagnostic...");
         Toast.makeText(this, "Running auth diagnostic - check logs", Toast.LENGTH_LONG).show();
-        
+
         if (authDiagnostic != null) {
             authDiagnostic.runFullDiagnostic();
         }
     }
-    
+
     /**
      * Force re-authentication (for debugging)
      */
     public void forceReauth() {
         Log.d(TAG, "Forcing re-authentication...");
         Toast.makeText(this, "Re-authenticating - check logs", Toast.LENGTH_LONG).show();
-        
+
         if (authDiagnostic != null) {
             authDiagnostic.forceReauth();
         }
     }
-    
+
     /**
      * Clear all authentication data (for debugging)
      */
     public void clearAuthData() {
         Log.d(TAG, "Clearing authentication data...");
         Toast.makeText(this, "Auth data cleared - restart app", Toast.LENGTH_LONG).show();
-        
+
         if (authDiagnostic != null) {
             authDiagnostic.clearAllAuth();
         }
     }
-    
+
     /**
      * Debug method to check current auth state
      */
@@ -176,12 +180,12 @@ public class MainActivity extends BaseActivity {
             boolean isLoggedIn = preferencesHelper.isLoggedIn();
             String authToken = preferencesHelper.getAuthToken();
             String userId = preferencesHelper.getUserId();
-            
+
             String message = "Auth State:\n" +
-                           "Logged in: " + isLoggedIn + "\n" +
-                           "Token: " + (authToken != null ? "present" : "null") + "\n" +
-                           "User ID: " + userId;
-            
+                    "Logged in: " + isLoggedIn + "\n" +
+                    "Token: " + (authToken != null ? "present" : "null") + "\n" +
+                    "User ID: " + userId;
+
             Log.d(TAG, message);
             Toast.makeText(this, message, Toast.LENGTH_LONG).show();
         }
