@@ -1,142 +1,157 @@
-package com.coffeecorner.app.activities;
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/color_04">
 
-import android.content.Intent;
-import android.os.Build;
-import android.os.Bundle;
-import android.view.View;
-import android.view.Window;
-import android.view.WindowInsetsController;
-import android.widget.ImageView;
-import android.widget.TextView;
-import com.coffeecorner.app.R;
-import com.coffeecorner.app.utils.PreferencesHelper;
-import com.google.android.material.button.MaterialButton;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.viewpager2.widget.ViewPager2;
-import android.view.LayoutInflater;
-import android.view.ViewGroup;
-import java.util.ArrayList;
-import java.util.List;
+    <!-- Illustration Container with Accent Background -->
+    <View
+        android:id="@+id/viewBackground"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:background="@color/color_03"
+        app:layout_constraintBottom_toTopOf="@+id/guideline"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
-/**
- * OnboardingActivity - Introduces users to the Coffee Corner app
- * Displays a series of slides with app features and benefits
- */
-public class OnboardingActivity extends AppCompatActivity {
-    private PreferencesHelper preferencesHelper;
-    private ViewPager2 viewPager;
-    private OnboardingAdapter adapter;
-    private List<OnboardingItem> onboardingItems;
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.5" />
 
-    @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        preferencesHelper = new PreferencesHelper(this);
-        setContentView(R.layout.activity_onboarding);
+    <FrameLayout
+        android:id="@+id/illustrationContainer"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toTopOf="@+id/guideline"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
-        // Make the activity fullscreen using the latest recommended approach
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            Window window = getWindow();
-            window.setDecorFitsSystemWindows(false);
-            WindowInsetsController insetsController = window.getInsetsController();
-            if (insetsController != null) {
-                insetsController.setSystemBarsBehavior(
-                        WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
-            }
-        } else {
-            int flags = View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
-                    View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
-            getWindow().getDecorView().setSystemUiVisibility(flags);
-        }
+        <ImageView
+            android:id="@+id/imgOnboarding"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:adjustViewBounds="true"
+            android:contentDescription="@string/app_name"
+            android:scaleType="centerCrop"
+            tools:src="@drawable/ic_launcher_foreground" />
 
-        // Setup onboarding data
-        onboardingItems = new ArrayList<>();
-        onboardingItems.add(new OnboardingItem(R.drawable.onboarding_welcome1, "Welcome to Coffee Corner", "Your perfect coffee experience starts here. Explore our selection of premium coffee and treats."));
-        onboardingItems.add(new OnboardingItem(R.drawable.onboarding_menu, "Order Easily", "Browse our menu and order your favorite coffee in seconds."));
-        onboardingItems.add(new OnboardingItem(R.drawable.onboarding_sorry_bro_heng, "Earn Rewards", "Collect points with every purchase and enjoy exclusive rewards!"));
+        <!-- Subtle overlay for better text visibility if needed -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="80dp"
+            android:layout_gravity="bottom"
+            android:background="@drawable/gradient_transparent_to_dark"
+            android:alpha="0.3" />
+    </FrameLayout>
 
-        viewPager = findViewById(R.id.viewPager);
-        adapter = new OnboardingAdapter(onboardingItems);
-        viewPager.setAdapter(adapter);
+    <!-- Coffee Corner brand logo -->
 
-        // Tab indicators (optional, if you have TabLayout)
-        // TabLayout tabLayout = findViewById(R.id.tabLayout);
-        // new TabLayoutMediator(tabLayout, viewPager, (tab, position) -> {}).attach();
-    }
+    <!-- Title -->
 
-    /**
-     * Navigate to the login screen when onboarding is complete
-     */
-    private void navigateToLogin() {
-        // Save onboarding completed state in SharedPreferences
-        preferencesHelper.setOnboardingCompleted(true);
+    <ImageView
+        android:id="@+id/imgLogo"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginTop="44dp"
+        android:contentDescription="@string/app_name"
+        android:src="@drawable/ic_coffee_cup"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/guideline"
+        app:tint="@color/color_01" />
 
-        // Start LoginActivity
-        Intent intent = new Intent(OnboardingActivity.this, LoginActivity.class);
-        startActivity(intent);
-        finish(); // Close this activity so it's not in the back stack
-    }
+    <TextView
+        android:id="@+id/tvTitle"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="32dp"
+        android:fontFamily="sans-serif-medium"
+        android:gravity="center"
+        android:textAppearance="@style/TextAppearance.CoffeeShop.Heading3"
+        android:textColor="@color/color_01"
+        android:textSize="24sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/imgLogo"
+        tools:text="Welcome to Coffee Corner" />
 
-    // --- OnboardingItem data model ---
-    static class OnboardingItem {
-        int imageResId;
-        String title;
-        String description;
-        OnboardingItem(int imageResId, String title, String description) {
-            this.imageResId = imageResId;
-            this.title = title;
-            this.description = description;
-        }
-    }
+    <!-- Description -->
 
-    // --- Adapter for ViewPager2 ---
-    class OnboardingAdapter extends androidx.recyclerview.widget.RecyclerView.Adapter<OnboardingAdapter.OnboardingViewHolder> {
-        private final List<OnboardingItem> items;
-        OnboardingAdapter(List<OnboardingItem> items) { this.items = items; }
+    <TextView
+        android:id="@+id/tvDescription"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="40dp"
+        android:layout_marginTop="36dp"
+        android:layout_marginEnd="40dp"
+        android:gravity="center"
+        android:lineSpacingExtra="6dp"
+        android:textAppearance="@style/TextAppearance.CoffeeShop.Body1"
+        android:textColor="@color/text_secondary"
+        android:textSize="16sp"
+        app:layout_constraintBottom_toTopOf="@+id/layoutButtons"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tvTitle"
+        app:layout_constraintVertical_bias="0.0"
+        tools:text="Your perfect coffee experience starts here. Explore our selection of premium coffee and treats." />
 
-        @Override
-        public OnboardingViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.onboarding_slide, parent, false);
-            return new OnboardingViewHolder(view);
-        }
+    <LinearLayout
+        android:id="@+id/layoutButtons"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tvTitle"
+        app:layout_constraintVertical_bias="0.76">
 
-        @Override
-        public void onBindViewHolder(OnboardingViewHolder holder, int position) {
-            OnboardingItem item = items.get(position);
-            holder.imgOnboarding.setImageResource(item.imageResId);
-            holder.tvTitle.setText(item.title);
-            holder.tvDescription.setText(item.description);
-            if (position == items.size() - 1) {
-                holder.btnNext.setText("Get Started");
-            } else {
-                holder.btnNext.setText("Next");
-            }
-            holder.btnSkip.setOnClickListener(v -> navigateToLogin());
-            holder.btnNext.setOnClickListener(v -> {
-                if (position == items.size() - 1) {
-                    navigateToLogin();
-                } else {
-                    viewPager.setCurrentItem(position + 1, true);
-                }
-            });
-        }
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnSkip"
+            android:layout_width="0dp"
+            android:layout_height="56dp"
+            android:layout_marginEnd="12dp"
+            android:layout_weight="1"
+            android:backgroundTint="@color/color_01"
+            android:elevation="4dp"
+            android:letterSpacing="0.01"
+            android:stateListAnimator="@animator/button_elevation"
+            android:text="Skip"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            android:textStyle="bold" />
 
-        @Override
-        public int getItemCount() { return items.size(); }
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnNext"
+            android:layout_width="0dp"
+            android:layout_height="56dp"
+            android:layout_marginStart="12dp"
+            android:layout_weight="1"
+            android:backgroundTint="@color/color_01"
+            android:elevation="4dp"
+            android:letterSpacing="0.01"
+            android:stateListAnimator="@animator/button_elevation"
+            android:text="Next"
+            android:textAllCaps="false"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            android:textStyle="bold" />
 
-        class OnboardingViewHolder extends androidx.recyclerview.widget.RecyclerView.ViewHolder {
-            ImageView imgOnboarding;
-            TextView tvTitle, tvDescription;
-            MaterialButton btnSkip, btnNext;
-            OnboardingViewHolder(View itemView) {
-                super(itemView);
-                imgOnboarding = itemView.findViewById(R.id.imgOnboarding);
-                tvTitle = itemView.findViewById(R.id.tvTitle);
-                tvDescription = itemView.findViewById(R.id.tvDescription);
-                btnSkip = itemView.findViewById(R.id.btnSkip);
-                btnNext = itemView.findViewById(R.id.btnNext);
-            }
-        }
-    }
-}
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
