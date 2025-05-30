@@ -13,9 +13,6 @@ import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
 import com.coffeecorner.app.R;
-
-import com.coffeecorner.app.services.GuestAuthService;
-
 import com.coffeecorner.app.utils.AuthDiagnostic;
 
 import com.coffeecorner.app.utils.PreferencesHelper;
@@ -27,8 +24,6 @@ public class MainActivity extends BaseActivity {
     private BottomNavigationView bottomNavigationView;
     private NavController navController;
 
-    private GuestAuthService guestAuthService;  
-    @Override
     private AuthDiagnostic authDiagnostic;
     private PreferencesHelper preferencesHelper;
     private int debugClickCount = 0;
