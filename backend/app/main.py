@@ -68,6 +68,12 @@ async def health_check():
     return {"status": "healthy", "message": "API is running"}
 
 
+@app.get("/healthz")
+async def health_check_z():
+    """Health check endpoint"""
+    return {"status": "healthy", "message": "API is running"}
+
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
     host = "0.0.0.0"
