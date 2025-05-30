@@ -56,32 +56,49 @@ public class SettingsFragment extends Fragment {
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-
-        navController = Navigation.findNavController(view);
-        preferencesHelper = new PreferencesHelper(requireContext()); // Set up the back button
+        super.onViewCreated(view, savedInstanceState);        navController = Navigation.findNavController(view);
+        preferencesHelper = new PreferencesHelper(requireContext());
+        
+        // Set up the back button
         ImageButton btnBack = view.findViewById(R.id.btnBack);
         if (btnBack != null) {
             btnBack.setOnClickListener(v -> requireActivity().getSupportFragmentManager().popBackStack());
         }
-
+        
         // Initialize UI elements
         RelativeLayout layoutEditProfile = view.findViewById(R.id.layoutEditProfile);
+        RelativeLayout layoutPaymentMethods = view.findViewById(R.id.layoutPaymentMethods);
+        RelativeLayout layoutAboutUs = view.findViewById(R.id.layoutAboutUs);
         SwitchMaterial switchNotifications = view.findViewById(R.id.switchNotifications);
         SwitchMaterial switchDarkMode = view.findViewById(R.id.switchDarkMode);
         RelativeLayout layoutPrivacyPolicy = view.findViewById(R.id.layoutPrivacyPolicy);
         RelativeLayout layoutTermsConditions = view.findViewById(R.id.layoutTermsConditions);
-        Button btnLogout = view.findViewById(R.id.btnLogout); // Set initial states for switches
+        Button btnLogout = view.findViewById(R.id.btnLogout);
+        
+        // Set initial states for switches
         switchNotifications.setChecked(preferencesHelper.isNotificationsEnabled());
-        // Initialize dark mode switch from PreferencesHelper (centralized source of
-        // truth)
-        switchDarkMode.setChecked(preferencesHelper.isDarkModeEnabled());
-
-        // Set up click listeners
+        // Initialize dark mode switch from PreferencesHelper (centralized source of truth)
+        switchDarkMode.setChecked(preferencesHelper.isDarkModeEnabled());        // Set up click listeners
         layoutEditProfile.setOnClickListener(v -> {
             // Navigate to EditProfileFragment - Ensure this action exists in your nav_graph
             if (Objects.requireNonNull(navController.getCurrentDestination()).getId() == R.id.settingsFragment) {
                 navController.navigate(R.id.action_settingsFragment_to_editProfileFragment);
+            }
+        });
+
+        layoutPaymentMethods.setOnClickListener(v -> {
+            try {
+                navController.navigate(R.id.action_settingsFragment_to_paymentMethodsFragment);
+            } catch (Exception e) {
+                Toast.makeText(requireContext(), "Payment Methods screen is under development", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        layoutAboutUs.setOnClickListener(v -> {
+            try {
+                navController.navigate(R.id.action_settingsFragment_to_aboutUsFragment);
+            } catch (Exception e) {
+                Toast.makeText(requireContext(), "About Us screen is under development", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -100,10 +117,10 @@ public class SettingsFragment extends Fragment {
             isThemeSwitching = true;
 
             // Save preference immediately to PreferencesHelper (single source of truth)
-            preferencesHelper.setDarkModeEnabled(isChecked);
-
-            // Remove any pending theme changes to prevent conflicts
-            themeHandler.removeCallbacksAndMessages(null);            // Apply theme change with debouncing for smooth transition
+            preferencesHelper.setDarkModeEnabled(isChecked);            // Remove any pending theme changes to prevent conflicts
+            themeHandler.removeCallbacksAndMessages(null);
+            
+            // Apply theme change with debouncing for smooth transition
             themeHandler.postDelayed(() -> {
                 try {
                     int targetMode = isChecked ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO;
