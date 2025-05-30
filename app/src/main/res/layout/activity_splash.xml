@@ -40,11 +40,13 @@
                 app:layout_constraintTop_toTopOf="parent" />
 
             <!-- Welcome Text -->
+
+            <!-- Subtitle Text -->
             <TextView
                 android:id="@+id/tvWelcome"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="48dp"
+                android:layout_marginTop="28dp"
                 android:text="@string/welcome"
                 android:textColor="@color/text_primary"
                 android:textSize="64sp"
@@ -53,7 +55,6 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/tvLogo" />
 
-            <!-- Subtitle Text -->
             <TextView
                 android:id="@+id/tvSubtitle"
                 android:layout_width="0dp"
@@ -76,14 +77,12 @@
                 android:layout_height="0dp"
                 android:layout_marginStart="64dp"
                 android:layout_marginEnd="64dp"
-                android:layout_marginTop="32dp"
-                android:layout_marginBottom="32dp"
-                android:src="@drawable/ic_corner_coffee_logo"
                 android:contentDescription="@string/coffee_cup"
-                app:layout_constraintTop_toBottomOf="@+id/tvSubtitle"
+                android:src="@drawable/ic_corner_coffee_logo"
                 app:layout_constraintBottom_toTopOf="@+id/btnContinue"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent" />
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/tvSubtitle" />
 
             <!-- Continue Button -->
             <com.google.android.material.button.MaterialButton
@@ -91,8 +90,8 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="32dp"
+                android:layout_marginTop="296dp"
                 android:layout_marginEnd="32dp"
-                android:layout_marginBottom="48dp"
                 android:backgroundTint="@color/color_01"
                 android:paddingTop="16dp"
                 android:paddingBottom="16dp"
@@ -102,7 +101,10 @@
                 app:cornerRadius="32dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent" />
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/tvSubtitle"
+                app:layout_constraintVertical_bias="0.761" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.cardview.widget.CardView>

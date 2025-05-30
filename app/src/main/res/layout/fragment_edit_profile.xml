@@ -93,7 +93,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="4dp"
                 android:layout_marginBottom="8dp"
-                android:text="Full Name"
+                android:text="Name"
                 android:textColor="@color/color_01"
                 android:textSize="14sp"
                 android:textStyle="bold" />
@@ -244,16 +244,6 @@
             </RadioGroup>
 
             <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="4dp"
-                android:layout_marginBottom="8dp"
-                android:text="Change Password"
-                android:textColor="@color/color_01"
-                android:textSize="14sp"
-                android:textStyle="bold" />
-
-            <TextView
                 android:id="@+id/btnChangePassword"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -262,7 +252,7 @@
                 android:clickable="true"
                 android:focusable="true"
                 android:minHeight="48dp"
-                android:text="Tap here to change your password"
+                android:text="Forget Password"
                 android:textColor="@color/primary"
                 android:textSize="14sp" />
 
