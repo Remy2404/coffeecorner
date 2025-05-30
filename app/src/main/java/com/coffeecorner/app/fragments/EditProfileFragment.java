@@ -46,7 +46,6 @@ import de.hdodenhof.circleimageview.CircleImageView;
 import io.github.jan.supabase.postgrest.Postgrest;
 import io.github.jan.supabase.storage.Storage;
 import io.github.jan.supabase.storage.StorageFile;
-import io.github.jan.supabase.storage.UploadData;
 
 public class EditProfileFragment extends Fragment {
 
@@ -335,7 +334,7 @@ public class EditProfileFragment extends Fragment {
                     .getSupabase()
                     .getPlugin(Storage.class)
                     .from("profile-images")
-                    .upload(new StorageFile(fileName), UploadData.from(imageData))
+                    .upload(new StorageFile(fileName), imageData)
                     .executeWithResponseHandlers(
                             response -> {
                                 // Get public URL

@@ -183,4 +183,28 @@ public class Product {
     public boolean hasAddons() {
         return availableAddons != null && availableAddons.size() > 0;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Product product = (Product) o;
+        return Double.compare(product.price, price) == 0 &&
+                isFeatured == product.isFeatured &&
+                isAvailable == product.isAvailable &&
+                Float.compare(product.rating, rating) == 0 &&
+                calories == product.calories &&
+                java.util.Objects.equals(id, product.id) &&
+                java.util.Objects.equals(name, product.name) &&
+                java.util.Objects.equals(description, product.description) &&
+                java.util.Objects.equals(category, product.category) &&
+                java.util.Objects.equals(imageUrl, product.imageUrl) &&
+                java.util.Objects.equals(availableSizes, product.availableSizes) &&
+                java.util.Objects.equals(availableAddons, product.availableAddons);
+    }
+
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(id, name, description, price, category, imageUrl, isFeatured, isAvailable, availableSizes, availableAddons, rating, calories);
+    }
 }
