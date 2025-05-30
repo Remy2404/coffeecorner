@@ -33,6 +33,7 @@ import com.coffeecorner.app.R;
 import com.coffeecorner.app.models.User;
 import com.coffeecorner.app.repositories.UserRepository;
 import com.coffeecorner.app.utils.PreferencesHelper;
+import com.coffeecorner.app.utils.UserProfileManager;
 import com.coffeecorner.app.utils.Validator;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.textfield.TextInputEditText;
@@ -62,9 +63,9 @@ public class EditProfileFragment extends Fragment {
     private User currentUser;
     private PreferencesHelper preferencesHelper;
     private UserRepository userRepository;
+    private UserProfileManager userProfileManager;
     private Uri selectedImageUri;
-    private boolean isImageChanged = false; // Activity result launchers - initialized in onViewCreated to avoid
-                                            // this-escape warnings
+    private boolean isImageChanged = false;
     private ActivityResultLauncher<Intent> galleryLauncher;
     private ActivityResultLauncher<Intent> cameraLauncher;
 
@@ -80,6 +81,7 @@ public class EditProfileFragment extends Fragment {
         // Initialize dependencies
         preferencesHelper = new PreferencesHelper(requireContext());
         userRepository = UserRepository.getInstance(requireContext());
+        userProfileManager = new UserProfileManager(requireContext());
 
         // Initialize activity result launchers after fragment is fully created
         initializeActivityResultLaunchers();
@@ -117,21 +119,31 @@ public class EditProfileFragment extends Fragment {
     private void loadUserData() {
         progressBar.setVisibility(View.VISIBLE);
 
-        // Load user data from preferences using UserRepository
-        currentUser = userRepository.loadUserFromPreferences();
+        // Use UserProfileManager to fetch data with server-first strategy and local
+        // fallback
+        userProfileManager.fetchWithFallback(new UserProfileManager.ProfileDataCallback() {
+            @Override
+            public void onSuccess(User user) {
+                requireActivity().runOnUiThread(() -> {
+                    currentUser = user;
+                    populateUserData();
+                    progressBar.setVisibility(View.GONE);
+                    Log.d("EditProfileFragment", "Profile loaded successfully");
+                });
+            }
 
-        if (currentUser != null && currentUser.getId() != null && !currentUser.getId().isEmpty()) {
-            populateUserData();
-        } else {
-            // Create default user if no data exists
-            currentUser = createDefaultUser();
-            populateUserData();
-        }
-
-        progressBar.setVisibility(View.GONE);
-    }
-
-    private User createDefaultUser() {
+            @Override
+            public void onError(String errorMessage) {
+                requireActivity().runOnUiThread(() -> {
+                    Log.w("EditProfileFragment", "Profile fetch failed: " + errorMessage);
+                    // Create default user as last resort
+                    currentUser = createDefaultUser();
+                    populateUserData();
+                    progressBar.setVisibility(View.GONE);
+                });
+            }
+        });
+    }    private User createDefaultUser() {
         String userId = preferencesHelper.getUserId();
         if (userId == null || userId.isEmpty()) {
             userId = "temp_user_" + System.currentTimeMillis();
@@ -142,9 +154,10 @@ public class EditProfileFragment extends Fragment {
         user.setFullName(preferencesHelper.getUserName() != null ? preferencesHelper.getUserName() : "");
         user.setEmail(preferencesHelper.getUserEmail() != null ? preferencesHelper.getUserEmail() : "");
         user.setPhone(preferencesHelper.getUserPhone() != null ? preferencesHelper.getUserPhone() : "");
-        user.setGender("other");
-        user.setPhotoUrl("");
-        user.setDateOfBirth("");
+        user.setGender(preferencesHelper.getUserGender() != null ? preferencesHelper.getUserGender() : "other");
+        user.setPhotoUrl(preferencesHelper.getUserProfilePic() != null ? preferencesHelper.getUserProfilePic() : "");
+        user.setDateOfBirth(
+                preferencesHelper.getUserDateOfBirth() != null ? preferencesHelper.getUserDateOfBirth() : "");
 
         return user;
     }
@@ -391,7 +404,8 @@ public class EditProfileFragment extends Fragment {
 
             ByteArrayOutputStream stream = new ByteArrayOutputStream();
             bitmap.compress(Bitmap.CompressFormat.JPEG, 90, stream);
-            byte[] imageData = stream.toByteArray();            String fileName = "profile_" + UUID.randomUUID() + ".jpg";
+            byte[] imageData = stream.toByteArray();
+            String fileName = "profile_" + UUID.randomUUID() + ".jpg";
 
             String imageUrl = uploadImageToStorage(imageData, fileName);
             updateUserData(fullName, email, phone, dateOfBirth, gender, imageUrl);
@@ -439,7 +453,9 @@ public class EditProfileFragment extends Fragment {
                 });
             }
         });
-    }    private void showChangePasswordDialog() {
+    }
+
+    private void showChangePasswordDialog() {
         BottomSheetDialog dialog = new BottomSheetDialog(requireContext());
         View view = LayoutInflater.from(requireContext())
                 .inflate(R.layout.dialog_change_password, (ViewGroup) requireView(), false);
@@ -473,7 +489,9 @@ public class EditProfileFragment extends Fragment {
 
     private void showError(String message) {
         Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
-    }    private void showSuccess(String message) {
+    }
+
+    private void showSuccess(String message) {
         Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
     }
 
@@ -481,7 +499,7 @@ public class EditProfileFragment extends Fragment {
         try {
             String baseUrl = "https://dqjyxspgrcvfcevevtjh.supabase.co/storage/v1/object/public/profile-images/";
             String imageUrl = baseUrl + fileName;
-            
+
             return imageUrl;
         } catch (Exception e) {
             Log.e("EditProfileFragment", "Error uploading image", e);

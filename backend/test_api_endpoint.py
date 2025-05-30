@@ -9,8 +9,7 @@ def test_profile_update_api():
 
         # Test user credentials
         email = "rosexmee1122@gmail.com"
-        password = "123456"  # Assuming this is the password
-
+        password = "12345678"
         print("=== Testing Profile Update API ===")
         # Step 1: Login to get JWT token
         print("\n--- Step 1: Login ---")

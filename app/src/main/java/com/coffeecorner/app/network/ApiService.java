@@ -69,9 +69,10 @@ public interface ApiService {
     
     // Alternative endpoint using JSON body for Firebase authentication
     @POST("auth/firebase-auth")
-    Call<AuthResponse> authenticateWithFirebaseJson(@Body FirebaseAuthRequest request);
+    Call<AuthResponse> authenticateWithFirebaseJson(@Body FirebaseAuthRequest request);    // User profile endpoints
+    @GET("auth/profile")
+    Call<ApiResponse<User>> getCurrentUserProfile();
 
-    // User profile endpoints
     @GET("users/profile/{userId}")
     Call<ApiResponse<User>> getUserProfile(@Path("userId") String userId);
 

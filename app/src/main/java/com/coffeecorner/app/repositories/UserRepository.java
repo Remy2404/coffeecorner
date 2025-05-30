@@ -513,6 +513,12 @@ public class UserRepository {
         if (user.getPhotoUrl() != null) {
             preferencesHelper.saveUserProfilePic(user.getPhotoUrl());
         }
+        if (user.getGender() != null) {
+            preferencesHelper.saveUserGender(user.getGender());
+        }
+        if (user.getDateOfBirth() != null) {
+            preferencesHelper.saveUserDateOfBirth(user.getDateOfBirth());
+        }
     }
 
     /**
@@ -525,7 +531,50 @@ public class UserRepository {
         user.setEmail(preferencesHelper.getUserEmail());
         user.setPhone(preferencesHelper.getUserPhone());
         user.setPhotoUrl(preferencesHelper.getUserProfilePic());
+        user.setGender(preferencesHelper.getUserGender());
+        user.setDateOfBirth(preferencesHelper.getUserDateOfBirth());
         return user;
+    }
+
+    /**
+     * Fetch fresh user profile data from server
+     * This method fetches the most current profile data from the database
+     * and updates both LiveData and local preferences cache
+     *
+     * @param callback Callback to handle success or error
+     */
+    public void fetchUserProfileFromServer(ProfileCallback callback) {
+        String authToken = preferencesHelper.getAuthToken();
+        if (authToken == null || authToken.isEmpty()) {
+            callback.onError("Authentication token not found");
+            return;
+        }
+        
+        apiService.getCurrentUserProfile().enqueue(new Callback<ApiResponse<User>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<User>> call, Response<ApiResponse<User>> response) {
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                    User user = response.body().getData();
+                    currentUser.setValue(user);
+                    saveUserToPreferences(user);
+                    callback.onSuccess(user);
+                    Log.d("UserRepository", "Fresh profile data fetched successfully");
+                } else {
+                    String errorMsg = "Failed to fetch profile data";
+                    if (response.body() != null && response.body().getMessage() != null) {
+                        errorMsg = response.body().getMessage();
+                    }
+                    Log.e("UserRepository", "Fetch profile failed: " + response.code() + " - " + errorMsg);
+                    callback.onError(errorMsg);
+                }
+            }
+            
+            @Override
+            public void onFailure(Call<ApiResponse<User>> call, Throwable t) {
+                Log.e("UserRepository", "Fetch profile network error", t);
+                callback.onError("Network error: " + t.getMessage());
+            }
+        });
     }
 
     /**
@@ -679,6 +728,15 @@ public class UserRepository {
      */
     public interface PasswordChangeCallback {
         void onSuccess();
+
+        void onError(String errorMessage);
+    }
+
+    /**
+     * Interface for profile fetch callbacks
+     */
+    public interface ProfileCallback {
+        void onSuccess(User user);
 
         void onError(String errorMessage);
     }

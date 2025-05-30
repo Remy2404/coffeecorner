@@ -81,6 +81,61 @@ async def get_profile(current_user: UserResponse = Depends(get_current_user)):
     )
 
 
+@router.get("/profile", response_model=ApiResponse)
+async def get_current_user_profile(current_user: UserResponse = Depends(get_current_user)):
+    """Get current authenticated user profile - Android app compatibility endpoint"""
+    try:
+        # Fetch fresh profile data from database using admin client
+        from app.database.supabase import SupabaseClient
+        
+        admin_client = SupabaseClient.get_admin_client()
+        result = (
+            admin_client.table("profiles")
+            .select("*")
+            .eq("id", current_user.id)
+            .limit(1)
+            .execute()
+        )
+        
+        if not result.data:
+            logger.error(f"Profile not found for authenticated user: {current_user.id}")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, 
+                detail="User profile not found"
+            )
+        
+        user_data = result.data[0]
+        
+        # Create user response with fresh data from database
+        user_response = UserResponse(
+            id=user_data.get("id"),
+            name=user_data.get("full_name", ""),
+            email=user_data.get("email", ""),
+            phone=user_data.get("phone", ""),
+            gender=user_data.get("gender", ""),
+            profile_image_url=user_data.get("profile_image_url", ""),
+            date_of_birth=user_data.get("date_of_birth", ""),
+            created_at=user_data.get("created_at"),
+            updated_at=user_data.get("updated_at"),
+        )
+        
+        logger.info(f"Profile retrieved for user: {current_user.id}")
+        return ApiResponse(
+            success=True, 
+            message="Profile retrieved successfully", 
+            data=user_response
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error retrieving current user profile: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to retrieve profile: {str(e)}"
+        )
+
+
 @router.put("/profile", response_model=ApiResponse)
 async def update_profile(
     user_update: UserUpdate, current_user: UserResponse = Depends(get_current_user)
