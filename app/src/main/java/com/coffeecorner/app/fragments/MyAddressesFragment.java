@@ -1,5 +1,6 @@
 package com.coffeecorner.app.fragments;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -237,6 +238,7 @@ public class MyAddressesFragment extends Fragment implements AddressAdapter.OnAd
         showDeleteConfirmationDialog(address, position);
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     @Override
     public void onSetDefaultAddress(Address address, int position) {
         for (Address addr : addresses) {
