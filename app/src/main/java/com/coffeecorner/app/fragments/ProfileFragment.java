@@ -1,23 +1,16 @@
 package com.coffeecorner.app.fragments;
 
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatDelegate;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
@@ -37,7 +30,6 @@ public class ProfileFragment extends Fragment {    private ImageView ivProfilePi
     private ImageButton btnEditProfile;
     private View btnSettings;
     private UserViewModel userViewModel;
-    private PreferencesHelper preferencesHelper;
 
     public ProfileFragment() {
         // Required empty public constructor
@@ -52,7 +44,7 @@ public class ProfileFragment extends Fragment {    private ImageView ivProfilePi
                 .get(UserViewModel.class);
 
         // Initialize PreferencesHelper
-        preferencesHelper = new PreferencesHelper(requireContext());
+        PreferencesHelper preferencesHelper = new PreferencesHelper(requireContext());
 
         return view;
     }
