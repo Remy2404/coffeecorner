@@ -221,6 +221,49 @@
                     android:layout_height="wrap_content"
                     android:orientation="vertical">
 
+                    <!-- Theme Switch (moved and restyled) -->
+                    <LinearLayout
+                        android:id="@+id/layoutThemeSwitch"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="false"
+                        android:focusable="false"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:padding="16dp">
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/ic_square_black_white"
+                            android:contentDescription="@string/theme_switch"
+                            android:scaleType="centerInside" />
+
+                        <TextView
+                            android:id="@+id/tvThemeSwitch"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="16dp"
+                            android:layout_weight="1"
+                            android:text="@string/switch_theme"
+                            android:textColor="@color/text_primary"
+                            android:textSize="16sp" />
+
+                        <Switch
+                            android:id="@+id/switchTheme"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:checked="false"
+                            android:thumbTint="@color/primary"
+                            android:trackTint="@color/secondary" />
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="@color/divider" />
+
                     <LinearLayout
                         android:id="@+id/layoutMyOrders"
                         android:layout_width="match_parent"

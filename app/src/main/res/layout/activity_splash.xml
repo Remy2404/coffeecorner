@@ -5,7 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/color_03">
+    android:background="@color/background">
 
     <androidx.cardview.widget.CardView
         android:layout_width="0dp"
@@ -30,7 +30,7 @@
                 android:layout_height="wrap_content"
                 android:drawablePadding="8dp"
                 android:text="@string/coffee_corner"
-                android:textColor="@color/color_01"
+                android:textColor="@color/text_primary"
                 android:textSize="32sp"
                 android:textStyle="bold"
                 android:layout_marginTop="64dp"
@@ -46,7 +46,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="48dp"
                 android:text="@string/welcome"
-                android:textColor="@color/color_01"
+                android:textColor="@color/text_primary"
                 android:textSize="64sp"
                 android:textStyle="bold"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -63,7 +63,7 @@
                 android:layout_marginTop="24dp"
                 android:gravity="center"
                 android:text="@string/explore_our_menu_and_order_your_favorite_coffee"
-                android:textColor="@color/color_01"
+                android:textColor="@color/text_secondary"
                 android:textSize="20sp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"

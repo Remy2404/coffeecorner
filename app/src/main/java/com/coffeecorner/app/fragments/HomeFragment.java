@@ -17,11 +17,13 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.card.MaterialCardView;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.tabs.TabLayout;
 
 import com.coffeecorner.app.R;
 import com.coffeecorner.app.adapters.ProductAdapter;
 import com.coffeecorner.app.utils.GridSpacingItemDecoration;
+import com.coffeecorner.app.utils.PreferencesHelper;
 import com.coffeecorner.app.viewmodels.CartViewModel;
 import com.coffeecorner.app.viewmodels.ProductViewModel;
 
@@ -78,13 +80,10 @@ public class HomeFragment extends Fragment {
 
     private void setupListeners() {
         tvLocationValue.setOnClickListener(v -> {
-            // TODO: Implement location picker with Google Maps API
-            Toast.makeText(requireContext(), "Location picker coming soon", Toast.LENGTH_SHORT).show();
+            showLocationPicker();
         });
-
         btnFilter.setOnClickListener(v -> {
-            // TODO: Implement advanced filtering options
-            Toast.makeText(requireContext(), "Filtering options coming soon", Toast.LENGTH_SHORT).show();
+            showFilterDialog();
         });
 
         tabLayoutCategories.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
@@ -118,17 +117,18 @@ public class HomeFragment extends Fragment {
 
     private void setupRecyclerView() {
         productAdapter = new ProductAdapter(requireContext(), new ArrayList<>());
-        
+
         // Set up grid layout with 2 columns and proper spacing
         GridLayoutManager layoutManager = new GridLayoutManager(requireContext(), 2);
         rvProducts.setLayoutManager(layoutManager);
-        
+
         // Set up click listeners
         productAdapter.setOnProductClickListener((product, position) -> {
             // Navigate to product details
             Bundle args = new Bundle();
             args.putString("productId", product.getId());
-            Navigation.findNavController(requireView()).navigate(R.id.action_homeFragment_to_productDetailsFragment, args);
+            Navigation.findNavController(requireView()).navigate(R.id.action_homeFragment_to_productDetailsFragment,
+                    args);
         });
 
         productAdapter.setOnAddToCartClickListener((product, position) -> {
@@ -140,7 +140,7 @@ public class HomeFragment extends Fragment {
         });
 
         rvProducts.setAdapter(productAdapter);
-        
+
         // Add item decoration for spacing if needed
         int spacing = getResources().getDimensionPixelSize(R.dimen.grid_spacing);
         rvProducts.addItemDecoration(new GridSpacingItemDecoration(2, spacing, true));
@@ -175,5 +175,74 @@ public class HomeFragment extends Fragment {
 
     private void filterProductsByCategory(String category) {
         productViewModel.filterByCategory(category);
+    }
+
+    private void showLocationPicker() {
+        String[] locations = {
+                "Downtown Coffee Corner",
+                "Mall Branch",
+                "University Campus",
+                "Airport Terminal",
+                "Business District"
+        };
+
+        new MaterialAlertDialogBuilder(requireContext())
+                .setTitle("Select Location")
+                .setItems(locations, (dialog, which) -> {
+                    String selectedLocation = locations[which];
+                    tvLocationValue.setText(selectedLocation);
+
+                    // Save selected location to preferences
+                    PreferencesHelper preferencesHelper = new PreferencesHelper(requireContext());
+                    preferencesHelper.saveSelectedLocation(selectedLocation);
+
+                    Toast.makeText(requireContext(), "Location set to: " + selectedLocation, Toast.LENGTH_SHORT).show();
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    private void showFilterDialog() {
+        String[] filterOptions = {
+                "Price: Low to High",
+                "Price: High to Low",
+                "Most Popular",
+                "Newest First",
+                "Highest Rated",
+                "Available Only"
+        };
+
+        new MaterialAlertDialogBuilder(requireContext())
+                .setTitle("Filter Products")
+                .setItems(filterOptions, (dialog, which) -> {
+                    String selectedFilter = filterOptions[which];
+                    applyFilter(selectedFilter);
+                    Toast.makeText(requireContext(), "Filter applied: " + selectedFilter, Toast.LENGTH_SHORT).show();
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    private void applyFilter(String filterType) {
+        switch (filterType) {
+            case "Price: Low to High":
+                productViewModel.sortByPriceAscending();
+                break;
+            case "Price: High to Low":
+                productViewModel.sortByPriceDescending();
+                break;
+            case "Most Popular":
+                productViewModel.sortByPopularity();
+                break;
+            case "Newest First":
+                productViewModel.sortByNewest();
+                break;
+            case "Highest Rated":
+                productViewModel.sortByRating();
+                break;
+            case "Available Only":
+                productViewModel.filterAvailableOnly();
+                break;
+        }
     }
 }

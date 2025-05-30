@@ -6,6 +6,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
@@ -25,6 +26,11 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // Set theme to follow user preference (light/dark)
+        android.content.SharedPreferences prefs = getSharedPreferences("app_prefs", MODE_PRIVATE);
+        boolean isDark = prefs.getBoolean("dark_mode", false);
+        AppCompatDelegate.setDefaultNightMode(isDark ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO);
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -85,5 +91,24 @@ public class MainActivity extends AppCompatActivity {
 
     public void showToast(String message) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+    }
+
+    /**
+     * Update cart badge on the floating action button
+     * @param itemCount Number of items in cart
+     */
+    public void updateCartBadge(int itemCount) {
+        // For now, we'll use a simple approach by updating the FAB's content description
+        // In a more advanced implementation, you could use Material Design Badge API
+        if (fabCart != null) {
+            if (itemCount > 0) {
+                fabCart.setContentDescription("Cart (" + itemCount + " items)");
+                // You could also change the FAB appearance here
+                // For example, change color or add an overlay
+            } else {
+                fabCart.setContentDescription("Cart (empty)");
+            }
+        }
+        Log.d(TAG, "Cart badge updated: " + itemCount + " items");
     }
 }
