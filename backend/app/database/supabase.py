@@ -15,10 +15,9 @@ class SupabaseClient:
                 raise ValueError("Supabase URL and ANON KEY must be provided")
 
             try:
-                # Initialize with basic configuration
+                # Initialize with only supported arguments (no proxy)
                 cls._instance = create_client(
-                    settings.supabase_url,
-                    settings.supabase_anon_key,
+                    settings.supabase_url, settings.supabase_anon_key
                 )
                 logger.info("Supabase client initialized successfully")
             except Exception as e:
@@ -42,51 +41,13 @@ class SupabaseClient:
                 logger.info("Admin client created with service role key")
                 return admin_client
             else:
-                # Create a new client instance with admin bypass capabilities
-                # Use the anon key but with additional headers for admin operations
+                # Use anon key for admin operations (with RLS bypass if configured)
                 admin_client = create_client(
-                    settings.supabase_url,
-                    settings.supabase_anon_key,
-                    options={
-                        "headers": {
-                            "X-Client-Info": "admin-bypass",
-                            "apikey": settings.supabase_anon_key
-                        }
-                    }
+                    settings.supabase_url, settings.supabase_anon_key
                 )
-                
-                # Try different methods to set headers based on library version
-                try:
-                    # Method 1: Try to set headers on the session if available
-                    if hasattr(admin_client, 'session') and hasattr(admin_client.session, 'headers'):
-                        admin_client.session.headers.update({
-                            "X-Client-Info": "admin-bypass",
-                            "Authorization": f"Bearer {settings.supabase_anon_key}"
-                        })
-                        logger.info("Admin headers set via session.headers")
-                    
-                    # Method 2: Try to set headers on postgrest session
-                    elif hasattr(admin_client, 'postgrest') and hasattr(admin_client.postgrest, 'session'):
-                        admin_client.postgrest.session.headers.update({
-                            "X-Client-Info": "admin-bypass",
-                            "Authorization": f"Bearer {settings.supabase_anon_key}"
-                        })
-                        logger.info("Admin headers set via postgrest.session.headers")
-                    
-                    # Method 3: Set auth token directly if possible
-                    elif hasattr(admin_client, 'auth') and hasattr(admin_client.auth, 'set_session'):
-                        # This is a fallback - the client should work with service operations
-                        logger.info("Using client with anon key - RLS may still apply")
-                    
-                    else:
-                        logger.warning("Could not set admin headers - using standard client")
-                        
-                except Exception as header_error:
-                    logger.warning(f"Could not set admin headers: {header_error}")
-                
-                logger.info("Admin client created with bypass configuration")
+                logger.info("Admin client created with anon key")
                 return admin_client
-                
+
         except Exception as e:
             logger.error(f"Failed to create admin client: {e}")
             return cls.get_client()
@@ -101,17 +62,17 @@ try:
     url = settings.supabase_url
     anon_key = settings.supabase_anon_key
 
-    # Log key lengths for debugging
+    # Log key lengths for debugging (without exposing actual keys)
     logger.info(f"SUPABASE_URL length: {len(url) if url else 0}")
     logger.info(f"SUPABASE_ANON_KEY length: {len(anon_key) if anon_key else 0}")
 
-    if anon_key:
-        # Create client with anon key
+    if url and anon_key:
+        # Create client with anon key - no proxy argument
         supabase = create_client(url, anon_key)
         logger.info("Successfully created Supabase client with anon key")
     else:
-        logger.error("No valid Supabase API keys found")
-        raise ValueError("No valid Supabase API keys found")
+        logger.error("Missing Supabase URL or ANON_KEY")
+        raise ValueError("Missing Supabase URL or ANON_KEY")
 
 except Exception as e:
     logger.error(f"Failed to create Supabase client: {e}")
@@ -148,5 +109,21 @@ except Exception as e:
 
         def execute(self):
             return type("obj", (object,), {"data": []})
+
+        @property
+        def auth(self):
+            # Mock auth object
+            return type(
+                "auth",
+                (object,),
+                {
+                    "sign_up": lambda self, _: type(
+                        "response", (object,), {"user": None}
+                    ),
+                    "sign_in_with_password": lambda self, _: type(
+                        "response", (object,), {"user": None, "session": None}
+                    ),
+                },
+            )()
 
     supabase = MockSupabaseClient()

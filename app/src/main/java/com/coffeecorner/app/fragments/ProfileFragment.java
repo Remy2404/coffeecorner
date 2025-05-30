@@ -166,7 +166,7 @@ public class ProfileFragment extends Fragment {    private ImageView ivProfilePi
                 })
                 .setNegativeButton("No", null)
                 .show();
-    }private void navigateToLogin() {
+    }    private void navigateToLogin() {
         Intent intent = new Intent(requireActivity(), LoginActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);

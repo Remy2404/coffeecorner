@@ -29,6 +29,7 @@ class UserResponse(BaseModel):
 
 class UserUpdate(BaseModel):
     name: Optional[str] = None
+    full_name: Optional[str] = None  # Added this field to handle Android app field
     email: Optional[str] = None
     phone: Optional[str] = None
     gender: Optional[str] = None

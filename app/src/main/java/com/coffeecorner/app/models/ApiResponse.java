@@ -1,9 +1,15 @@
 package com.coffeecorner.app.models;
 
 public class ApiResponse<T> {
-    private boolean success;
-    private String message;
-    private T data;
+    private final boolean success;
+    private final String message;
+    private final T data;
+
+    public ApiResponse(boolean success, String message, T data) {
+        this.success = success;
+        this.message = message;
+        this.data = data;
+    }
 
     public boolean isSuccess() {
         return success;
