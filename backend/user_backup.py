@@ -57,7 +57,6 @@ async def update_user_profile(
     """Update user profile - Android app compatibility endpoint"""
     try:
         update_data = {k: v for k, v in user_update.dict().items() if v is not None}
-
         if "full_name" in update_data:
             update_data["full_name"] = update_data.get("full_name")
             if "name" in update_data:
@@ -75,12 +74,11 @@ async def update_user_profile(
         logger.info(f"Updating profile for user ID: {current_user.id}")
         logger.info(f"Update data: {update_data}")
 
-        # Use admin client to bypass RLS for authenticated user updates
-        admin_client = SupabaseClient.get_admin_client()
         result = (
-            admin_client.table("profiles")
+            supabase.table("profiles")
             .update(update_data)
             .eq("id", current_user.id)
+            .select("*")
             .execute()
         )
 
@@ -126,11 +124,7 @@ async def delete_user_profile(
 ):
     """Delete user profile"""
     try:
-        # Use admin client to bypass RLS for authenticated user operations
-        admin_client = SupabaseClient.get_admin_client()
-        result = (
-            admin_client.table("profiles").delete().eq("id", current_user.id).execute()
-        )
+        result = supabase.table("profiles").delete().eq("id", current_user.id).execute()
 
         if not result.data:
             raise HTTPException(
