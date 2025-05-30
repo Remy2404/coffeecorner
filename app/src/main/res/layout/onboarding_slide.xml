@@ -22,7 +22,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.6" />
+        app:layout_constraintGuide_percent="0.5" />
 
     <FrameLayout
         android:id="@+id/illustrationContainer"
@@ -41,7 +41,7 @@
             android:contentDescription="@string/app_name"
             android:scaleType="centerCrop"
             tools:src="@drawable/ic_launcher_foreground" />
-            
+
         <!-- Subtle overlay for better text visibility if needed -->
         <View
             android:layout_width="match_parent"
@@ -52,19 +52,22 @@
     </FrameLayout>
 
     <!-- Coffee Corner brand logo -->
+
+    <!-- Title -->
+
     <ImageView
         android:id="@+id/imgLogo"
         android:layout_width="48dp"
         android:layout_height="48dp"
-        android:layout_marginTop="24dp"
+        android:layout_marginTop="44dp"
         android:contentDescription="@string/app_name"
         android:src="@drawable/ic_coffee_cup"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/guideline"
         app:tint="@color/color_01" />
 
-    <!-- Title -->
     <TextView
         android:id="@+id/tvTitle"
         android:layout_width="0dp"
@@ -72,32 +75,83 @@
         android:layout_marginStart="32dp"
         android:layout_marginTop="16dp"
         android:layout_marginEnd="32dp"
+        android:fontFamily="sans-serif-medium"
         android:gravity="center"
         android:textAppearance="@style/TextAppearance.CoffeeShop.Heading3"
         android:textColor="@color/color_01"
         android:textSize="24sp"
-        android:fontFamily="sans-serif-medium"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/imgLogo"
         tools:text="Welcome to Coffee Corner" />
 
     <!-- Description -->
+
     <TextView
         android:id="@+id/tvDescription"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="40dp"
+        android:layout_marginTop="36dp"
         android:layout_marginEnd="40dp"
-        android:layout_marginTop="16dp"
         android:gravity="center"
         android:lineSpacingExtra="6dp"
         android:textAppearance="@style/TextAppearance.CoffeeShop.Body1"
         android:textColor="@color/text_secondary"
         android:textSize="16sp"
+        app:layout_constraintBottom_toTopOf="@+id/layoutButtons"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/tvTitle"
+        app:layout_constraintVertical_bias="0.0"
         tools:text="Your perfect coffee experience starts here. Explore our selection of premium coffee and treats." />
+
+    <LinearLayout
+        android:id="@+id/layoutButtons"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tvTitle"
+        app:layout_constraintVertical_bias="0.76">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnSkip"
+            android:layout_width="0dp"
+            android:layout_height="56dp"
+            android:layout_marginEnd="12dp"
+            android:layout_weight="1"
+            android:backgroundTint="@color/color_01"
+            android:elevation="4dp"
+            android:letterSpacing="0.01"
+            android:stateListAnimator="@animator/button_elevation"
+            android:text="Skip"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnNext"
+            android:layout_width="0dp"
+            android:layout_height="56dp"
+            android:layout_marginStart="12dp"
+            android:layout_weight="1"
+            android:backgroundTint="@color/color_01"
+            android:elevation="4dp"
+            android:letterSpacing="0.01"
+            android:stateListAnimator="@animator/button_elevation"
+            android:text="Next"
+            android:textAllCaps="false"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
