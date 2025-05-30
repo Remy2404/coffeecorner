@@ -5,7 +5,7 @@ package com.coffeecorner.app.utils;
  */
 public class Constants {
     // API endpoints
-    public static final String BASE_URL = "http://10.0.2.2:8000/";
+    public static final String BASE_URL = "https://coffeecorner-4u7g.onrender.com/";
     public static final String API_BASE_URL = BASE_URL;
     public static final String API_LOGIN = "auth/login";
     public static final String API_REGISTER = "auth/register";
