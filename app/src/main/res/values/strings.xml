@@ -1,16 +1,16 @@
 <resources>
     <string name="app_name" translatable="false">Apsara android</string>
     <string name="continues" translatable="false">Continue</string>
-    <string name="welcome">Welcome</string>
-    <string name="explore_our_menu_and_order_your_favorite_coffee">Explore our menu and order your favorite coffee.</string>
-    <string name="coffee_cup">Coffee cup</string>
-    <string name="coffee_corner">COFFEE corner</string>
-    <string name="sign_in_with_pinterest">Sign in with Pinterest</string>
-    <string name="remember_password">Remember password</string>
-    <string name="by_signing_in_you_are_agreeing_our_terms_and_privacy_policy">By signing in you are agreeing our Terms and privacy policy</string>
-    <string name="email_address">Email address</string>
-    <string name="password">Password</string>
-    <string name="or_connect_with">or connect with</string>
+    <string name="welcome" translatable="false">Welcome</string>
+    <string name="explore_our_menu_and_order_your_favorite_coffee" translatable="false">Explore our menu and order your favorite coffee.</string>
+    <string name="coffee_cup" translatable="false">Coffee cup</string>
+    <string name="coffee_corner" translatable="false">COFFEE corner</string>
+    <string name="sign_in_with_pinterest" translatable="false">Sign in with Pinterest</string>
+    <string name="remember_password" translatable="false">Remember password</string>
+    <string name="by_signing_in_you_are_agreeing_our_terms_and_privacy_policy" translatable="false">By signing in you are agreeing our Terms and privacy policy</string>
+    <string name="email_address" translatable="false">Email address</string>
+    <string name="password" translatable="false">Password</string>
+    <string name="or_connect_with" translatable="false">or connect with</string>
     <string name="forgot_password_title">"forget password ? "</string>
     <string name="forgot_password_subtitle">Enter your email address</string>
     <string name="send_reset_link">Reset</string>
@@ -129,7 +129,7 @@
     <string name="profile_updated">Profile updated successfully</string>
     <string name="error_update_profile">Error updating profile</string>
     <string name="upload_image_failed">Failed to upload image</string>
-    <string name="please_wait">Please wait...</string>
+    <string name="please_wait">Please wait…</string>
 
     <!-- Loyalty and Rewards Strings -->
     <string name="my_points">My Points</string>
@@ -194,8 +194,6 @@
     <string name="notifications_cleared">Notifications cleared</string>
     <string name="notifications_marked_read">All notifications marked as read</string>
 
-    <!-- Additional UI Component Labels and Descriptions -->
-    <!-- These were removed as duplicates of entries above -->
 
     <!-- Additional UI Components for ProductDetailsFragment -->
     <string name="calories_format">%d cal</string>

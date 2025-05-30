@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="continues" translatable="false">Continue</string>
-    <string name="forgot_password_title">"forget password "</string>
-    <string name="forgot_password_subtitle">Forgot your Password</string>
-    <string name="send_reset_link">Reset</string>
-    <string name="back_to_sign_in">Back to Sigin</string>
-    <string name="coffee_corner_logo">logo\n</string>
-    <string name="by_signing_in_you_are_agreeing_our">By signing in you are agreeing our</string>
-    <string name="terms_and_privacy_policy">Terms and privacy policy</string>
-    <string name="create_account">Create New Account</string>
-    <string name="full_name">FullName</string>
-    <string name="confirm_password">comfirm password\n</string>
-    <string name="sign_up">Sign Up</string>
-    <string name="already_have_an_account">Already have an account ?</string>
-    <string name="sign_in_underlined">Sign in</string>
-    <string name="sign_in">Sign in</string>
-    <string name="order_summary">Order Summary</string>
+    <string name="forgot_password_title" translatable="false">"forget password "</string>
+    <string name="forgot_password_subtitle" translatable="false">Forgot your Password</string>
+    <string name="send_reset_link" translatable="false">Reset</string>
+    <string name="back_to_sign_in" translatable="false">Back to Sigin</string>
+    <string name="coffee_corner_logo" translatable="false">logo\n</string>
+    <string name="by_signing_in_you_are_agreeing_our" translatable="false">By signing in you are agreeing our</string>
+    <string name="terms_and_privacy_policy" translatable="false">Terms and privacy policy</string>
+    <string name="create_account" translatable="false">Create New Account</string>
+    <string name="full_name" translatable="false">FullName</string>
+    <string name="confirm_password" translatable="false">comfirm password\n</string>
+    <string name="sign_up" translatable="false">Sign Up</string>
+    <string name="already_have_an_account" translatable="false">Already have an account ?</string>
+    <string name="sign_in_underlined" translatable="false">Sign in</string>
+    <string name="sign_in" translatable="false">Sign in</string>
+    <string name="order_summary" translatable="false">Order Summary</string>
     <string name="delivery_fee">Delivery Fee</string>
     <string name="total_amount">Total Amount</string>
     <string name="payment_method">Payment Method</string>

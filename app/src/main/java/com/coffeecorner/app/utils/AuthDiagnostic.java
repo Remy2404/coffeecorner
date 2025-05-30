@@ -28,13 +28,11 @@ import retrofit2.Response;
 public class AuthDiagnostic {
     private static final String TAG = "AuthDiagnostic";
 
-    private final Context context;
     private final PreferencesHelper preferencesHelper;
     private final ApiService apiService;
     private final FirebaseAuth firebaseAuth;
 
     public AuthDiagnostic(Context context) {
-        this.context = context;
         this.preferencesHelper = new PreferencesHelper(context);
         this.apiService = RetrofitClient.getApiService();
         this.firebaseAuth = FirebaseAuth.getInstance();
@@ -283,10 +281,10 @@ public class AuthDiagnostic {
         // Adjust based on your actual API
         String userId = preferencesHelper.getUserId();
         if (userId != null) {
-            apiService.getUserById(userId).enqueue(new Callback<ApiResponse<User>>() {
+            apiService.getUserById(userId).enqueue(new Callback<>() {
                 @Override
                 public void onResponse(@NonNull Call<ApiResponse<User>> call,
-                        @NonNull Response<ApiResponse<User>> response) {
+                                       @NonNull Response<ApiResponse<User>> response) {
                     Log.d(TAG, "User profile endpoint response: " + response.code());
 
                     if (response.isSuccessful() && response.body() != null) {

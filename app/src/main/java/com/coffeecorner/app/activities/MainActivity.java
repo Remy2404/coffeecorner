@@ -190,4 +190,12 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, message, Toast.LENGTH_LONG).show();
         }
     }
+
+    public int getDebugClickCount() {
+        return debugClickCount;
+    }
+
+    public void setDebugClickCount(int debugClickCount) {
+        this.debugClickCount = debugClickCount;
+    }
 }
