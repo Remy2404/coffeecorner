@@ -3,126 +3,66 @@ package com.coffeecorner.app.activities;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowInsetsController;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import com.coffeecorner.app.R;
 import com.coffeecorner.app.utils.PreferencesHelper;
-
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.RecyclerView;
-import androidx.viewpager2.widget.ViewPager2;
-
 import com.google.android.material.button.MaterialButton;
-import com.google.android.material.tabs.TabLayout;
-import com.google.android.material.tabs.TabLayoutMediator;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.viewpager2.widget.ViewPager2;
+import android.view.LayoutInflater;
+import android.view.ViewGroup;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * OnboardingActivity - Introduces users to the Coffee Corner app
  * Displays a series of slides with app features and benefits
  */
 public class OnboardingActivity extends AppCompatActivity {
-
-    private ViewPager2 viewPager;
-    private MaterialButton btnNext;
     private PreferencesHelper preferencesHelper;
-
-    // Content for the onboarding slides
-    private final String[] titles = {
-            "Welcome to Coffee Corner",
-            "Discover Our Menu",
-            "Fast Delivery",
-            "Earn Rewards"
-    };
-
-    private final String[] descriptions = {
-            "Your perfect coffee experience starts here. Explore our selection of premium coffee and treats.",
-            "Browse our wide range of coffee, tea, and pastries. Customize your order just the way you like it.",
-            "Order ahead and pick up at your convenience, or get it delivered right to your doorstep.",
-            "Earn points with every purchase and redeem them for free drinks and special offers."
-    }; // Drawable resources for onboarding slides
-    private final int[] images = {
-            R.drawable.onboarding_welcome,
-            R.drawable.onboarding_menu,
-            R.drawable.onboarding_delivery,
-            R.drawable.onboarding_rewards
-    };
+    private ViewPager2 viewPager;
+    private OnboardingAdapter adapter;
+    private List<OnboardingItem> onboardingItems;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        // Initialize PreferencesHelper
         preferencesHelper = new PreferencesHelper(this);
-
-        // Set content view first
         setContentView(R.layout.activity_onboarding);
 
         // Make the activity fullscreen using the latest recommended approach
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             Window window = getWindow();
             window.setDecorFitsSystemWindows(false);
-
-            // Additionally, we can control system bar appearance
             WindowInsetsController insetsController = window.getInsetsController();
             if (insetsController != null) {
                 insetsController.setSystemBarsBehavior(
                         WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
             }
         } else {
-            // For older versions, use the older method
             int flags = View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
                     View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
             getWindow().getDecorView().setSystemUiVisibility(flags);
         }
 
-        // Initialize views
-        viewPager = findViewById(R.id.viewPagerOnboarding);
-        btnNext = findViewById(R.id.btnNext);
-        MaterialButton btnSkip = findViewById(R.id.btnSkip);
-        TabLayout tabIndicator = findViewById(R.id.tabIndicator);
+        // Setup onboarding data
+        onboardingItems = new ArrayList<>();
+        onboardingItems.add(new OnboardingItem(R.drawable.onboarding_welcome1, "Welcome to Coffee Corner", "Your perfect coffee experience starts here. Explore our selection of premium coffee and treats."));
+        onboardingItems.add(new OnboardingItem(R.drawable.onboarding_menu, "Order Easily", "Browse our menu and order your favorite coffee in seconds."));
+        onboardingItems.add(new OnboardingItem(R.drawable.onboarding_sorry_bro_heng, "Earn Rewards", "Collect points with every purchase and enjoy exclusive rewards!"));
 
-        // Set up the ViewPager with the slides adapter
-        OnboardingAdapter adapter = new OnboardingAdapter();
+        viewPager = findViewById(R.id.viewPager);
+        adapter = new OnboardingAdapter(onboardingItems);
         viewPager.setAdapter(adapter);
 
-        // Connect the tab indicators with the ViewPager
-        new TabLayoutMediator(tabIndicator, viewPager,
-                (tab, position) -> {
-                    // No text for tabs, just the indicator dots
-                }).attach();
-
-        // Next button click logic
-        btnNext.setOnClickListener(v -> {
-            // If at the last slide, go to login
-            if (viewPager.getCurrentItem() == titles.length - 1) {
-                navigateToLogin();
-            } else {
-                // Otherwise, go to the next slide
-                viewPager.setCurrentItem(viewPager.getCurrentItem() + 1);
-            }
-        });
-
-        // Skip button click logic - go straight to login
-        btnSkip.setOnClickListener(v -> navigateToLogin());
-
-        // Set up a listener to update the Next button text on the last slide
-        viewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
-            @Override
-            public void onPageSelected(int position) {
-                if (position == titles.length - 1) {
-                    btnNext.setText("Get Started");
-                } else {
-                    btnNext.setText("Next");
-                }
-            }
-        });
+        // Tab indicators (optional, if you have TabLayout)
+        // TabLayout tabLayout = findViewById(R.id.tabLayout);
+        // new TabLayoutMediator(tabLayout, viewPager, (tab, position) -> {}).attach();
     }
 
     /**
@@ -138,49 +78,64 @@ public class OnboardingActivity extends AppCompatActivity {
         finish(); // Close this activity so it's not in the back stack
     }
 
-    /**
-     * Adapter for the onboarding slides
-     */
-    private class OnboardingAdapter extends RecyclerView.Adapter<OnboardingAdapter.OnboardingViewHolder> {
+    // --- OnboardingItem data model ---
+    static class OnboardingItem {
+        int imageResId;
+        String title;
+        String description;
+        OnboardingItem(int imageResId, String title, String description) {
+            this.imageResId = imageResId;
+            this.title = title;
+            this.description = description;
+        }
+    }
 
-        @NonNull
+    // --- Adapter for ViewPager2 ---
+    class OnboardingAdapter extends androidx.recyclerview.widget.RecyclerView.Adapter<OnboardingAdapter.OnboardingViewHolder> {
+        private final List<OnboardingItem> items;
+        OnboardingAdapter(List<OnboardingItem> items) { this.items = items; }
+
         @Override
-        public OnboardingViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            return new OnboardingViewHolder(
-                    LayoutInflater.from(parent.getContext()).inflate(
-                            R.layout.onboarding_slide, parent, false));
+        public OnboardingViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.onboarding_slide, parent, false);
+            return new OnboardingViewHolder(view);
         }
 
         @Override
-        public void onBindViewHolder(@NonNull OnboardingViewHolder holder, int position) {
-            holder.setData(titles[position], descriptions[position], images[position]);
+        public void onBindViewHolder(OnboardingViewHolder holder, int position) {
+            OnboardingItem item = items.get(position);
+            holder.imgOnboarding.setImageResource(item.imageResId);
+            holder.tvTitle.setText(item.title);
+            holder.tvDescription.setText(item.description);
+            if (position == items.size() - 1) {
+                holder.btnNext.setText("Get Started");
+            } else {
+                holder.btnNext.setText("Next");
+            }
+            holder.btnSkip.setOnClickListener(v -> navigateToLogin());
+            holder.btnNext.setOnClickListener(v -> {
+                if (position == items.size() - 1) {
+                    navigateToLogin();
+                } else {
+                    viewPager.setCurrentItem(position + 1, true);
+                }
+            });
         }
 
         @Override
-        public int getItemCount() {
-            return titles.length;
-        }
+        public int getItemCount() { return items.size(); }
 
-        /**
-         * ViewHolder for each onboarding slide
-         */
-        class OnboardingViewHolder extends RecyclerView.ViewHolder {
-
-            private final TextView tvTitle;
-            private final TextView tvDescription;
-            private final ImageView imgOnboarding;
-
-            OnboardingViewHolder(@NonNull View itemView) {
+        class OnboardingViewHolder extends androidx.recyclerview.widget.RecyclerView.ViewHolder {
+            ImageView imgOnboarding;
+            TextView tvTitle, tvDescription;
+            MaterialButton btnSkip, btnNext;
+            OnboardingViewHolder(View itemView) {
                 super(itemView);
+                imgOnboarding = itemView.findViewById(R.id.imgOnboarding);
                 tvTitle = itemView.findViewById(R.id.tvTitle);
                 tvDescription = itemView.findViewById(R.id.tvDescription);
-                imgOnboarding = itemView.findViewById(R.id.imgOnboarding);
-            }
-
-            void setData(String title, String description, int imageResource) {
-                tvTitle.setText(title);
-                tvDescription.setText(description);
-                imgOnboarding.setImageResource(imageResource);
+                btnSkip = itemView.findViewById(R.id.btnSkip);
+                btnNext = itemView.findViewById(R.id.btnNext);
             }
         }
     }

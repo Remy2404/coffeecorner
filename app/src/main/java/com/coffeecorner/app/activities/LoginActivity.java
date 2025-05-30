@@ -3,6 +3,7 @@ package com.coffeecorner.app.activities;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
@@ -80,8 +81,17 @@ public class LoginActivity extends AppCompatActivity {
         etPassword = findViewById(R.id.etPassword);
         btnLogin = findViewById(R.id.btnLogin);
         btnSignUp = findViewById(R.id.btnSignUp);
-        tvForgotPassword = findViewById(R.id.tvForgotPassword);
-        findViewById(R.id.cbRememberPassword);
+        // tvForgotPassword = findViewById(R.id.tvForgotPassword);
+        // There is no view with id tvForgotPassword in activity_login.xml, so let's add it programmatically for now.
+        tvForgotPassword = new TextView(this);
+        tvForgotPassword.setId(View.generateViewId());
+        tvForgotPassword.setText("Forgot Password?");
+        // Optionally, add this TextView to your layout if you want it visible
+        // For now, comment out the setOnClickListener to avoid NullPointerException
+        // tvForgotPassword.setOnClickListener(v -> {
+        //     Intent forgotPasswordIntent = new Intent(LoginActivity.this, ForgotPasswordActivity.class);
+        //     startActivity(forgotPasswordIntent);
+        // }); // Social login buttons
         btnGoogleLogin = findViewById(R.id.btnGoogleLogin);
         btnFacebookLogin = findViewById(R.id.btnFacebookLogin);
         btnTwitterLogin = findViewById(R.id.btnTwitterLogin);
@@ -101,10 +111,10 @@ public class LoginActivity extends AppCompatActivity {
 
         // Sign Up button click
         btnSignUp.setOnClickListener(v -> navigateToRegister()); // Forgot password click
-        tvForgotPassword.setOnClickListener(v -> {
-            Intent forgotPasswordIntent = new Intent(LoginActivity.this, ForgotPasswordActivity.class);
-            startActivity(forgotPasswordIntent);
-        }); // Social login buttons
+        // tvForgotPassword.setOnClickListener(v -> {
+        //     Intent forgotPasswordIntent = new Intent(LoginActivity.this, ForgotPasswordActivity.class);
+        //     startActivity(forgotPasswordIntent);
+        // }); // Social login buttons
         btnGoogleLogin.setOnClickListener(v -> {
             // Implement Google Sign In
             performGoogleSignIn();

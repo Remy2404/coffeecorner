@@ -26,128 +26,21 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.coffeecorner.app.R;
 import com.coffeecorner.app.activities.LoginActivity;
-import com.coffeecorner.app.activities.MainActivity;
 import com.coffeecorner.app.models.User;
 import com.coffeecorner.app.utils.PreferencesHelper;
 import com.coffeecorner.app.viewmodel.UserViewModel;
 import com.coffeecorner.app.viewmodel.UserViewModelFactory;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
-public class ProfileFragment extends Fragment {
-
-    private ImageView ivProfilePic;
+public class ProfileFragment extends Fragment {    private ImageView ivProfilePic;
     private TextView tvUsername, tvEmail, tvLoyaltyPoints, tvTotalOrders, tvMemberSince;
     private ImageButton btnEditProfile;
     private View btnSettings;
     private UserViewModel userViewModel;
-    private Switch switchTheme;
     private PreferencesHelper preferencesHelper;
-    private int debugClickCount = 0;
-
-    // Theme switching state management
-    private boolean isThemeSwitching = false;
-    private Handler themeHandler = new Handler(Looper.getMainLooper());
 
     public ProfileFragment() {
         // Required empty public constructor
-    }
-    
-    /**
-     * Setup debug features - tap profile picture 7 times to show debug menu
-     */
-    private void setupDebugFeatures(View view) {
-        ivProfilePic.setOnClickListener(v -> {
-            debugClickCount++;
-            
-            if (debugClickCount >= 7) {
-                debugClickCount = 0;
-                showDebugMenu();
-            } else {
-                // Reset counter after 2 seconds if not reached
-                themeHandler.removeCallbacks(() -> debugClickCount = 0);
-                themeHandler.postDelayed(() -> debugClickCount = 0, 2000);
-            }
-        });
-    }
-    
-    /**
-     * Show debug menu for authentication testing
-     */
-    private void showDebugMenu() {
-        String[] options = {
-            "Run Auth Diagnostic",
-            "Check Auth State", 
-            "Force Re-auth",
-            "Clear Auth Data",
-            "Cancel"
-        };
-        
-        new MaterialAlertDialogBuilder(requireContext())
-            .setTitle("Debug Menu")
-            .setItems(options, (dialog, which) -> {
-                switch (which) {
-                    case 0: // Run Auth Diagnostic
-                        runAuthDiagnostic();
-                        break;
-                    case 1: // Check Auth State
-                        checkAuthState();
-                        break;
-                    case 2: // Force Re-auth
-                        forceReauth();
-                        break;
-                    case 3: // Clear Auth Data
-                        clearAuthData();
-                        break;
-                    default: // Cancel
-                        break;
-                }
-            })
-            .show();
-    }
-    
-    /**
-     * Run authentication diagnostic
-     */
-    private void runAuthDiagnostic() {
-        if (getActivity() instanceof MainActivity) {
-            ((MainActivity) getActivity()).runAuthDiagnostic();
-        }
-    }
-    
-    /**
-     * Check current authentication state
-     */
-    private void checkAuthState() {
-        if (getActivity() instanceof MainActivity) {
-            ((MainActivity) getActivity()).checkAuthState();
-        }
-    }
-    
-    /**
-     * Force re-authentication
-     */
-    private void forceReauth() {
-        if (getActivity() instanceof MainActivity) {
-            ((MainActivity) getActivity()).forceReauth();
-        }
-    }
-    
-    /**
-     * Clear all authentication data
-     */
-    private void clearAuthData() {
-        new MaterialAlertDialogBuilder(requireContext())
-            .setTitle("Clear Auth Data")
-            .setMessage("This will log you out and clear all authentication data. Continue?")
-            .setPositiveButton("Yes", (dialog, which) -> {
-                if (getActivity() instanceof MainActivity) {
-                    ((MainActivity) getActivity()).clearAuthData();
-                }
-                // Navigate to login after clearing data
-                navigateToLogin();
-            })
-            .setNegativeButton("No", null)
-            .show();
     }
 
     @Override
@@ -166,9 +59,7 @@ public class ProfileFragment extends Fragment {
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-
-        // Initialize views
+        super.onViewCreated(view, savedInstanceState);        // Initialize views
         initializeViews(view);
 
         // Setup observers
@@ -176,46 +67,7 @@ public class ProfileFragment extends Fragment {
 
         // Setup click listeners
         setupClickListeners(view);
-        
-        // Setup debug functionality
-        setupDebugFeatures(view); // Set initial switch state from PreferencesHelper (centralized source of truth)
-        isThemeSwitching = true;
-        switchTheme.setChecked(preferencesHelper.isDarkModeEnabled());
-        isThemeSwitching = false;
-
-        // Set up the dark mode switch with proper debouncing and state management
-        switchTheme.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            // Prevent recursive calls during theme switching
-            if (isThemeSwitching) {
-                return;
-            }
-
-            // Set switching flag to prevent multiple rapid changes
-            isThemeSwitching = true;
-
-            // Save preference immediately to PreferencesHelper (single source of truth)
-            preferencesHelper.setDarkModeEnabled(isChecked);
-
-            // Remove any pending theme changes to prevent conflicts
-            themeHandler.removeCallbacksAndMessages(null);
-
-            // Apply theme change with debouncing for smooth transition
-            themeHandler.postDelayed(() -> {
-                try {
-                    int targetMode = isChecked ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO;
-                    // Only apply if different from current mode to prevent unnecessary recreation
-                    if (AppCompatDelegate.getDefaultNightMode() != targetMode) {
-                        AppCompatDelegate.setDefaultNightMode(targetMode);
-                    }
-                } finally {
-                    // Reset switching flag after completion
-                    isThemeSwitching = false;
-                }
-            }, 200); // 200ms delay for smooth transition
-        });
-    }
-
-    private void initializeViews(View view) {
+    }    private void initializeViews(View view) {
         ivProfilePic = view.findViewById(R.id.imgProfile);
         tvUsername = view.findViewById(R.id.tvName);
         tvEmail = view.findViewById(R.id.tvEmail);
@@ -224,7 +76,6 @@ public class ProfileFragment extends Fragment {
         tvMemberSince = view.findViewById(R.id.tvMemberSince);
         btnEditProfile = view.findViewById(R.id.btnEditProfile);
         btnSettings = view.findViewById(R.id.btnSettings);
-        switchTheme = view.findViewById(R.id.switchTheme);
     }
 
     private void setupObservers() {
@@ -249,44 +100,36 @@ public class ProfileFragment extends Fragment {
             } catch (Exception e) {
                 Toast.makeText(requireContext(), "Settings screen is under development", Toast.LENGTH_SHORT).show();
             }
-        });
-
-        // Setup click listeners for action items
+        });        // Setup click listeners for action items
         view.findViewById(R.id.layoutMyOrders).setOnClickListener(v -> {
             Navigation.findNavController(v).navigate(R.id.action_profileFragment_to_orderHistoryFragment);
-        }); // Add click listener for Payment Methods
-        view.findViewById(R.id.layoutPaymentMethods).setOnClickListener(v -> {
-            try {
-                Navigation.findNavController(v).navigate(R.id.action_profileFragment_to_paymentMethodsFragment);
-            } catch (Exception e) {
-                Toast.makeText(requireContext(), "Payment Methods screen is under development", Toast.LENGTH_SHORT)
-                        .show();
-            }
-        }); // Add click listener for My Rewards
+        });
+
+        // Add click listener for My Rewards
         view.findViewById(R.id.layoutMyRewards).setOnClickListener(v -> {
             try {
                 Navigation.findNavController(v).navigate(R.id.action_profileFragment_to_myRewardsFragment);
             } catch (Exception e) {
                 Toast.makeText(requireContext(), "My Rewards screen is under development", Toast.LENGTH_SHORT).show();
             }
-        }); // Add click listener for About Us
-        view.findViewById(R.id.layoutAboutUs).setOnClickListener(v -> {
+        });
+
+        // Add click listener for Loyalty Program
+        view.findViewById(R.id.layoutLoyaltyProgram).setOnClickListener(v -> {
             try {
-                Navigation.findNavController(v).navigate(R.id.action_profileFragment_to_aboutUsFragment);
+                Navigation.findNavController(v).navigate(R.id.action_profileFragment_to_loyaltyFragment);
             } catch (Exception e) {
-                Toast.makeText(requireContext(), "About Us screen is under development", Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), "Loyalty Program screen is under development", Toast.LENGTH_SHORT).show();
             }
-        }); // Add click listener for My Addresses
+        });
+
+        // Add click listener for My Addresses
         view.findViewById(R.id.layoutMyAddresses).setOnClickListener(v -> {
             try {
                 Navigation.findNavController(v).navigate(R.id.action_profileFragment_to_myAddressesFragment);
             } catch (Exception e) {
                 Toast.makeText(requireContext(), "My Addresses screen is under development", Toast.LENGTH_SHORT).show();
             }
-        });
-
-        view.findViewById(R.id.layoutLogout).setOnClickListener(v -> {
-            showLogoutConfirmationDialog();
         });
     }
 
@@ -313,9 +156,7 @@ public class ProfileFragment extends Fragment {
         } else {
             ivProfilePic.setImageResource(R.drawable.default_profile);
         }
-    }
-
-    private void showLogoutConfirmationDialog() {
+    }    private void showLogoutConfirmationDialog() {
         new MaterialAlertDialogBuilder(requireContext())
                 .setTitle("Logout")
                 .setMessage("Are you sure you want to logout?")
@@ -325,24 +166,10 @@ public class ProfileFragment extends Fragment {
                 })
                 .setNegativeButton("No", null)
                 .show();
-    }
-
-    private void navigateToLogin() {
+    }private void navigateToLogin() {
         Intent intent = new Intent(requireActivity(), LoginActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
         requireActivity().finish();
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        // Clean up handler to prevent memory leaks
-        if (themeHandler != null) {
-            themeHandler.removeCallbacksAndMessages(null);
-        }
-        
-        // Reset debug click count
-        debugClickCount = 0;
     }
 }
