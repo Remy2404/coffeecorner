@@ -15,14 +15,13 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.coffeecorner.app.R;
 import com.coffeecorner.app.models.FeedbackItem;
-import com.coffeecorner.app.utils.AppUtils;
 
 import java.util.List;
 
 public class FeedbackAdapter extends RecyclerView.Adapter<FeedbackAdapter.FeedbackViewHolder> {
 
-    private Context context;
-    private List<FeedbackItem> feedbackItems;
+    private final Context context;
+    private final List<FeedbackItem> feedbackItems;
     private OnFeedbackInteractionListener listener;
 
     // Interface for handling interactions
@@ -66,16 +65,7 @@ public class FeedbackAdapter extends RecyclerView.Adapter<FeedbackAdapter.Feedba
         holder.tvTimeAgo.setText(item.getTimeAgo());
 
         // Load user photo if available
-        if (item.getUserPhotoUrl() != null && !item.getUserPhotoUrl().isEmpty()) {
-            // Use image loading library like Glide or Picasso
-            // Glide.with(context).load(item.getUserPhotoUrl()).into(holder.ivUserPhoto);
-
-            // For now we'll use a placeholder
-            holder.ivUserPhoto.setImageResource(R.drawable.ic_default_user);
-        } else {
-            // Set default user photo
-            holder.ivUserPhoto.setImageResource(R.drawable.ic_default_user);
-        }        // Set up interaction listeners
+        holder.ivUserPhoto.setImageResource(R.drawable.ic_default_user);
         holder.tvHelpful.setOnClickListener(v -> {
             if (listener != null) {
                 listener.onHelpfulClicked(item, holder.getAdapterPosition());

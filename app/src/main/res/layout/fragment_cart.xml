@@ -290,7 +290,8 @@
             android:textSize="16sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tvEmptyCartTitle" />        <androidx.constraintlayout.widget.ConstraintLayout
+            app:layout_constraintTop_toBottomOf="@id/tvEmptyCartTitle" /> 
+            <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/btnBrowseMenuContainer"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -305,7 +306,7 @@
                 android:layout_height="wrap_content"
                 android:backgroundTint="@color/color_02"
                 android:paddingStart="48dp"
-                android:paddingTop="12dp"
+                android:paddingTop="30dp"
                 android:paddingEnd="32dp"
                 android:paddingBottom="12dp"
                 android:text="Browse Menu"

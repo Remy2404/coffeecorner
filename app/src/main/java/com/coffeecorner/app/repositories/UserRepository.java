@@ -7,10 +7,12 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import com.coffeecorner.app.models.FirebaseAuthRequest;
 import com.coffeecorner.app.models.User;
 import com.coffeecorner.app.network.ApiService;
 import com.coffeecorner.app.network.RetrofitClient;
 import com.coffeecorner.app.network.ApiResponse;
+import com.coffeecorner.app.network.AuthResponse;
 import com.coffeecorner.app.utils.PreferencesHelper;
 
 import retrofit2.Call;
@@ -399,6 +401,33 @@ public class UserRepository {
     }
 
     /**
+     * Change user password (overloaded method for EditProfileFragment)
+     *
+     * @param currentPassword Current password
+     * @param newPassword     New password
+     * @param callback        Callback to handle result
+     */
+    public void changePassword(String currentPassword, String newPassword, @NonNull PasswordChangeCallback callback) {
+        String userId = preferencesHelper.getUserId();
+        if (userId == null || userId.isEmpty()) {
+            callback.onError("User ID not found. Please log in again.");
+            return;
+        }
+
+        changePassword(userId, currentPassword, newPassword, new ResetCallback() {
+            @Override
+            public void onSuccess(String message) {
+                callback.onSuccess();
+            }
+
+            @Override
+            public void onError(String errorMessage) {
+                callback.onError(errorMessage);
+            }
+        });
+    }
+
+    /**
      * Update user profile with Supabase integration
      * Falls back to local storage if Supabase is not available
      */
@@ -422,9 +451,48 @@ public class UserRepository {
         saveUserToPreferences(user);
         currentUser.setValue(user);
 
-        // For now, always succeed since we're using local storage
-        // TODO: Implement actual Supabase integration when server is available
-        callback.onSuccess(user);
+        // Make API call to update user profile on the server
+        String authToken = preferencesHelper.getAuthToken();
+        if (authToken == null || authToken.isEmpty()) {
+            Log.w("UserRepository", "No auth token available, profile update may fail");
+        }
+
+        // Use the API service to update the profile
+        apiService.updateUserProfile(user).enqueue(new Callback<ApiResponse<User>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<User>> call, Response<ApiResponse<User>> response) {
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                    // Update was successful on the server
+                    User updatedUser = response.body().getData();
+                    // Update local storage and LiveData with server response
+                    currentUser.setValue(updatedUser);
+                    saveUserToPreferences(updatedUser);
+                    callback.onSuccess(updatedUser);
+                    Log.d("UserRepository", "Profile updated successfully on server");
+                } else {
+                    // Server rejected the update or returned an error
+                    String errorMsg = "Failed to update profile on server";
+                    if (response.body() != null && response.body().getMessage() != null) {
+                        errorMsg = response.body().getMessage();
+                    }
+                    Log.e("UserRepository", "Server error: " + errorMsg + ", Code: " + response.code());
+
+                    // Still consider it a "success" since we have local data saved
+                    // This ensures the user experience isn't disrupted if server has issues
+                    Log.w("UserRepository", "Using local profile data despite server error");
+                    callback.onSuccess(user);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse<User>> call, Throwable t) {
+                // Network error, but local data is still saved
+                Log.e("UserRepository", "Network error during profile update", t);
+                // Still return success with local data
+                Log.w("UserRepository", "Using local profile data despite network error");
+                callback.onSuccess(user);
+            }
+        });
     }
 
     /**
@@ -445,6 +513,12 @@ public class UserRepository {
         if (user.getPhotoUrl() != null) {
             preferencesHelper.saveUserProfilePic(user.getPhotoUrl());
         }
+        if (user.getGender() != null) {
+            preferencesHelper.saveUserGender(user.getGender());
+        }
+        if (user.getDateOfBirth() != null) {
+            preferencesHelper.saveUserDateOfBirth(user.getDateOfBirth());
+        }
     }
 
     /**
@@ -457,46 +531,160 @@ public class UserRepository {
         user.setEmail(preferencesHelper.getUserEmail());
         user.setPhone(preferencesHelper.getUserPhone());
         user.setPhotoUrl(preferencesHelper.getUserProfilePic());
+        user.setGender(preferencesHelper.getUserGender());
+        user.setDateOfBirth(preferencesHelper.getUserDateOfBirth());
         return user;
+    }
+
+    /**
+     * Fetch fresh user profile data from server
+     * This method fetches the most current profile data from the database
+     * and updates both LiveData and local preferences cache
+     *
+     * @param callback Callback to handle success or error
+     */
+    public void fetchUserProfileFromServer(ProfileCallback callback) {
+        String authToken = preferencesHelper.getAuthToken();
+        if (authToken == null || authToken.isEmpty()) {
+            callback.onError("Authentication token not found");
+            return;
+        }
+        
+        apiService.getCurrentUserProfile().enqueue(new Callback<ApiResponse<User>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<User>> call, Response<ApiResponse<User>> response) {
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                    User user = response.body().getData();
+                    currentUser.setValue(user);
+                    saveUserToPreferences(user);
+                    callback.onSuccess(user);
+                    Log.d("UserRepository", "Fresh profile data fetched successfully");
+                } else {
+                    String errorMsg = "Failed to fetch profile data";
+                    if (response.body() != null && response.body().getMessage() != null) {
+                        errorMsg = response.body().getMessage();
+                    }
+                    Log.e("UserRepository", "Fetch profile failed: " + response.code() + " - " + errorMsg);
+                    callback.onError(errorMsg);
+                }
+            }
+            
+            @Override
+            public void onFailure(Call<ApiResponse<User>> call, Throwable t) {
+                Log.e("UserRepository", "Fetch profile network error", t);
+                callback.onError("Network error: " + t.getMessage());
+            }
+        });
     }
 
     /**
      * Authenticate with backend using Firebase ID token
      */
     public void authenticateWithFirebase(String firebaseToken, @NonNull AuthCallback callback) {
-        apiService.authenticateWithFirebase(firebaseToken).enqueue(new Callback<ApiResponse<User>>() {
+        // Try both authentication methods - form-encoded and JSON
+        // First try JSON approach
+        FirebaseAuthRequest jsonRequest = new FirebaseAuthRequest(firebaseToken);
+
+        Log.d("UserRepository", "Trying Firebase auth with JSON body...");
+
+        apiService.authenticateWithFirebaseJson(jsonRequest).enqueue(new Callback<AuthResponse>() {
             @Override
-            public void onResponse(@NonNull Call<ApiResponse<User>> call,
-                    @NonNull Response<ApiResponse<User>> response) {
-                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                    User user = response.body().getData();
-                    if (user != null) {
-                        currentUser.setValue(user);
-                        saveUserToPreferences(user);
-                        callback.onSuccess(user);
-                    } else {
-                        Log.e("UserRepository", "User object is null in response");
-                        callback.onError("User data is missing from server response.");
-                    }
-                } else {
-                    Log.e("UserRepository", "Firebase auth failed: " + response.code() + " - " + response.message());
-                    try {
-                        if (response.errorBody() != null) {
-                            Log.e("UserRepository", "Error body: " + response.errorBody().string());
-                        }
-                    } catch (Exception e) {
-                        Log.e("UserRepository", "Error parsing error body", e);
-                    }
-                    callback.onError("Authentication failed. Please try again.");
-                }
+            public void onResponse(@NonNull Call<AuthResponse> call,
+                    @NonNull Response<AuthResponse> response) {
+                processAuthResponse(response, callback, firebaseToken, false);
             }
 
             @Override
-            public void onFailure(@NonNull Call<ApiResponse<User>> call, @NonNull Throwable t) {
-                Log.e("UserRepository", "Firebase auth network error", t);
+            public void onFailure(@NonNull Call<AuthResponse> call, @NonNull Throwable t) {
+                Log.e("UserRepository", "Firebase auth with JSON failed, trying form-encoded", t);
+                // Fall back to form-encoded approach
+                tryFormEncodedAuth(firebaseToken, callback);
+            }
+        });
+    }
+
+    /**
+     * Try authenticating with form-encoded parameters
+     */
+    private void tryFormEncodedAuth(String firebaseToken, @NonNull AuthCallback callback) {
+        Log.d("UserRepository", "Trying Firebase auth with form-encoded...");
+
+        apiService.authenticateWithFirebase(firebaseToken).enqueue(new Callback<AuthResponse>() {
+            @Override
+            public void onResponse(@NonNull Call<AuthResponse> call,
+                    @NonNull Response<AuthResponse> response) {
+                processAuthResponse(response, callback, firebaseToken, true);
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<AuthResponse> call, @NonNull Throwable t) {
+                Log.e("UserRepository", "Firebase auth network error (both methods failed)", t);
                 callback.onError("Network error. Please try again. " + t.getMessage());
             }
         });
+    }
+
+    /**
+     * Process authentication response
+     */
+    private void processAuthResponse(Response<AuthResponse> response, AuthCallback callback,
+            String firebaseToken, boolean isLastAttempt) {
+        if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+            AuthResponse authResponse = response.body();
+            User user = authResponse.getUser();
+
+            if (user != null) {
+                // Save access token
+                if (authResponse.getAccessToken() != null) {
+                    preferencesHelper.saveAuthToken(authResponse.getAccessToken());
+                    Log.d("UserRepository", "Access token saved successfully: " +
+                            authResponse.getAccessToken().substring(0,
+                                    Math.min(15, authResponse.getAccessToken().length()))
+                            + "...");
+                }
+
+                // Save user data
+                currentUser.setValue(user);
+                saveUserToPreferences(user);
+
+                Log.d("UserRepository", "Firebase authentication successful for user: " + user.getEmail());
+                callback.onSuccess(user);
+            } else {
+                Log.e("UserRepository", "User object is null in AuthResponse");
+                Log.e("UserRepository", "Full response: success=" + authResponse.isSuccess() +
+                        ", message=" + authResponse.getMessage() +
+                        ", accessToken=" + (authResponse.getAccessToken() != null ? "present" : "null"));
+
+                // If this was our last attempt, report the error
+                if (isLastAttempt) {
+                    callback.onError("User data is missing from server response.");
+                } else {
+                    // Try the form-encoded approach
+                    tryFormEncodedAuth(firebaseToken, callback);
+                }
+            }
+        } else {
+            Log.e("UserRepository", "Firebase auth failed: " + response.code() + " - " + response.message());
+            try {
+                if (response.errorBody() != null) {
+                    Log.e("UserRepository", "Error body: " + response.errorBody().string());
+                }
+                if (response.body() != null) {
+                    Log.e("UserRepository", "Response body success: " + response.body().isSuccess());
+                    Log.e("UserRepository", "Response body message: " + response.body().getMessage());
+                }
+            } catch (Exception e) {
+                Log.e("UserRepository", "Error parsing error body", e);
+            }
+
+            // If this was our last attempt, report the error
+            if (isLastAttempt) {
+                callback.onError("Authentication failed. Please try again.");
+            } else {
+                // Try the form-encoded approach
+                tryFormEncodedAuth(firebaseToken, callback);
+            }
+        }
     }
 
     /**
@@ -530,6 +718,24 @@ public class UserRepository {
      * Interface for profile update callbacks
      */
     public interface ProfileUpdateCallback {
+        void onSuccess(User user);
+
+        void onError(String errorMessage);
+    }
+
+    /**
+     * Interface for password change callbacks
+     */
+    public interface PasswordChangeCallback {
+        void onSuccess();
+
+        void onError(String errorMessage);
+    }
+
+    /**
+     * Interface for profile fetch callbacks
+     */
+    public interface ProfileCallback {
         void onSuccess(User user);
 
         void onError(String errorMessage);

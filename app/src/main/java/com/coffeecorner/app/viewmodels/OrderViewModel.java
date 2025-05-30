@@ -79,17 +79,17 @@ public class OrderViewModel extends AndroidViewModel {
     }
 
     public void loadOrders() {
-        String userId = preferencesHelper.getUserId();
-        if (userId == null || userId.isEmpty()) {
+        String authToken = preferencesHelper.getAuthToken();
+        if (authToken == null || authToken.isEmpty()) {
             errorMessage.setValue("User not logged in. Please login to view orders.");
             Log.w(TAG, "loadOrders: User not logged in.");
             return;
         }
 
         isLoading.setValue(true);
-        Log.d(TAG, "loadOrders: Fetching orders for userId: " + userId);
+        Log.d(TAG, "loadOrders: Fetching orders with JWT authentication");
 
-        orderRepository.getUserOrders(userId, new OrderRepository.OrdersCallback() {
+        orderRepository.getUserOrders(new OrderRepository.OrdersCallback() {
             @Override
             public void onOrdersLoaded(List<Order> orders) {
                 isLoading.setValue(false);
@@ -150,8 +150,8 @@ public class OrderViewModel extends AndroidViewModel {
 
     public void createOrder(List<CartItem> cartItems, double total, String deliveryAddress, String paymentMethod,
             String paymentId, String notes) {
-        String userId = preferencesHelper.getUserId();
-        if (userId == null || userId.isEmpty()) {
+        String authToken = preferencesHelper.getAuthToken();
+        if (authToken == null || authToken.isEmpty()) {
             errorMessage.setValue("User not logged in. Cannot create order.");
             Log.w(TAG, "createOrder: User not logged in.");
             return;
@@ -164,7 +164,7 @@ public class OrderViewModel extends AndroidViewModel {
         }
 
         isLoading.setValue(true);
-        Log.d(TAG, "createOrder: Attempting to create order for userId: " + userId);
+        Log.d(TAG, "createOrder: Attempting to create order with JWT authentication");
 
         // Build the necessary parameters for the repository method
         // The repository expects List<CartItem>, double, String, String, OrderCallback

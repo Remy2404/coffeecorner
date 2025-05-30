@@ -15,13 +15,14 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
 
 import com.bumptech.glide.Glide;
 import com.coffeecorner.app.R;
 import com.coffeecorner.app.models.CartItem;
 import com.coffeecorner.app.models.Product;
-import com.coffeecorner.app.utils.CartManager;
+import com.coffeecorner.app.viewmodels.CartViewModel;
 import com.coffeecorner.app.network.ApiService;
 import com.coffeecorner.app.network.RetrofitClient;
 import com.coffeecorner.app.network.ApiResponse;
@@ -49,11 +50,11 @@ public class ProductDetailsFragment extends Fragment {
     // UI elements for size selection
     private Chip chipSizeS, chipSizeM, chipSizeL;
     private CollapsingToolbarLayout collapsingToolbar;
-
     private Product product;
     private int quantity = 1;
     private boolean isFavorite = false;
     private NumberFormat currencyFormatter = NumberFormat.getCurrencyInstance(Locale.US);
+    private CartViewModel cartViewModel;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -65,6 +66,11 @@ public class ProductDetailsFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        // Initialize CartViewModel
+        cartViewModel = new ViewModelProvider(requireActivity(),
+                ViewModelProvider.AndroidViewModelFactory.getInstance(requireActivity().getApplication()))
+                .get(CartViewModel.class);
 
         // Initialize views
         initViews(view);
@@ -278,59 +284,23 @@ public class ProductDetailsFragment extends Fragment {
             return;
         }
 
-        // Get selected size
-        String size = "Small"; // Default
-        if (chipSizeM != null && chipSizeM.isChecked()) {
-            size = "Medium";
-        } else if (chipSizeL != null && chipSizeL.isChecked()) {
-            size = "Large";
-        }
+        // Add to cart using CartViewModel
+        cartViewModel.addToCart(product, quantity);
 
-        // Get temperature - default to "Hot" since we don't have radioGroupTemperature
-        String temperature = "Hot";
+        // Show success message
+        Toast.makeText(requireContext(), getString(R.string.added_to_cart), Toast.LENGTH_SHORT).show();
 
-        // Get selected extras
-        StringBuilder customizations = new StringBuilder();
-        if (chipGroupExtras != null) {
-            for (int i = 0; i < chipGroupExtras.getChildCount(); i++) {
-                Chip chip = (Chip) chipGroupExtras.getChildAt(i);
-                if (chip.isChecked()) {
-                    if (customizations.length() > 0) {
-                        customizations.append(", ");
-                    }
-                    customizations.append(chip.getText());
-                }
+        // Navigate back safely
+        try {
+            if (isAdded() && getView() != null) {
+                Navigation.findNavController(requireView()).popBackStack();
             }
-        }
-
-        // Add to cart with null safety check
-        CartItem addedItem = CartManager.getInstance().addToCart(
-                product,
-                quantity,
-                size,
-                temperature,
-                customizations.length() > 0 ? customizations.toString() : null);
-
-        if (addedItem != null) {
-            // Show success message
-            Toast.makeText(requireContext(), getString(R.string.added_to_cart), Toast.LENGTH_SHORT).show();
-
-            // Navigate back safely
-            try {
-                if (isAdded() && getView() != null) {
-                    Navigation.findNavController(requireView()).popBackStack();
-                }
-            } catch (Exception e) {
-                android.util.Log.e("ProductDetailsFragment", "Navigation error: " + e.getMessage()); // Fallback: try to
-                                                                                                     // pop the
-                                                                                                     // backstack
-                if (isAdded()) {
-                    requireActivity().getSupportFragmentManager().popBackStack();
-                }
+        } catch (Exception e) {
+            android.util.Log.e("ProductDetailsFragment", "Navigation error: " + e.getMessage());
+            // Fallback: try to pop the backstack
+            if (isAdded()) {
+                requireActivity().getSupportFragmentManager().popBackStack();
             }
-        } else {
-            // Show error message
-            Toast.makeText(requireContext(), "Failed to add item to cart", Toast.LENGTH_SHORT).show();
         }
     }
 
