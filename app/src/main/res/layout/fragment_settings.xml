@@ -4,20 +4,21 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/color_04_light_gray"
+    android:background="?android:colorBackground"
     tools:context=".fragments.SettingsFragment">
 
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/white"
+        android:background="?attr/colorSurface"
         app:elevation="1dp">
 
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize">
+            android:layout_height="?attr/actionBarSize"
+            android:background="?attr/colorSurface">
 
             <ImageButton
                 android:id="@+id/btnBack"
@@ -28,7 +29,7 @@
                 android:contentDescription="Back"
                 android:padding="12dp"
                 android:src="@drawable/ic_arrow_back_black"
-                app:tint="@color/text_primary" />
+                app:tint="?attr/colorOnSurface" />
 
             <TextView
                 android:id="@+id/toolbar_title"
@@ -36,7 +37,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="Settings"
-                android:textColor="@color/color_02_dark_slate_gray"
+                android:textColor="?attr/colorOnSurface"
                 android:textSize="20sp"
                 android:textStyle="bold" />
 
@@ -64,7 +65,7 @@
                 android:paddingTop="16dp"
                 android:paddingBottom="8dp"
                 android:text="Account"
-                android:textColor="@color/primary"
+                android:textColor="?attr/colorPrimary"
                 android:textSize="14sp"
                 android:textStyle="bold" />
 
@@ -72,17 +73,18 @@
                 android:id="@+id/layoutEditProfile"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@color/white"
+                android:background="?attr/colorSurface"
                 android:clickable="true"
                 android:focusable="true"
-                android:padding="16dp">
+                android:padding="16dp"
+                android:minHeight="64dp">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
                     android:text="Edit Profile"
-                    android:textColor="@color/text_primary"
+                    android:textColor="?attr/colorOnSurface"
                     android:textSize="16sp" />
 
                 <ImageView
@@ -91,7 +93,7 @@
                     android:layout_alignParentEnd="true"
                     android:layout_centerVertical="true"
                     android:src="@drawable/ic_chevron_right"
-                    app:tint="@color/text_secondary" />
+                    app:tint="?attr/colorOnSurface" />
             </RelativeLayout>
 
             <View
@@ -108,7 +110,7 @@
                 android:paddingTop="16dp"
                 android:paddingBottom="8dp"
                 android:text="App Settings"
-                android:textColor="@color/primary"
+                android:textColor="?attr/colorPrimary"
                 android:textSize="14sp"
                 android:textStyle="bold" />
 
@@ -116,15 +118,16 @@
                 android:id="@+id/layoutNotifications"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@color/white"
-                android:padding="16dp">
+                android:background="?attr/colorSurface"
+                android:padding="16dp"
+                android:minHeight="64dp">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
                     android:text="Notifications"
-                    android:textColor="@color/text_primary"
+                    android:textColor="?attr/colorOnSurface"
                     android:textSize="16sp" />
 
                 <com.google.android.material.switchmaterial.SwitchMaterial
@@ -144,15 +147,16 @@
                 android:id="@+id/layoutDarkMode"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@color/white"
-                android:padding="16dp">
+                android:background="?attr/colorSurface"
+                android:padding="16dp"
+                android:minHeight="64dp">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
                     android:text="Dark Mode"
-                    android:textColor="@color/text_primary"
+                    android:textColor="?attr/colorOnSurface"
                     android:textSize="16sp" />
 
                 <com.google.android.material.switchmaterial.SwitchMaterial
@@ -161,6 +165,37 @@
                     android:layout_height="wrap_content"
                     android:layout_alignParentEnd="true"
                     android:layout_centerVertical="true" />
+            </RelativeLayout>
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/color_divider" />
+
+            <RelativeLayout
+                android:id="@+id/layoutPaymentMethods"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="?attr/colorSurface"
+                android:clickable="true"
+                android:focusable="true"
+                android:padding="16dp"
+                android:minHeight="64dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:text="Payment Methods"
+                    android:textColor="?attr/colorOnSurface"
+                    android:textSize="16sp" />
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:src="@drawable/ic_chevron_right"
+                    app:tint="?attr/colorOnSurface" />
             </RelativeLayout>
 
             <View
@@ -176,8 +211,8 @@
                 android:paddingEnd="16dp"
                 android:paddingTop="16dp"
                 android:paddingBottom="8dp"
-                android:text="Legal"
-                android:textColor="@color/primary"
+                android:text="Other"
+                android:textColor="?attr/colorPrimary"
                 android:textSize="14sp"
                 android:textStyle="bold" />
 
@@ -185,17 +220,18 @@
                 android:id="@+id/layoutPrivacyPolicy"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@color/white"
+                android:background="?attr/colorSurface"
                 android:clickable="true"
                 android:focusable="true"
-                android:padding="16dp">
+                android:padding="16dp"
+                android:minHeight="64dp">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
                     android:text="Privacy Policy"
-                    android:textColor="@color/text_primary"
+                    android:textColor="?attr/colorOnSurface"
                     android:textSize="16sp" />
 
                 <ImageView
@@ -204,7 +240,7 @@
                     android:layout_alignParentEnd="true"
                     android:layout_centerVertical="true"
                     android:src="@drawable/ic_chevron_right"
-                    app:tint="@color/text_secondary" />
+                    app:tint="?attr/colorOnSurface" />
             </RelativeLayout>
 
             <View
@@ -216,17 +252,18 @@
                 android:id="@+id/layoutTermsConditions"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@color/white"
+                android:background="?attr/colorSurface"
                 android:clickable="true"
                 android:focusable="true"
-                android:padding="16dp">
+                android:padding="16dp"
+                android:minHeight="64dp">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
                     android:text="Terms &amp; Conditions"
-                    android:textColor="@color/text_primary"
+                    android:textColor="?attr/colorOnSurface"
                     android:textSize="16sp" />
 
                 <ImageView
@@ -235,7 +272,38 @@
                     android:layout_alignParentEnd="true"
                     android:layout_centerVertical="true"
                     android:src="@drawable/ic_chevron_right"
-                    app:tint="@color/text_secondary" />
+                    app:tint="?attr/colorOnSurface" />
+            </RelativeLayout>
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/color_divider" />
+
+            <RelativeLayout
+                android:id="@+id/layoutAboutUs"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="?attr/colorSurface"
+                android:clickable="true"
+                android:focusable="true"
+                android:padding="16dp"
+                android:minHeight="64dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:text="About Us"
+                    android:textColor="?attr/colorOnSurface"
+                    android:textSize="16sp" />
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:src="@drawable/ic_chevron_right"
+                    app:tint="?attr/colorOnSurface" />
             </RelativeLayout>
 
             <View
@@ -255,13 +323,13 @@
                 android:layout_marginBottom="16dp"
                 android:padding="12dp"
                 android:text="Logout"
-                android:textColor="@color/error_color"
+                android:textColor="?attr/colorError"
                 android:textSize="16sp"
-                app:backgroundTint="@color/white"
-                app:strokeColor="@color/error_color"
+                app:backgroundTint="?attr/colorSurface"
+                app:strokeColor="?attr/colorError"
                 app:strokeWidth="1dp"
                 app:icon="@drawable/ic_logout"
-                app:iconTint="@color/error_color"
+                app:iconTint="?attr/colorError"
                 app:iconGravity="textStart"/>
 
         </LinearLayout>
