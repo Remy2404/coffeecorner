@@ -58,12 +58,17 @@ public class EditProfileFragment extends Fragment {
     private CircleImageView imgProfile;
     private TextInputEditText etFullName, etEmail, etPhone, etDateOfBirth;
     private RadioGroup radioGroupGender;
-    private ProgressBar progressBar; // State    private User currentUser;
+    private ProgressBar progressBar; 
+    
+    // State
+    private User currentUser;
     private PreferencesHelper preferencesHelper;
     private UserRepository userRepository;
     private Uri selectedImageUri;
-    private boolean isImageChanged = false; // Activity result launchers - initialized in onViewCreated to avoid
-                                            // this-escape warnings
+    private boolean isImageChanged = false; 
+    private UserProfileManager userProfileManager;
+    
+    // Activity result launchers - initialized in onViewCreated to avoid this-escape warnings
     private ActivityResultLauncher<Intent> galleryLauncher;
     private ActivityResultLauncher<Intent> cameraLauncher;
 
@@ -79,10 +84,7 @@ public class EditProfileFragment extends Fragment {
         // Initialize dependencies
         preferencesHelper = new PreferencesHelper(requireContext());
         userRepository = UserRepository.getInstance(requireContext());
-
-        if (userProfileManager == null) {
-            userProfileManager = new UserProfileManager(requireContext());
-        }
+        userProfileManager = new UserProfileManager(requireContext());
 
         // Initialize activity result launchers after fragment is fully created
         initializeActivityResultLaunchers();
