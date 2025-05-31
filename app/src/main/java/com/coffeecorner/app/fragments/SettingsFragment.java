@@ -78,7 +78,26 @@ public class SettingsFragment extends Fragment {
         // Set initial states for switches
         switchNotifications.setChecked(preferencesHelper.isNotificationsEnabled());
         // Initialize dark mode switch from PreferencesHelper (centralized source of truth)
-        switchDarkMode.setChecked(preferencesHelper.isDarkModeEnabled());        // Set up click listeners
+        switchDarkMode.setChecked(preferencesHelper.isDarkModeEnabled());
+        switchDarkMode.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isThemeSwitching) return;
+            isThemeSwitching = true;
+            preferencesHelper.setDarkModeEnabled(isChecked);
+            themeHandler.removeCallbacksAndMessages(null);
+            themeHandler.postDelayed(() -> {
+                try {
+                    int targetMode = isChecked ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO;
+                    if (AppCompatDelegate.getDefaultNightMode() != targetMode) {
+                        AppCompatDelegate.setDefaultNightMode(targetMode);
+                        requireActivity().recreate();
+                    }
+                } finally {
+                    isThemeSwitching = false;
+                }
+            }, 200);
+        });
+
+        // Set up click listeners
         layoutEditProfile.setOnClickListener(v -> {
             // Navigate to EditProfileFragment - Ensure this action exists in your nav_graph
             if (Objects.requireNonNull(navController.getCurrentDestination()).getId() == R.id.settingsFragment) {
@@ -106,35 +125,6 @@ public class SettingsFragment extends Fragment {
             preferencesHelper.setNotificationsEnabled(isChecked);
             Toast.makeText(requireContext(), "Notifications " + (isChecked ? "Enabled" : "Disabled"),
                     Toast.LENGTH_SHORT).show();
-        });
-        switchDarkMode.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            // Prevent recursive calls during theme switching
-            if (isThemeSwitching) {
-                return;
-            }
-
-            // Set switching flag to prevent multiple rapid changes
-            isThemeSwitching = true;
-
-            // Save preference immediately to PreferencesHelper (single source of truth)
-            preferencesHelper.setDarkModeEnabled(isChecked);            // Remove any pending theme changes to prevent conflicts
-            themeHandler.removeCallbacksAndMessages(null);
-            
-            // Apply theme change with debouncing for smooth transition
-            themeHandler.postDelayed(() -> {
-                try {
-                    int targetMode = isChecked ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO;
-                    // Only apply if different from current mode to prevent unnecessary recreation
-                    if (AppCompatDelegate.getDefaultNightMode() != targetMode) {
-                        AppCompatDelegate.setDefaultNightMode(targetMode);
-                        // Recreate the activity to apply the theme change
-                        requireActivity().recreate();
-                    }
-                } finally {
-                    // Reset switching flag after completion
-                    isThemeSwitching = false;
-                }
-            }, 200); // 200ms delay for smooth transition
         });
 
         layoutPrivacyPolicy.setOnClickListener(v -> {
@@ -166,6 +156,22 @@ public class SettingsFragment extends Fragment {
                     requireActivity().finish();
                 }).setNegativeButton("Cancel", null)
                 .show());
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        // Ensure dark mode switch is always in sync with the current theme
+        View view = getView();
+        if (view != null) {
+            SwitchMaterial switchDarkMode = view.findViewById(R.id.switchDarkMode);
+            if (switchDarkMode != null) {
+                boolean isDark = preferencesHelper.isDarkModeEnabled();
+                if (switchDarkMode.isChecked() != isDark) {
+                    switchDarkMode.setChecked(isDark);
+                }
+            }
+        }
     }
 
     @Override

@@ -11,9 +11,10 @@ public class PreferencesHelper {
     private static final String PREF_NAME = "CoffeeCornerPrefs"; // Preference keys
     private static final String KEY_USER_ID = "user_id";
     private static final String KEY_USER_NAME = "user_name";
-    private static final String KEY_USER_EMAIL = "user_email";
-    private static final String KEY_USER_PHONE = "user_phone";
+    private static final String KEY_USER_EMAIL = "user_email";    private static final String KEY_USER_PHONE = "user_phone";
     private static final String KEY_USER_PROFILE_PIC = "user_profile_pic";
+    private static final String KEY_USER_GENDER = "user_gender";
+    private static final String KEY_USER_DATE_OF_BIRTH = "user_date_of_birth";
     private static final String KEY_USER_POINTS = "user_points";
     private static final String KEY_USER_TIER = "user_tier";
     private static final String KEY_IS_LOGGED_IN = "is_logged_in";
@@ -31,8 +32,6 @@ public class PreferencesHelper {
     private static final String KEY_SELECTED_LOCATION = "selected_location";
     private static final String KEY_LOYALTY_POINTS = "loyalty_points";
     private static final String KEY_PROMO_CODE = "promo_code";
-    private static final String KEY_USER_GENDER = "user_gender";
-    private static final String KEY_USER_DATE_OF_BIRTH = "user_date_of_birth";
 
     private final SharedPreferences sharedPreferences;
 
@@ -157,51 +156,13 @@ public class PreferencesHelper {
      */
     public String getUserPhone() {
         return sharedPreferences.getString(KEY_USER_PHONE, null);
-    }
-
-    /**
+    }    /**
      * Save user phone
      * 
      * @param phone User phone number
      */
     public void saveUserPhone(String phone) {
         sharedPreferences.edit().putString(KEY_USER_PHONE, phone).apply();
-    }
-
-    /**
-     * Get user profile picture URL
-     * 
-     * @return Profile picture URL
-     */
-    public String getUserProfilePic() {
-        return sharedPreferences.getString(KEY_USER_PROFILE_PIC, null);
-    }
-
-    /**
-     * Save user profile picture URL
-     * 
-     * @param profilePicUrl Profile picture URL
-     */
-    public void saveUserProfilePic(String profilePicUrl) {
-        sharedPreferences.edit().putString(KEY_USER_PROFILE_PIC, profilePicUrl).apply();
-    }
-
-    /**
-     * Get user loyalty points
-     * 
-     * @return Loyalty points
-     */
-    public int getUserPoints() {
-        return sharedPreferences.getInt(KEY_USER_POINTS, 0);
-    }
-
-    /**
-     * Save user loyalty points
-     * 
-     * @param points Loyalty points
-     */
-    public void saveUserPoints(int points) {
-        sharedPreferences.edit().putInt(KEY_USER_POINTS, points).apply();
     }
 
     /**
@@ -241,12 +202,57 @@ public class PreferencesHelper {
     }
 
     /**
-     * Save user photo (alias for saveUserProfilePic)
+     * Get user profile picture URL
      * 
-     * @param photoUrl User photo URL
+     * @return Profile picture URL
      */
-    public void saveUserPhoto(String photoUrl) {
-        saveUserProfilePic(photoUrl);
+    public String getUserProfilePic() {
+        return sharedPreferences.getString(KEY_USER_PROFILE_PIC, null);
+    }
+
+    /**
+     * Save user profile picture URL
+     * 
+     * @param profilePicUrl Profile picture URL
+     */
+    public void saveUserProfilePic(String profilePicUrl) {
+        sharedPreferences.edit().putString(KEY_USER_PROFILE_PIC, profilePicUrl).apply();
+    }
+
+    /**
+     * Get user loyalty points
+     * 
+     * @return Loyalty points
+     */
+    public int getUserPoints() {
+        return sharedPreferences.getInt(KEY_USER_POINTS, 0);
+    }
+
+    /**
+     * Save user loyalty points
+     * 
+     * @param points Loyalty points
+     */
+    public void saveUserPoints(int points) {
+        sharedPreferences.edit().putInt(KEY_USER_POINTS, points).apply();
+    }
+
+    /**
+     * Get user tier level
+     * 
+     * @return Tier level (1: Bronze, 2: Silver, 3: Gold, 4: Platinum)
+     */
+    public int getUserTier() {
+        return sharedPreferences.getInt(KEY_USER_TIER, 1);
+    }
+
+    /**
+     * Save user tier level
+     * 
+     * @param tier Tier level
+     */
+    public void saveUserTier(int tier) {
+        sharedPreferences.edit().putInt(KEY_USER_TIER, tier).apply();
     }
 
     /**
@@ -382,9 +388,7 @@ public class PreferencesHelper {
      */
     public void setOnboardingCompleted(boolean completed) {
         sharedPreferences.edit().putBoolean(KEY_ONBOARDING_COMPLETED, completed).apply();
-    }
-
-    /**
+    }    /**
      * Clear all preferences
      */
     public void clearAll() {
@@ -396,7 +400,9 @@ public class PreferencesHelper {
      */
     public void clear() {
         clearAll();
-    }    public void clearUserData() {
+    }
+
+    public void clearUserData() {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.remove(KEY_USER_ID);
         editor.remove(KEY_USER_NAME);
@@ -407,8 +413,6 @@ public class PreferencesHelper {
         editor.remove(KEY_USER_TIER);
         editor.remove(KEY_IS_LOGGED_IN);
         editor.remove(KEY_AUTH_TOKEN);
-        editor.remove(KEY_USER_GENDER);
-        editor.remove(KEY_USER_DATE_OF_BIRTH);
         editor.apply();
     }
 
